@@ -68,9 +68,14 @@ export const POST: APIRoute = async ({ request }) => {
       auth: { user: gmailAddress, pass: gmailPassword },
     });
 
-    // Wrap plain text body in minimal HTML
-    const htmlBody = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #333; max-width: 560px; line-height: 1.6;">
-${prospect.draft_body.split('\n').map((line: string) => `<p>${line}</p>`).join('\n')}
+    // Wrap plain text body in minimal HTML with proper paragraph spacing
+    const paragraphs = prospect.draft_body
+      .split(/\n\n+/)
+      .map((para: string) => para.trim())
+      .filter((para: string) => para.length > 0);
+
+    const htmlBody = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #333; max-width: 560px; line-height: 1.6; font-size: 14px;">
+${paragraphs.map((p: string) => `<p style="margin: 0 0 16px 0;">${p.replace(/\n/g, '<br>')}</p>`).join('\n')}
 </div>`;
 
     await transporter.sendMail({

@@ -12,16 +12,24 @@ function getSupabase() {
   return createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'));
 }
 
-const SYSTEM_PROMPT = `You are a business automation consultant analyzing small UK businesses. Your client (Leadership Growth Consulting) offers to build simple digital improvements for free as a way to start relationships with business owners.
+const SYSTEM_PROMPT = `You are a business automation consultant analyzing small UK businesses. Your client (Leadership Growth Consulting) builds simple digital improvements for free as a way to start relationships with business owners.
 
 Analyze the website and generate actionable ideas. Be specific to THIS business, not generic. The ideas should be things a developer could build in 1-2 days: chatbots, booking widgets, automated follow-ups, review collection systems, lead capture forms, process dashboards, reporting tools, client portals, etc.
 
-Rules:
+Rules for the ideas:
 - Be hyper-specific to their business. Reference what you see on their site.
 - Each idea should be a concrete tool or widget, not a vague "improve your SEO" suggestion.
-- The email should feel genuinely helpful, not salesy. Mention one specific observation about their website.
+
+Rules for the email:
+- Mention one specific observation about their website or business.
+- Be direct and confident. Say you have already put together a blueprint/ideas, not that you "could" or "would like to". You have done the work already.
+- Mention you have a few simple automation ideas you could send over on a PDF if useful.
+- The email MUST end with a question. Always close on a question to invite a reply.
+- Never say "I'd love", "I'd be thrilled", "I'm excited" or any over-the-top language. Keep it calm, professional, direct.
 - Never use em dashes in any copy.
-- Keep the email to 60-100 words. Relationship-first tone.
+- Keep the email to 80-120 words.
+- Format the email body with line breaks between paragraphs (use \\n\\n between paragraphs). Do NOT write it as one solid block.
+- Sign off as Will, Leadership Growth Consulting.
 - Respond with valid JSON only, no markdown formatting or code fences.`;
 
 interface AnalysisResult {
@@ -224,8 +232,8 @@ Please return JSON with this exact structure:
     }
   ],
   "draft_email": {
-    "subject": "short, personal subject line",
-    "body": "cold email body (60-100 words, relationship-first tone, mention one specific observation about their business, offer the top idea as a free build, sign off as Will from Leadership Growth Consulting)"
+    "subject": "short, personal subject line (no clickbait)",
+    "body": "Write 80-120 words. Use \\n\\n between paragraphs for white space. Open with a specific observation about their business. Say you have put together a few simple automation ideas for their business and can send them over on a PDF if useful. Be direct, not tentative. MUST end with a question. Sign off as:\\n\\nWill\\nLeadership Growth Consulting"
   }
 }`;
 
