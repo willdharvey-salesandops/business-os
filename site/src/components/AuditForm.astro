@@ -117,7 +117,12 @@
         <div class="audit-step" data-step="4">
           <h3>The cost</h3>
           <div class="form-group">
-            <label for="audit-hours">How many hours per week does this cost you?</label>
+            <label for="audit-financial-cost">Beyond your time, what is this costing you per month? (&pound;)</label>
+            <input type="number" id="audit-financial-cost" placeholder="2000" min="0">
+            <p class="form-hint">Lost deals, wasted spend, rework, penalties. Your best estimate.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-hours">How many hours per week does this take?</label>
             <select id="audit-hours" required>
               <option value="">Select...</option>
               <option value="3">2 - 5 hours</option>
@@ -439,6 +444,12 @@
     box-shadow: 0 0 30px rgba(45, 212, 191, 0.45) !important;
   }
 
+  .form-hint {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 0.3rem;
+  }
+
   .form-error {
     font-size: 0.75rem;
     color: #f87171;
@@ -687,6 +698,7 @@
       team_size: (document.getElementById('audit-team') as HTMLSelectElement).value,
       challenge: (document.getElementById('audit-challenge') as HTMLTextAreaElement).value,
       time_area: (document.getElementById('audit-area') as HTMLSelectElement).value,
+      monthly_financial_cost: parseFloat((document.getElementById('audit-financial-cost') as HTMLInputElement).value) || 0,
       hours_per_week: parseFloat((document.getElementById('audit-hours') as HTMLSelectElement).value),
       hourly_value: parseFloat((document.getElementById('audit-value') as HTMLInputElement).value) || 75,
     };
@@ -741,7 +753,7 @@
     document.getElementById('auditResults')?.classList.add('active');
   }
 
-  function renderFallback(formData: { hours_per_week: number; hourly_value: number }) {
+  function renderFallback(formData: { monthly_financial_cost: number; hours_per_week: number; hourly_value: number }) {
     document.getElementById('auditLoading')?.classList.remove('active');
 
     const ideasContainer = document.getElementById('auditIdeas');
@@ -754,7 +766,9 @@
     }
 
     const weeklySavings = formData.hours_per_week * 0.6;
-    const annualSavings = Math.round(weeklySavings * formData.hourly_value * 48);
+    const timeSavings = Math.round(weeklySavings * formData.hourly_value * 48);
+    const financialSavings = Math.round((formData.monthly_financial_cost || 0) * 12 * 0.5);
+    const annualSavings = timeSavings + financialSavings;
     const savings = document.getElementById('auditSavings');
     const hours = document.getElementById('auditHoursSaved');
     if (savings) savings.textContent = `\u00A3${annualSavings.toLocaleString()}`;

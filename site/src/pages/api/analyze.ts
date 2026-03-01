@@ -41,6 +41,7 @@ interface FormData {
   team_size: string;
   challenge: string;
   time_area: string;
+  monthly_financial_cost: number;
   hours_per_week: number;
   hourly_value: number;
 }
@@ -58,14 +59,19 @@ interface AuditResult {
 }
 
 function buildUserPrompt(data: FormData): string {
+  const financialLine = data.monthly_financial_cost
+    ? `Estimated monthly financial cost of this problem: £${data.monthly_financial_cost.toLocaleString('en-GB')} (lost deals, wasted spend, rework, etc.)`
+    : 'Monthly financial cost: Not specified';
+
   return `Business: ${data.industry || 'Unknown'}
 Website: ${data.website || 'Not provided'}
 Team size: ${data.team_size || 'Unknown'}
 Biggest challenge: ${data.challenge || 'Not specified'}
 Area that takes most time: ${data.time_area || 'Not specified'}
 Hours lost per week: ${data.hours_per_week || 'Unknown'}
+${financialLine}
 
-Generate 2-3 automation ideas tailored to this specific business and challenge. Each idea should save meaningful time. The total hours saved across all ideas should be realistic but impactful relative to the ${data.hours_per_week || 10} hours they currently lose per week.`;
+Generate 2-3 automation ideas tailored to this specific business and challenge. Each idea should save meaningful time. The total hours saved across all ideas should be realistic but impactful relative to the ${data.hours_per_week || 10} hours they currently lose per week. If the business has significant direct financial losses, factor those into your recommendations too.`;
 }
 
 function generatePDF(data: FormData, result: AuditResult): Buffer {
@@ -261,6 +267,7 @@ function buildNotificationEmail(data: FormData, result: AuditResult): string {
     <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Team</td><td>${data.team_size || ''}</td></tr>
     <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Challenge</td><td>${data.challenge || ''}</td></tr>
     <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Time area</td><td>${data.time_area || ''}</td></tr>
+    <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Financial cost/mo</td><td>${data.monthly_financial_cost ? `\u00A3${data.monthly_financial_cost.toLocaleString('en-GB')}` : 'Not specified'}</td></tr>
     <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Hours/week</td><td>${data.hours_per_week || ''}</td></tr>
     <tr><td style="padding: 4px 16px 4px 0; font-weight: bold;">Savings</td><td>${result.total_annual_savings || ''}</td></tr>
   </table>
@@ -307,10 +314,16 @@ export const POST: APIRoute = async ({ request }) => {
     const hourlyValue = data.hourly_value || 75;
     const totalHoursWeekly = result.ideas.reduce((sum, idea) => sum + idea.hours_saved_per_week, 0);
     const totalHoursYearly = Math.ceil(totalHoursWeekly * 48);
-    const totalAnnualSavings = Math.ceil(totalHoursWeekly * hourlyValue * 48);
+    const timeSavings = Math.ceil(totalHoursWeekly * hourlyValue * 48);
+    const financialRecovery = Math.ceil((data.monthly_financial_cost || 0) * 12 * 0.5);
+    const totalAnnualSavings = timeSavings + financialRecovery;
 
     result.total_annual_savings = `\u00A3${totalAnnualSavings.toLocaleString('en-GB')}`;
-    result.total_hours_saved_per_year = `Based on ${totalHoursYearly.toLocaleString('en-GB')} hours recovered per year`;
+    const parts = [`Based on ${totalHoursYearly.toLocaleString('en-GB')} hours recovered per year`];
+    if (financialRecovery > 0) {
+      parts.push(`plus \u00A3${financialRecovery.toLocaleString('en-GB')} in reduced financial losses`);
+    }
+    result.total_hours_saved_per_year = parts.join(', ');
 
     // Post-processing: PDF, emails, and lead logging
     // Run in parallel to stay within Vercel timeout
