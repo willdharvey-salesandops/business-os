@@ -300,45 +300,44 @@ export const POST: APIRoute = async ({ request }) => {
     result.total_annual_savings = `\u00A3${totalAnnualSavings.toLocaleString('en-GB')}`;
     result.total_hours_saved_per_year = `Based on ${totalHoursYearly.toLocaleString('en-GB')} hours recovered per year`;
 
-    // Fire-and-forget: PDF, emails, and lead logging
-    // Don't await to avoid Vercel timeout
+    // Post-processing: PDF, emails, and lead logging
+    // Run in parallel to stay within Vercel timeout
     const gmailAddress = import.meta.env.GMAIL_ADDRESS || process.env.GMAIL_ADDRESS;
     const gmailPassword = import.meta.env.GMAIL_APP_PASSWORD || process.env.GMAIL_APP_PASSWORD;
     const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const postProcess = async () => {
-      try {
-        // Generate PDF
-        const pdfBuffer = generatePDF(data, result);
+    try {
+      const pdfBuffer = generatePDF(data, result);
+      const tasks: Promise<any>[] = [];
 
-        // Send emails
-        if (gmailAddress && gmailPassword) {
-          const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: gmailAddress, pass: gmailPassword },
-          });
+      // Emails
+      if (gmailAddress && gmailPassword) {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user: gmailAddress, pass: gmailPassword },
+        });
 
-          // Email lead with PDF
-          await sendEmail(transporter, data.email, 'Your Automation Audit Results', buildLeadEmail(data, result), [
+        tasks.push(
+          sendEmail(transporter, data.email, 'Your Automation Audit Results', buildLeadEmail(data, result), [
             { filename: 'Automation-Audit-Results.pdf', content: pdfBuffer },
-          ]);
-
-          // Notify Will
-          await sendEmail(
+          ])
+        );
+        tasks.push(
+          sendEmail(
             transporter,
             gmailAddress,
             `New Website Lead: ${data.name || 'Unknown'} (${data.industry || ''})`,
             buildNotificationEmail(data, result)
-          );
-        }
+          )
+        );
+      }
 
-        // Log to Supabase
-        if (supabaseUrl && supabaseKey) {
-          const supabase = createClient(supabaseUrl, supabaseKey);
-          const ideaTitles = result.ideas.map((i) => i.title).join(', ');
-
-          await supabase.from('leads').insert({
+      // Supabase lead log
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        tasks.push(
+          supabase.from('leads').insert({
             name: data.name,
             email: data.email,
             phone: data.phone,
@@ -349,15 +348,14 @@ export const POST: APIRoute = async ({ request }) => {
             hourly_value: String(data.hourly_value || ''),
             total_savings: result.total_annual_savings,
             ideas: result.ideas,
-          });
-        }
-      } catch (err) {
-        console.error('Post-processing error:', err);
+          })
+        );
       }
-    };
 
-    // Don't await - let it run in background to avoid timeout
-    postProcess();
+      await Promise.allSettled(tasks);
+    } catch (err) {
+      console.error('Post-processing error:', err);
+    }
 
     return new Response(JSON.stringify(result), {
       status: 200,
