@@ -102,34 +102,45 @@ function generatePDF(data: FormData, result: AuditResult): Buffer {
 
   // Ideas
   result.ideas.forEach((idea, i) => {
+    // Calculate description lines to determine card height
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const lines = doc.splitTextToSize(idea.description, 178);
+    const lineHeight = 3.5;
+    const descHeight = lines.length * lineHeight;
+    const cardPadding = 10; // top padding before title
+    const titleToDesc = 8; // gap from title to description
+    const descToHours = 6; // gap from last desc line to hours saved
+    const hoursToBottom = 8; // padding below hours saved
+    const cardHeight = cardPadding + titleToDesc + descHeight + descToHours + hoursToBottom;
+
     // Card background
     doc.setFillColor(...LIGHT_GREY);
-    doc.rect(10, yPos, 190, 36, 'F');
+    doc.rect(10, yPos, 190, cardHeight, 'F');
 
     // Teal left accent
     doc.setFillColor(...TEAL_BRIGHT);
-    doc.rect(10, yPos, 2.5, 36, 'F');
+    doc.rect(10, yPos, 2.5, cardHeight, 'F');
 
     // Title
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...INK);
-    doc.text(`${i + 1}. ${idea.title}`, 16, yPos + 10);
+    doc.text(`${i + 1}. ${idea.title}`, 16, yPos + cardPadding);
 
     // Description
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...GREY);
-    const lines = doc.splitTextToSize(idea.description, 180);
-    doc.text(lines, 16, yPos + 18);
+    doc.text(lines, 16, yPos + cardPadding + titleToDesc);
 
     // Hours saved
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(...TEAL);
-    doc.text(`${idea.hours_saved_per_week} hours saved per week`, 16, yPos + 30);
+    doc.text(`${idea.hours_saved_per_week} hours saved per week`, 16, yPos + cardPadding + titleToDesc + descHeight + descToHours);
 
-    yPos += 42;
+    yPos += cardHeight + 6;
   });
 
   // Total savings section
