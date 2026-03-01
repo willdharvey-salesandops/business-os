@@ -179,16 +179,17 @@ function generatePDF(data: FormData, result: AuditResult): Buffer {
   doc.text("Just a conversation about what's possible.", 105, yPos + 14, { align: 'center' });
 
   // Footer
+  yPos += 28;
   doc.setDrawColor(...LIGHT_GREY);
-  doc.line(10, 262, 200, 262);
+  doc.line(10, yPos, 200, yPos);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...GREY);
-  doc.text('Book a call to discuss these ideas:', 10, 268);
+  doc.text('Book a call to discuss these ideas:', 10, yPos + 6);
   doc.setTextColor(...TEAL);
-  doc.text(CALENDLY_URL, 10, 273);
+  doc.text(CALENDLY_URL, 10, yPos + 11);
   doc.setTextColor(...GREY);
-  doc.text('will@leadershipgrowthconsulting.com', 10, 278);
+  doc.text('will@leadershipgrowthconsulting.com', 10, yPos + 16);
 
   return Buffer.from(doc.output('arraybuffer'));
 }
