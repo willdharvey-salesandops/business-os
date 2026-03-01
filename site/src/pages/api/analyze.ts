@@ -282,11 +282,10 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     let responseText = (message.content[0] as { type: 'text'; text: string }).text.trim();
-    if (responseText.startsWith('```')) {
-      responseText = responseText.split('\n', 1)[1] || responseText;
-    }
-    if (responseText.endsWith('```')) {
-      responseText = responseText.replace(/```$/, '');
+    // Strip markdown code fences if present
+    const fenceMatch = responseText.match(/^```(?:json)?\s*\n([\s\S]*?)\n```$/);
+    if (fenceMatch) {
+      responseText = fenceMatch[1].trim();
     }
     responseText = responseText.trim();
 
