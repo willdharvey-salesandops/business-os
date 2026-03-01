@@ -493,36 +493,46 @@
 
   .audit-results h3 {
     color: var(--white);
-    font-size: 1.3rem;
-    margin-bottom: 1.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    margin-bottom: 1.8rem;
+    letter-spacing: -0.02em;
   }
 
   .result-idea {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--teal-bright);
     border-radius: var(--radius-md);
-    padding: 1.4rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem 1.5rem 1.2rem;
+    margin-bottom: 1.2rem;
   }
 
   .result-idea h4 {
-    color: var(--white);
-    font-family: var(--font-body);
+    color: var(--teal-bright);
+    font-family: var(--font-heading);
     font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
   }
 
   .result-idea p {
-    font-size: 0.88rem;
-    line-height: 1.65;
-    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   .result-idea .time-saved {
+    display: inline-block;
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--teal-bright);
+    background: rgba(45, 212, 191, 0.1);
+    padding: 0.25rem 0.65rem;
+    border-radius: 100px;
   }
 
   .result-total {
