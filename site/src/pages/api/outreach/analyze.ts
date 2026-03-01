@@ -104,26 +104,195 @@ function extractEmailsFromHTML(html: string): string[] {
   );
 }
 
-function guessOwnerEmail(ownerName: string, websiteUrl: string, foundEmails: string[]): string {
-  // If we found emails on the website, prefer info@ or the first one
-  if (foundEmails.length > 0) {
-    const infoEmail = foundEmails.find(e => e.startsWith('info@') || e.startsWith('contact@') || e.startsWith('hello@'));
-    if (infoEmail) return infoEmail;
-    return foundEmails[0];
-  }
+interface EmailCandidate {
+  email: string;
+  source: string;
+  confidence: 'high' | 'medium' | 'low';
+  verified: 'valid' | 'catch-all' | 'invalid' | 'unknown' | 'unchecked';
+}
 
-  // Try to guess from owner name + domain
-  if (ownerName && websiteUrl) {
-    try {
-      const domain = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname.replace('www.', '');
-      const nameParts = ownerName.toLowerCase().split(' ');
-      if (nameParts.length >= 2) {
-        return `${nameParts[0]}@${domain}`;
+const GENERIC_PREFIXES = ['info', 'contact', 'hello', 'admin', 'office', 'enquiries', 'enquiry', 'sales', 'support', 'team', 'general', 'mail', 'reception'];
+
+// Prospeo Email Finder: find the director's verified email from name + domain
+async function prospeoFindEmail(firstName: string, lastName: string, domain: string, apiKey: string): Promise<{ email: string; status: string } | null> {
+  try {
+    const res = await fetch('https://api.prospeo.io/email-finder', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        company: domain,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) {
+      console.error('Prospeo finder error:', res.status, await res.text());
+      return null;
+    }
+    const data = await res.json();
+    if (data.error || !data.response?.email) return null;
+    return {
+      email: data.response.email,
+      status: data.response.email_status || 'unknown',
+    };
+  } catch (err) {
+    console.error('Prospeo finder failed:', err);
+    return null;
+  }
+}
+
+// Prospeo Email Verifier: check if a specific email address exists
+async function prospeoVerifyEmail(email: string, apiKey: string): Promise<string> {
+  try {
+    const res = await fetch('https://api.prospeo.io/email-verifier', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ email }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return 'unknown';
+    const data = await res.json();
+    const status = (data.response?.email_status || data.email_status || 'unknown').toLowerCase();
+    if (status === 'valid') return 'valid';
+    if (status === 'catch_all' || status === 'catch-all' || status === 'accept_all') return 'catch-all';
+    if (status === 'invalid' || status === 'disposable') return 'invalid';
+    return 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function mapProspeoStatus(status: string): EmailCandidate['verified'] {
+  const s = status.toLowerCase();
+  if (s === 'valid') return 'valid';
+  if (s === 'catch_all' || s === 'catch-all' || s === 'accept_all') return 'catch-all';
+  if (s === 'invalid' || s === 'disposable') return 'invalid';
+  return 'unknown';
+}
+
+async function generateEmailCandidates(
+  ownerName: string,
+  websiteUrl: string,
+  foundEmails: string[],
+  prospeoKey: string,
+): Promise<EmailCandidate[]> {
+  const candidates: EmailCandidate[] = [];
+  let domain = '';
+
+  try {
+    domain = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname.replace('www.', '');
+  } catch { /* ignore */ }
+
+  if (!domain) return candidates;
+
+  const nameParts = (ownerName || '').toLowerCase().trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
+  const added = new Set<string>();
+
+  // Step 1: Try Prospeo Email Finder (best source: verified email for this person)
+  if (prospeoKey && firstName && lastName) {
+    const found = await prospeoFindEmail(firstName, lastName, domain, prospeoKey);
+    if (found && found.email) {
+      const verified = mapProspeoStatus(found.status);
+      if (verified !== 'invalid') {
+        candidates.push({
+          email: found.email,
+          source: 'Prospeo (verified)',
+          confidence: verified === 'valid' ? 'high' : 'medium',
+          verified,
+        });
+        added.add(found.email.toLowerCase());
       }
-    } catch { /* ignore */ }
+    }
   }
 
-  return '';
+  // Split found website emails into personal vs generic
+  const personalWebEmails: string[] = [];
+  const genericWebEmails: string[] = [];
+
+  for (const email of foundEmails) {
+    const prefix = email.split('@')[0].toLowerCase();
+    if (GENERIC_PREFIXES.includes(prefix)) {
+      genericWebEmails.push(email);
+    } else {
+      personalWebEmails.push(email);
+    }
+  }
+
+  // Step 2: Personal email from website matching director name
+  if (firstName) {
+    const matching = personalWebEmails.filter(e => {
+      const prefix = e.split('@')[0].toLowerCase();
+      return prefix.includes(firstName) || (lastName && prefix.includes(lastName));
+    });
+    for (const e of matching) {
+      if (!added.has(e.toLowerCase())) {
+        candidates.push({ email: e, source: 'Website (matches director)', confidence: 'high', verified: 'unchecked' });
+        added.add(e.toLowerCase());
+      }
+    }
+  }
+
+  // Step 3: Guessed personal patterns from owner name + domain
+  if (firstName && domain) {
+    const patterns = firstName && lastName
+      ? [
+          `${firstName}@${domain}`,
+          `${firstName}.${lastName}@${domain}`,
+          `${firstName[0]}${lastName}@${domain}`,
+          `${firstName[0]}.${lastName}@${domain}`,
+        ]
+      : [`${firstName}@${domain}`];
+
+    for (const p of patterns) {
+      if (!added.has(p.toLowerCase())) {
+        candidates.push({ email: p, source: 'Guessed from director name', confidence: 'low', verified: 'unchecked' });
+        added.add(p.toLowerCase());
+      }
+    }
+  }
+
+  // Step 4: Other personal emails from website
+  for (const e of personalWebEmails) {
+    if (!added.has(e.toLowerCase())) {
+      candidates.push({ email: e, source: 'Website (personal)', confidence: 'medium', verified: 'unchecked' });
+      added.add(e.toLowerCase());
+    }
+  }
+
+  // Step 5: Generic emails as last resort
+  for (const e of genericWebEmails) {
+    if (!added.has(e.toLowerCase())) {
+      candidates.push({ email: e, source: 'Website (generic)', confidence: 'low', verified: 'unchecked' });
+      added.add(e.toLowerCase());
+    }
+  }
+
+  // Step 6: Verify unchecked candidates via Prospeo (top 3 only to conserve credits)
+  if (prospeoKey) {
+    const toVerify = candidates.filter(c => c.verified === 'unchecked').slice(0, 3);
+    for (const candidate of toVerify) {
+      const status = await prospeoVerifyEmail(candidate.email, prospeoKey);
+      candidate.verified = status as EmailCandidate['verified'];
+      if (status === 'valid') candidate.confidence = 'high';
+      else if (status === 'invalid') candidate.confidence = 'low';
+    }
+  }
+
+  // Sort: valid verified first, then catch-all, then unchecked, then invalid last
+  const verifiedOrder: Record<string, number> = { valid: 0, 'catch-all': 1, unknown: 2, unchecked: 3, invalid: 4 };
+  candidates.sort((a, b) => (verifiedOrder[a.verified] ?? 3) - (verifiedOrder[b.verified] ?? 3));
+
+  // Remove any that came back invalid
+  return candidates.filter(c => c.verified !== 'invalid');
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -274,8 +443,10 @@ Please return JSON with this exact structure:
 
     const analysis: AnalysisResult = JSON.parse(responseText);
 
-    // Determine owner email
-    const ownerEmail = guessOwnerEmail(prospect.owner_name || '', prospect.website, foundEmails);
+    // Generate ranked email candidates with Prospeo verification where possible
+    const prospeoKey = getEnv('PROSPEO_API_KEY');
+    const emailCandidates = await generateEmailCandidates(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
+    const ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
 
     // Update prospect
     await supabase
@@ -290,6 +461,7 @@ Please return JSON with this exact structure:
         follow_up_2_subject: analysis.follow_up_2?.subject || '',
         follow_up_2_body: analysis.follow_up_2?.body || '',
         owner_email: ownerEmail,
+        email_candidates: emailCandidates,
         pipeline_status: 'email_drafted',
       })
       .eq('id', prospect_id);
@@ -303,7 +475,7 @@ Please return JSON with this exact structure:
       follow_up_1: analysis.follow_up_1,
       follow_up_2: analysis.follow_up_2,
       owner_email: ownerEmail,
-      found_emails: foundEmails,
+      email_candidates: emailCandidates,
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

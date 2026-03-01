@@ -551,6 +551,66 @@
     }
     .btn-replied:hover { background: #c2410c; }
 
+    /* Email candidate selector */
+    .email-candidates {
+      margin-bottom: 0.8rem;
+    }
+    .email-candidates-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.3rem;
+    }
+    .email-candidate {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 0.82rem;
+    }
+    .email-candidate:hover { background: var(--grey-100); }
+    .email-candidate.selected { background: var(--teal-glow); }
+    .email-candidate input[type="radio"] {
+      accent-color: var(--teal);
+      margin: 0;
+    }
+    .email-candidate-email {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .email-candidate-source {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+    }
+    .confidence-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .confidence-high { background: var(--green); }
+    .confidence-medium { background: var(--orange); }
+    .confidence-low { background: var(--grey-400); }
+    .verified-badge {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 100px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .verified-valid { background: #dcfce7; color: var(--green); }
+    .verified-catch-all { background: #fff7ed; color: var(--orange); }
+    .verified-unknown { background: var(--grey-100); color: var(--grey-400); }
+    .verified-unchecked { background: var(--grey-100); color: var(--grey-400); }
+
     /* Responsive */
     @media (max-width: 768px) {
       .main { padding: 1rem; }
@@ -847,6 +907,7 @@
           </h4>
           <label>To</label>
           <input type="email" id="email-to-${p.id}" value="${esc(p.owner_email || '')}" ${isSent ? 'disabled' : ''}>
+          ${!isSent && p.email_candidates && p.email_candidates.length > 1 ? buildEmailCandidates(p) : ''}
           <label>Subject</label>
           <input type="text" id="email-subj-${p.id}" value="${esc(p.draft_subject || '')}" ${isSent ? 'disabled' : ''}>
           <label>Body</label>
@@ -868,6 +929,44 @@
         ${(isSent || p.follow_up_1_body) ? buildFollowUpSection(p) : ''}
       </div>
     `;
+  }
+
+  function buildEmailCandidates(p) {
+    const candidates = p.email_candidates || [];
+    const currentEmail = p.owner_email || '';
+    const verifiedLabels = {
+      'valid': 'Verified',
+      'catch-all': 'Catch-all',
+      'unknown': 'Unverified',
+      'unchecked': 'Not checked',
+    };
+    return `
+      <div class="email-candidates">
+        <div class="email-candidates-label">Email candidates (pick the best match)</div>
+        ${candidates.map((c, i) => `
+          <label class="email-candidate ${c.email === currentEmail ? 'selected' : ''}">
+            <input type="radio" name="email-pick-${p.id}" value="${esc(c.email)}"
+              ${c.email === currentEmail ? 'checked' : ''}
+              onchange="pickEmail('${p.id}', '${esc(c.email)}')">
+            <span class="confidence-dot confidence-${c.confidence}"></span>
+            <span class="email-candidate-email">${esc(c.email)}</span>
+            <span class="verified-badge verified-${c.verified || 'unchecked'}">${verifiedLabels[c.verified] || 'Not checked'}</span>
+            <span class="email-candidate-source">${esc(c.source)}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function pickEmail(prospectId, email) {
+    document.getElementById(`email-to-${prospectId}`).value = email;
+    // Update visual selection
+    const container = document.querySelector(`#editor-${prospectId} .email-candidates`);
+    if (container) {
+      container.querySelectorAll('.email-candidate').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('input').value === email);
+      });
+    }
   }
 
   function buildFollowUpSection(p) {
@@ -990,6 +1089,7 @@
           follow_up_2_subject: data.follow_up_2?.subject,
           follow_up_2_body: data.follow_up_2?.body,
           owner_email: data.owner_email,
+          email_candidates: data.email_candidates,
         });
       }
       renderProspects();
