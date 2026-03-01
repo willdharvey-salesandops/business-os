@@ -722,11 +722,11 @@
 
     data.ideas.forEach(idea => {
       const ideaEl = document.createElement('div');
-      ideaEl.className = 'result-idea';
+      ideaEl.style.cssText = 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-left:3px solid #2dd4bf;border-radius:12px;padding:1.5rem;margin-bottom:1.2rem;';
       ideaEl.innerHTML = `
-        <h4>${idea.title}</h4>
-        <p>${idea.description}</p>
-        <span class="time-saved">${idea.hours_saved_per_week}h saved per week</span>
+        <h4 style="color:#2dd4bf;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.15rem;margin-bottom:0.7rem;line-height:1.3;letter-spacing:-0.01em;">${idea.title}</h4>
+        <p style="font-size:0.9rem;line-height:1.7;margin-bottom:0.8rem;color:rgba(255,255,255,0.55);">${idea.description}</p>
+        <span style="display:inline-block;font-size:0.8rem;font-weight:600;color:#2dd4bf;background:rgba(45,212,191,0.15);padding:0.3rem 0.75rem;border-radius:100px;">${idea.hours_saved_per_week}h saved per week</span>
       `;
       ideasContainer.appendChild(ideaEl);
     });
