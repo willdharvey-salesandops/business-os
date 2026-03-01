@@ -225,6 +225,7 @@
     .badge-approved { background: #dcfce7; color: var(--green); }
     .badge-sent { background: var(--ink); color: var(--white); }
     .badge-failed { background: #fee2e2; color: var(--red); }
+    .badge-replied { background: #dbeafe; color: var(--blue); }
     .badge-unregistered { background: #fff7ed; color: var(--orange); }
 
     /* Table */
@@ -494,6 +495,62 @@
       font-weight: 600;
     }
 
+    /* Follow-up section */
+    .followup-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--grey-200);
+    }
+    .followup-section h4 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      color: var(--ink);
+      margin-bottom: 0.8rem;
+    }
+    .followup-card {
+      background: var(--grey-100);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .followup-card .fu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+    .followup-card .fu-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--grey-400);
+    }
+    .followup-card .fu-status {
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .followup-card .fu-status.pending { color: var(--orange); }
+    .followup-card .fu-status.sent { color: var(--green); }
+    .followup-card .fu-status.stopped { color: var(--grey-400); }
+    .followup-card .fu-subject {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .followup-card .fu-body {
+      font-size: 0.8rem;
+      color: var(--grey-600);
+      white-space: pre-line;
+    }
+    .btn-replied {
+      background: var(--orange);
+      color: var(--white);
+    }
+    .btn-replied:hover { background: #c2410c; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .main { padding: 1rem; }
@@ -580,6 +637,7 @@
         <button class="btn btn-primary btn-sm" id="btnQualify" onclick="qualifyAll()">Qualify All</button>
         <button class="btn btn-primary btn-sm" id="btnAnalyze" onclick="analyzeAll()">Analyze All</button>
         <button class="btn btn-success btn-sm" id="btnSendAll" onclick="sendAll()">Send All Approved</button>
+        <button class="btn btn-secondary btn-sm" id="btnFollowups" onclick="sendFollowUps()">Send Follow-ups</button>
       </div>
     </div>
 
@@ -693,7 +751,7 @@
     tbody.innerHTML = '';
 
     // Stats
-    const stats = { discovered: 0, qualified: 0, disqualified: 0, email_drafted: 0, approved: 0, sent: 0, failed: 0 };
+    const stats = { discovered: 0, qualified: 0, disqualified: 0, email_drafted: 0, approved: 0, sent: 0, replied: 0, failed: 0 };
     prospects.forEach(p => {
       const key = p.pipeline_status || 'discovered';
       if (stats[key] !== undefined) stats[key]++;
@@ -705,6 +763,7 @@
       <div class="stat-card"><div class="stat-label">Analyzed</div><div class="stat-value">${stats.email_drafted}</div></div>
       <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value">${stats.approved}</div></div>
       <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value">${stats.sent}</div></div>
+      <div class="stat-card"><div class="stat-label">Replied</div><div class="stat-value">${stats.replied}</div></div>
     `;
 
     // Button states
@@ -723,7 +782,7 @@
         <td>${p.owner_name ? esc(p.owner_name) : '-'}</td>
         <td><span class="badge badge-${p.pipeline_status}">${formatStatus(p.pipeline_status)}</span></td>
         <td>
-          ${p.pipeline_status === 'email_drafted' || p.pipeline_status === 'approved' || p.pipeline_status === 'sent' ?
+          ${['email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status) ?
             `<button class="btn btn-secondary btn-sm" onclick="toggleDetail('${p.id}')">View</button>` : ''}
           ${p.pipeline_status === 'discovered' ?
             `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}')">Qualify</button>` : ''}
@@ -734,7 +793,7 @@
       tbody.appendChild(tr);
 
       // Detail row (hidden by default)
-      if (p.pipeline_status === 'email_drafted' || p.pipeline_status === 'approved' || p.pipeline_status === 'sent') {
+      if (['email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status)) {
         const detailTr = document.createElement('tr');
         detailTr.id = `detail-${p.id}`;
         detailTr.className = 'detail-row';
@@ -797,10 +856,65 @@
               ${isApproved ? '' : `<button class="btn btn-success btn-sm" onclick="approveProspect('${p.id}')">Approve</button>`}
               ${isApproved ? `<button class="btn btn-success btn-sm" onclick="sendOne('${p.id}')">Send Now</button>` : ''}
             </div>
-          ` : `<p style="font-size:0.8rem; color:var(--green); margin-top:0.5rem;">Sent on ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : '-'}</p>`}
+          ` : `
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.5rem;">
+              <p style="font-size:0.8rem; color:var(--green);">Sent on ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : '-'}</p>
+              ${!p.replied ? `<button class="btn btn-replied btn-sm" onclick="markReplied('${p.id}')">Mark as Replied</button>` : `<span class="badge badge-qualified">Replied</span>`}
+            </div>
+          `}
         </div>
+
+        ${(isSent || p.follow_up_1_body) ? buildFollowUpSection(p) : ''}
       </div>
     `;
+  }
+
+  function buildFollowUpSection(p) {
+    const fu1Status = p.replied ? 'stopped' : (p.follow_up_1_sent_at ? 'sent' : 'pending');
+    const fu2Status = p.replied ? 'stopped' : (p.follow_up_2_sent_at ? 'sent' : 'pending');
+    const fu1StatusText = p.replied ? 'Stopped (replied)' : (p.follow_up_1_sent_at ? `Sent ${new Date(p.follow_up_1_sent_at).toLocaleDateString('en-GB')}` : 'Pending (day 2)');
+    const fu2StatusText = p.replied ? 'Stopped (replied)' : (p.follow_up_2_sent_at ? `Sent ${new Date(p.follow_up_2_sent_at).toLocaleDateString('en-GB')}` : 'Pending (day 5)');
+
+    return `
+      <div class="followup-section">
+        <h4>Follow-up Sequence</h4>
+        ${p.follow_up_1_body ? `
+          <div class="followup-card">
+            <div class="fu-header">
+              <span class="fu-label">Follow-up 1 (Day 2)</span>
+              <span class="fu-status ${fu1Status}">${fu1StatusText}</span>
+            </div>
+            <div class="fu-subject">${esc(p.follow_up_1_subject || '')}</div>
+            <div class="fu-body">${esc(p.follow_up_1_body || '')}</div>
+          </div>
+        ` : ''}
+        ${p.follow_up_2_body ? `
+          <div class="followup-card">
+            <div class="fu-header">
+              <span class="fu-label">Follow-up 2 (Day 5)</span>
+              <span class="fu-status ${fu2Status}">${fu2StatusText}</span>
+            </div>
+            <div class="fu-subject">${esc(p.follow_up_2_subject || '')}</div>
+            <div class="fu-body">${esc(p.follow_up_2_body || '')}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  async function markReplied(id) {
+    try {
+      await api('POST', '/api/outreach/approve', { prospect_id: id, status: 'replied' });
+      const p = prospects.find(x => x.id === id);
+      if (p) {
+        p.replied = true;
+        p.pipeline_status = 'replied';
+      }
+      renderProspects();
+      toast(`${p?.company_name}: Marked as replied, follow-ups stopped`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
   }
 
   function toggleDetail(id) {
@@ -870,6 +984,10 @@
           improvement_ideas: data.improvement_ideas,
           draft_subject: data.draft_email?.subject,
           draft_body: data.draft_email?.body,
+          follow_up_1_subject: data.follow_up_1?.subject,
+          follow_up_1_body: data.follow_up_1?.body,
+          follow_up_2_subject: data.follow_up_2?.subject,
+          follow_up_2_body: data.follow_up_2?.body,
           owner_email: data.owner_email,
         });
       }
@@ -962,6 +1080,31 @@
     toast(`All ${toSend.length} emails sent.`);
   }
 
+  async function sendFollowUps() {
+    const sentCount = prospects.filter(p => p.pipeline_status === 'sent' && !p.replied).length;
+    if (sentCount === 0) {
+      toast('No sent prospects awaiting follow-ups', 'error');
+      return;
+    }
+    if (!confirm(`Check ${sentCount} sent prospects for due follow-ups and send them?`)) return;
+
+    showLoading('Sending follow-ups...');
+    try {
+      const data = await api('POST', '/api/outreach/cron-followups', {});
+      hideLoading();
+      if (data.follow_ups_sent > 0) {
+        toast(`Sent ${data.follow_ups_sent} follow-up${data.follow_ups_sent > 1 ? 's' : ''}`);
+        // Reload pipeline to reflect updated sent_at timestamps
+        await loadPipeline(currentCampaignId, document.getElementById('pipelineTitle').textContent.split(' in ')[0], document.getElementById('pipelineTitle').textContent.split(' in ')[1] || '');
+      } else {
+        toast('No follow-ups due yet. Follow-up 1 sends after 2 days, follow-up 2 after 5 days.');
+      }
+    } catch (err) {
+      hideLoading();
+      toast(err.message, 'error');
+    }
+  }
+
   async function skipProspect(id) {
     try {
       await api('POST', '/api/outreach/approve', { prospect_id: id, status: 'disqualified' });
@@ -1021,6 +1164,7 @@
       email_drafted: 'Email Ready',
       approved: 'Approved',
       sent: 'Sent',
+      replied: 'Replied',
       failed: 'Failed',
       unregistered: 'Unregistered',
     };

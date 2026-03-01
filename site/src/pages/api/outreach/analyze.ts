@@ -27,9 +27,14 @@ Rules for the email:
 - The email MUST end with a question. Always close on a question to invite a reply.
 - Never say "I'd love", "I'd be thrilled", "I'm excited" or any over-the-top language. Keep it calm, professional, direct.
 - Never use em dashes in any copy.
-- Keep the email to 80-120 words.
-- Format the email body with line breaks between paragraphs (use \\n\\n between paragraphs). Do NOT write it as one solid block.
+- Keep each email to 80-120 words.
+- Format every email body with line breaks between paragraphs (use \\n\\n between paragraphs). Do NOT write as one solid block.
 - Sign off as Will, Leadership Growth Consulting.
+
+You must generate THREE emails: the initial email, a follow-up for 2 days later, and a final follow-up for 5 days later.
+- Follow-up 1 (day 2): Shorter (40-60 words). Add a small piece of value or a different angle. Still end on a question. Do NOT repeat the initial email.
+- Follow-up 2 (day 5): Final nudge (30-50 words). Casual, no pressure. Leave the door open. Still end on a question.
+- All three emails must follow the same tone rules above.
 - Respond with valid JSON only, no markdown formatting or code fences.`;
 
 interface AnalysisResult {
@@ -47,6 +52,14 @@ interface AnalysisResult {
     impact: string;
   }>;
   draft_email: {
+    subject: string;
+    body: string;
+  };
+  follow_up_1: {
+    subject: string;
+    body: string;
+  };
+  follow_up_2: {
     subject: string;
     body: string;
   };
@@ -234,12 +247,20 @@ Please return JSON with this exact structure:
   "draft_email": {
     "subject": "short, personal subject line (no clickbait)",
     "body": "Write 80-120 words. Use \\n\\n between paragraphs for white space. Open with a specific observation about their business. Say you have put together a few simple automation ideas for their business and can send them over on a PDF if useful. Be direct, not tentative. MUST end with a question. Sign off as:\\n\\nWill\\nLeadership Growth Consulting"
+  },
+  "follow_up_1": {
+    "subject": "Re: [same subject as initial email]",
+    "body": "40-60 words. Add a small piece of value or a different angle. Do NOT repeat the initial email. Still end on a question. Use \\n\\n between paragraphs. Sign off as:\\n\\nWill"
+  },
+  "follow_up_2": {
+    "subject": "Re: [same subject as initial email]",
+    "body": "30-50 words. Final nudge. Casual, no pressure. Leave the door open. Still end on a question. Use \\n\\n between paragraphs. Sign off as:\\n\\nWill"
   }
 }`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 3000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
     });
@@ -264,6 +285,10 @@ Please return JSON with this exact structure:
         improvement_ideas: analysis.improvement_ideas,
         draft_subject: analysis.draft_email.subject,
         draft_body: analysis.draft_email.body,
+        follow_up_1_subject: analysis.follow_up_1?.subject || '',
+        follow_up_1_body: analysis.follow_up_1?.body || '',
+        follow_up_2_subject: analysis.follow_up_2?.subject || '',
+        follow_up_2_body: analysis.follow_up_2?.body || '',
         owner_email: ownerEmail,
         pipeline_status: 'email_drafted',
       })
@@ -275,6 +300,8 @@ Please return JSON with this exact structure:
       website_analysis: analysis.website_analysis,
       improvement_ideas: analysis.improvement_ideas,
       draft_email: analysis.draft_email,
+      follow_up_1: analysis.follow_up_1,
+      follow_up_2: analysis.follow_up_2,
       owner_email: ownerEmail,
       found_emails: foundEmails,
     }), {

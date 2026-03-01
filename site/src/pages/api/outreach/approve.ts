@@ -21,12 +21,13 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const allowedStatuses = ['approved', 'disqualified'];
+  const allowedStatuses = ['approved', 'disqualified', 'replied'];
   const finalStatus = allowedStatuses.includes(targetStatus) ? targetStatus : 'approved';
 
   const supabase = getSupabase();
 
-  const updates: Record<string, string> = { pipeline_status: finalStatus };
+  const updates: Record<string, any> = { pipeline_status: finalStatus };
+  if (finalStatus === 'replied') updates.replied = true;
   if (subject) updates.draft_subject = subject;
   if (body) updates.draft_body = body;
   if (owner_email) updates.owner_email = owner_email;
