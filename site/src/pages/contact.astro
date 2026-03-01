@@ -1,0 +1,88 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Book a Call | Will Harvey | Leadership Growth Consulting"
+  description="A straight conversation about where you are and where you want to get to. No pitch. No pressure."
+>
+  <Nav />
+
+  <!-- HERO -->
+  <section class="bg-white pt-28 pb-16 lg:pt-36 lg:pb-20">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      <p class="text-brand uppercase tracking-widest text-xs font-semibold mb-6">Contact</p>
+      <h1 class="font-serif text-5xl lg:text-6xl text-zinc-900 leading-tight mb-6 max-w-2xl">
+        Book a discovery call
+      </h1>
+      <p class="text-zinc-500 text-xl max-w-lg leading-relaxed">
+        A straight conversation about where you are and where you want to get to. No pitch. No pressure.
+      </p>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section class="bg-stone-50 py-20 lg:py-28">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div>
+          <h2 class="font-serif text-2xl text-zinc-900 mb-6">What to expect</h2>
+          <div class="space-y-4 text-zinc-600 leading-relaxed mb-10">
+            <p>
+              We'll spend about 30-45 minutes talking. I'll want to understand the business, what's
+              working, what isn't, where you're spending your time, and what a better version of
+              your week would look like.
+            </p>
+            <p>
+              If it sounds like working together could make sense, I'll explain how that works and
+              we can go from there. If it doesn't, you'll leave the call with something useful anyway.
+            </p>
+          </div>
+          <a
+            href="https://calendly.com/will-leadershipgrowthconsulting/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-block bg-brand text-white px-8 py-4 font-medium hover:bg-brand-hover transition-colors"
+          >
+            Choose a time
+          </a>
+        </div>
+
+        <!-- Calendly embed -->
+        <div class="min-h-[600px]">
+          <div
+            class="calendly-inline-widget h-full min-h-[600px]"
+            data-url="https://calendly.com/will-leadershipgrowthconsulting/30min?hide_gdpr_banner=1"
+          ></div>
+          <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMAIL -->
+  <section class="bg-white py-20">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      <div class="max-w-md">
+        <h2 class="font-serif text-2xl text-zinc-900 mb-4">Prefer to send a message first?</h2>
+        <p class="text-zinc-500 text-sm mb-6 leading-relaxed">
+          If you're not sure a call makes sense yet, drop me an email. Tell me a bit about where
+          you are and what you're trying to figure out.
+        </p>
+        <a
+          href="mailto:will@leadershipgrowthconsulting.com"
+          class="text-brand font-medium hover:text-brand-hover transition-colors"
+        >
+          will@leadershipgrowthconsulting.com
+        </a>
+        <p class="text-zinc-400 text-xs mt-4">
+          I read every message myself. I aim to reply within a day or two.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

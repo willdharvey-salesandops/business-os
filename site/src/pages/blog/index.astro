@@ -1,0 +1,178 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const SUPABASE_URL = import.meta.env.SUPABASE_URL || 'https://zgtaskiordteelfvlmti.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+
+let posts: any[] = [];
+let error = '';
+
+try {
+  const now = new Date().toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&published_at=lte.${now}&order=published_at.desc`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  if (res.ok) {
+    posts = await res.json();
+  } else {
+    error = 'Failed to load articles.';
+  }
+} catch (e) {
+  error = 'Failed to load articles.';
+}
+
+const categories = [...new Set(posts.map((p: any) => p.category).filter(Boolean))];
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+---
+
+<Layout
+  title="Blog | Leadership Growth Consulting"
+  description="Thoughts on systems, AI, and building businesses that run without you."
+>
+  <Nav />
+
+  <section class="bg-white pt-28 pb-12 lg:pt-36 lg:pb-16">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+      <p class="text-brand uppercase tracking-widest text-xs font-semibold mb-4">Blog</p>
+      <h1 class="font-serif text-4xl lg:text-5xl text-zinc-900 leading-tight mb-4">
+        Thoughts on building better businesses.
+      </h1>
+      <p class="text-lg text-zinc-500 max-w-md mx-auto">
+        Systems, AI, and getting your business to run without you.
+      </p>
+    </div>
+  </section>
+
+  {categories.length > 1 && (
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 pb-8">
+      <div class="flex justify-center gap-2 flex-wrap" id="blog-filters">
+        <button
+          class="filter-btn px-4 py-1.5 text-sm font-medium rounded-full border transition-colors active"
+          data-category="all"
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            class="filter-btn px-4 py-1.5 text-sm font-medium rounded-full border transition-colors"
+            data-category={cat}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <section class="pb-20 lg:pb-28">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      {error && (
+        <p class="text-center text-zinc-400 py-12">{error}</p>
+      )}
+
+      {!error && posts.length === 0 && (
+        <div class="text-center py-12">
+          <p class="text-zinc-400 text-lg">No articles yet.</p>
+          <p class="text-zinc-400 text-sm mt-1">Check back soon.</p>
+        </div>
+      )}
+
+      {posts.length > 0 && (
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="blog-grid">
+          {posts.map((post: any) => (
+            <a
+              href={`/blog/${post.slug}`}
+              class="blog-card group block bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              data-category={post.category || ''}
+            >
+              {post.cover_image_url ? (
+                <img
+                  src={post.cover_image_url}
+                  alt={post.title}
+                  class="w-full h-52 object-cover bg-zinc-100"
+                  loading="lazy"
+                />
+              ) : (
+                <div class="w-full h-52 bg-zinc-100" />
+              )}
+              <div class="p-6 flex flex-col flex-1">
+                <p class="text-brand text-xs font-semibold uppercase tracking-wider mb-2">
+                  {post.category || 'General'}
+                </p>
+                <h3 class="font-serif text-xl text-zinc-900 leading-snug mb-2 group-hover:text-brand transition-colors">
+                  {post.title}
+                </h3>
+                <p class="text-zinc-500 text-sm leading-relaxed mb-4 flex-1">
+                  {post.excerpt || ''}
+                </p>
+                <div class="flex items-center gap-3 text-xs text-zinc-400">
+                  <span>{formatDate(post.published_at)}</span>
+                  <span class="w-1 h-1 bg-zinc-300 rounded-full" />
+                  <span>{post.read_time || '5 min read'}</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<style>
+  .filter-btn {
+    border-color: #e4e4e7;
+    color: #a1a1aa;
+    background: transparent;
+    cursor: pointer;
+  }
+  .filter-btn:hover {
+    border-color: #71717a;
+    color: #27272a;
+  }
+  .filter-btn.active {
+    background: #1D3A2B;
+    border-color: #1D3A2B;
+    color: #fff;
+  }
+</style>
+
+<script>
+  const filters = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.blog-card');
+
+  filters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = (btn as HTMLElement).dataset.category;
+
+      filters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      cards.forEach(card => {
+        const el = card as HTMLElement;
+        if (cat === 'all' || el.dataset.category === cat) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

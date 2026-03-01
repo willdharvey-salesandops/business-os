@@ -1,0 +1,76 @@
+---
+const links = [
+  { label: 'About', href: '/about' },
+  { label: 'Work With Me', href: '/work-with-me' },
+  { label: 'Results', href: '/results' },
+  { label: 'Blog', href: '/blog' },
+];
+
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100">
+  <div class="max-w-5xl mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
+    <a href="/" class="font-serif text-xl text-zinc-900 font-medium tracking-tight">
+      Will Harvey
+    </a>
+
+    <!-- Desktop links -->
+    <div class="hidden md:flex items-center gap-8">
+      {links.map(link => (
+        <a
+          href={link.href}
+          class={`text-sm transition-colors ${currentPath === link.href ? 'text-zinc-900 font-medium' : 'text-zinc-500 hover:text-zinc-900'}`}
+        >
+          {link.label}
+        </a>
+      ))}
+      <a
+        href="https://calendly.com/will-leadershipgrowthconsulting/30min"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="bg-brand text-white text-sm font-medium px-5 py-2.5 hover:bg-brand-hover transition-colors duration-200"
+      >
+        Book a Call
+      </a>
+    </div>
+
+    <!-- Mobile menu button -->
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden text-zinc-600 hover:text-zinc-900"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-100 bg-white px-6 py-4 space-y-3">
+    {links.map(link => (
+      <a href={link.href} class="block text-zinc-700 py-1">{link.label}</a>
+    ))}
+    <a
+      href="https://calendly.com/will-leadershipgrowthconsulting/30min"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="block bg-brand text-white text-center py-3 font-medium mt-4 hover:bg-brand-hover transition-colors"
+    >
+      Book a Call
+    </a>
+  </div>
+</nav>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  btn?.addEventListener('click', () => {
+    menu?.classList.toggle('hidden');
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+  });
+</script>

@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { marked } from 'marked';
+
+const SUPABASE_URL = import.meta.env.SUPABASE_URL || 'https://zgtaskiordteelfvlmti.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+
+const { slug } = Astro.params;
+
+let post: any = null;
+
+try {
+  const now = new Date().toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/blog_posts?slug=eq.${slug}&published=eq.true&published_at=lte.${now}&limit=1`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  if (res.ok) {
+    const data = await res.json();
+    post = data[0] || null;
+  }
+} catch (e) {
+  // post stays null
+}
+
+if (!post) {
+  return Astro.redirect('/blog');
+}
+
+const contentHtml = marked.parse(post.content || '');
+
+let faqs: any[] = [];
+if (post.faqs) {
+  faqs = typeof post.faqs === 'string' ? JSON.parse(post.faqs) : post.faqs;
+}
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateISO(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toISOString();
+}
+
+const articleSchema: any = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.title,
+  author: { '@type': 'Person', name: post.author || 'Will Harvey' },
+  publisher: { '@type': 'Organization', name: 'Leadership Growth Consulting' },
+  url: `https://leadershipgrowthconsulting.com/blog/${post.slug}`,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `https://leadershipgrowthconsulting.com/blog/${post.slug}`,
+  },
+};
+if (post.meta_description) articleSchema.description = post.meta_description;
+if (post.published_at) articleSchema.datePublished = formatDateISO(post.published_at);
+if (post.updated_at) articleSchema.dateModified = formatDateISO(post.updated_at);
+if (post.cover_image_url) articleSchema.image = post.cover_image_url;
+
+let faqSchema: any = null;
+if (faqs.length > 0) {
+  faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs
+      .filter((f: any) => f.question && f.answer)
+      .map((f: any) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+  };
+}
+
+const title = `${post.title} | Leadership Growth Consulting`;
+const description = post.meta_description || post.excerpt || '';
+const ogImage = post.cover_image_url || '/images/og-default.jpg';
+---
+
+<Layout title={title} description={description} ogImage={ogImage}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+    {faqSchema && (
+      <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    )}
+  </Fragment>
+
+  <Nav />
+
+  <header class="max-w-3xl mx-auto pt-28 pb-6 lg:pt-36 lg:pb-8 px-6 lg:px-8 text-center">
+    <p class="text-brand text-xs font-semibold uppercase tracking-wider mb-4">
+      {post.category || 'General'}
+    </p>
+    <h1 class="font-serif text-3xl lg:text-5xl text-zinc-900 leading-tight mb-5">
+      {post.title}
+    </h1>
+    <div class="flex items-center justify-center gap-3 text-sm text-zinc-400 flex-wrap">
+      <span>{post.author || 'Will Harvey'}</span>
+      <span class="w-1 h-1 bg-zinc-300 rounded-full" />
+      <span>{formatDate(post.published_at)}</span>
+      <span class="w-1 h-1 bg-zinc-300 rounded-full" />
+      <span>{post.read_time || '5 min read'}</span>
+    </div>
+  </header>
+
+  {post.cover_image_url && (
+    <div class="max-w-4xl mx-auto px-6 lg:px-8 pb-8">
+      <img
+        src={post.cover_image_url}
+        alt={post.title}
+        class="w-full rounded-xl"
+        loading="eager"
+      />
+    </div>
+  )}
+
+  <article class="prose max-w-2xl mx-auto px-6 lg:px-8 pb-12" set:html={contentHtml} />
+
+  {faqs.length > 0 && (
+    <section class="max-w-2xl mx-auto px-6 lg:px-8 pb-12 border-t border-zinc-200 pt-10">
+      <h2 class="font-serif text-2xl text-zinc-900 mb-8">Frequently Asked Questions</h2>
+      <div class="space-y-6">
+        {faqs.map((faq: any) => (
+          <div>
+            <h3 class="font-serif text-lg text-zinc-900 mb-2">{faq.question}</h3>
+            <p class="text-zinc-600 leading-relaxed">{faq.answer}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <div class="max-w-2xl mx-auto px-6 lg:px-8 pb-16 flex items-center justify-between flex-wrap gap-4">
+    <a href="/blog" class="text-sm font-medium text-zinc-500 hover:text-zinc-900 uppercase tracking-wider transition-colors">
+      &larr; All articles
+    </a>
+    <a
+      href="https://calendly.com/will-leadershipgrowthconsulting/30min"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-block bg-brand text-white px-6 py-3 font-medium text-sm hover:bg-brand-hover transition-colors duration-200"
+    >
+      Book a Call
+    </a>
+  </div>
+
+  <Footer />
+</Layout>
+
+<style is:global>
+  .prose h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: #18181b;
+    line-height: 1.2;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .prose h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #18181b;
+    line-height: 1.3;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .prose h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #18181b;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .prose p {
+    margin-bottom: 1.25rem;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #52525b;
+  }
+  .prose ul, .prose ol {
+    margin: 0 0 1.25rem 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #52525b;
+  }
+  .prose li {
+    margin-bottom: 0.35rem;
+  }
+  .prose blockquote {
+    border-left: 3px solid #1D3A2B;
+    padding: 0.5rem 0 0.5rem 1.25rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #18181b;
+  }
+  .prose a {
+    color: #1D3A2B;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose a:hover {
+    color: #2A5240;
+  }
+  .prose strong {
+    color: #18181b;
+    font-weight: 600;
+  }
+  .prose hr {
+    border: none;
+    border-top: 1px solid #e4e4e7;
+    margin: 2rem 0;
+  }
+  .prose img {
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  .prose code {
+    font-size: 0.9em;
+    background: #f4f4f5;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+  .prose pre {
+    background: #18181b;
+    color: #e0e0e0;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .prose pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+</style>

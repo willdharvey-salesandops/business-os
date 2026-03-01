@@ -1,5 +1,6 @@
 # Environment variables (never commit secrets!)
 .env
+.google-credentials.json
 .env.local
 .env.*.local
 
@@ -20,8 +21,12 @@ __pycache__/
 venv/
 .venv/
 
-# Node (if you add any JS skills)
+# Node
 node_modules/
+
+# Build artifacts
+.vercel/
+dist/
 
 # Personal files you might not want to share
 workspace/journal/
