@@ -40,34 +40,52 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    // Google Maps Places API (New) - Text Search
+    // Google Maps Places API (New) - Text Search with pagination
     const searchQuery = `${company_type} in ${region}`;
-    const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.id,places.types',
-      },
-      body: JSON.stringify({
+    const allPlaces: PlaceResult[] = [];
+    let pageToken: string | undefined;
+    const MAX_PAGES = 3; // Up to 60 results (20 per page)
+
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const requestBody: Record<string, any> = {
         textQuery: searchQuery,
         maxResultCount: 20,
         languageCode: 'en',
         regionCode: 'GB',
-      }),
-    });
+      };
+      if (pageToken) requestBody.pageToken = pageToken;
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Google Maps API error:', response.status, errorBody);
-      return new Response(JSON.stringify({ error: 'Google Maps API error', detail: errorBody }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.id,places.types,nextPageToken',
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Google Maps API error:', response.status, errorBody);
+        if (allPlaces.length === 0) {
+          return new Response(JSON.stringify({ error: 'Google Maps API error', detail: errorBody }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        break; // Use whatever we got so far
+      }
+
+      const data = await response.json();
+      const pagePlaces: PlaceResult[] = data.places || [];
+      allPlaces.push(...pagePlaces);
+
+      if (!data.nextPageToken) break; // No more pages
+      pageToken = data.nextPageToken;
     }
 
-    const data = await response.json();
-    const places: PlaceResult[] = data.places || [];
+    const places = allPlaces;
 
     if (places.length === 0) {
       return new Response(JSON.stringify({ error: 'No businesses found for that search' }), {
