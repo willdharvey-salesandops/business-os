@@ -371,6 +371,7 @@ export const POST: APIRoute = async ({ request }) => {
             hours: String(data.hours_per_week || ''),
             tasks: `${data.industry || ''} | ${data.challenge || ''} | ${data.time_area || ''}`,
             hourly_value: String(data.hourly_value || ''),
+            monthly_financial_cost: String(data.monthly_financial_cost || ''),
             total_savings: result.total_annual_savings,
             ideas: result.ideas,
           })
