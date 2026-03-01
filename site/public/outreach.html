@@ -1171,10 +1171,11 @@
     progress.style.display = 'block';
 
     for (let i = 0; i < toSend.length; i++) {
-      label.textContent = `Sending ${i + 1} of ${toSend.length}: ${toSend[i].company_name}`;
+      const delay = i < toSend.length - 1 ? Math.floor(240 + Math.random() * 180) : 0;
+      label.textContent = `Sending ${i + 1} of ${toSend.length}: ${toSend[i].company_name}${delay ? ` (next in ~${Math.round(delay / 60)}min)` : ''}`;
       fill.style.width = `${((i + 1) / toSend.length) * 100}%`;
       await sendOne(toSend[i].id);
-      if (i < toSend.length - 1) await sleep(1000);
+      if (delay) await sleep(delay * 1000);
     }
 
     progress.style.display = 'none';
