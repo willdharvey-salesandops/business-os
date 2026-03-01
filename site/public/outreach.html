@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outreach | Leadership Growth Consulting</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --white: #ffffff;
+      --ink: #111111;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --grey-600: #555555;
+      --grey-400: #888888;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--ink);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--white);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-nav { display: flex; gap: 1rem; align-items: center; }
+    .header-nav a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .header-nav a:hover { color: var(--white); }
+    .header-nav a.active { color: var(--teal-bright); }
+
+    /* Main */
+    .main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Campaign Creator */
+    .creator {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .creator h2 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .creator p {
+      font-size: 0.85rem;
+      color: var(--grey-400);
+      margin-bottom: 1.5rem;
+    }
+    .creator-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.4rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--teal); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: var(--white);
+    }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-primary:disabled {
+      background: var(--grey-200);
+      color: var(--grey-400);
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: var(--grey-100);
+      color: var(--grey-600);
+    }
+    .btn-secondary:hover { background: var(--grey-200); }
+    .btn-success {
+      background: var(--green);
+      color: var(--white);
+    }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger {
+      background: var(--red);
+      color: var(--white);
+    }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.4rem;
+      flex: 1;
+      min-width: 140px;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.2rem;
+    }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Campaign header */
+    .campaign-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .campaign-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      color: var(--ink);
+    }
+    .campaign-meta {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+    }
+    .campaign-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .badge-discovered { background: var(--grey-100); color: var(--grey-400); }
+    .badge-qualified { background: #dbeafe; color: var(--blue); }
+    .badge-disqualified { background: #fee2e2; color: var(--red); }
+    .badge-email_drafted { background: var(--teal-glow); color: var(--teal); }
+    .badge-approved { background: #dcfce7; color: var(--green); }
+    .badge-sent { background: var(--ink); color: var(--white); }
+    .badge-failed { background: #fee2e2; color: var(--red); }
+    .badge-unregistered { background: #fff7ed; color: var(--orange); }
+
+    /* Table */
+    .prospect-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .prospect-table th {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      background: var(--grey-100);
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .prospect-table td {
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--grey-200);
+      vertical-align: top;
+    }
+    .prospect-table tr:last-child td { border-bottom: none; }
+    .prospect-table tr:hover { background: rgba(17, 94, 89, 0.02); }
+    .prospect-table tr.expanded { background: var(--teal-glow); }
+
+    .company-name {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .website-link {
+      color: var(--teal);
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .website-link:hover { text-decoration: underline; }
+
+    /* Expanded detail panel */
+    .detail-row td { padding: 0; }
+    .detail-panel {
+      padding: 1.5rem;
+      background: var(--grey-100);
+      border-top: 2px solid var(--teal-bright);
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .detail-section h4 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      color: var(--ink);
+      margin-bottom: 0.6rem;
+    }
+    .detail-section p, .detail-section li {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      margin-bottom: 0.3rem;
+    }
+    .detail-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .detail-section ul li::before {
+      content: '\2022';
+      color: var(--teal-bright);
+      font-weight: 700;
+      margin-right: 0.5rem;
+    }
+
+    /* Idea cards */
+    .idea-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-left: 3px solid var(--teal-bright);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+    .idea-card h5 {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      color: var(--teal);
+      margin-bottom: 0.3rem;
+    }
+    .idea-card p {
+      font-size: 0.8rem;
+      color: var(--grey-600);
+      margin-bottom: 0.3rem;
+    }
+    .idea-card .impact {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--teal-bright);
+    }
+
+    /* Email editor */
+    .email-editor {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+    }
+    .email-editor label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.3rem;
+    }
+    .email-editor input {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--ink);
+      margin-bottom: 0.8rem;
+      outline: none;
+    }
+    .email-editor input:focus { border-color: var(--teal); }
+    .email-editor textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.7rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--ink);
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 0.8rem;
+    }
+    .email-editor textarea:focus { border-color: var(--teal); }
+    .email-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    /* Progress bar */
+    .progress-container {
+      margin-bottom: 1.5rem;
+    }
+    .progress-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--grey-200);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--teal);
+      border-radius: 100px;
+      transition: width 0.3s ease;
+    }
+
+    /* Loading */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--grey-200);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(250, 250, 249, 0.9);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-text {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--ink);
+    }
+
+    /* Views */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 0.8rem 1.4rem;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--white);
+      z-index: 200;
+      animation: slideUp 0.3s ease;
+      max-width: 400px;
+    }
+    .toast-success { background: var(--green); }
+    .toast-error { background: var(--red); }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Campaign list */
+    .campaign-list {
+      display: grid;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+    .campaign-item {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .campaign-item:hover {
+      border-color: var(--teal);
+      box-shadow: 0 2px 8px rgba(17, 94, 89, 0.08);
+    }
+    .campaign-item-info h3 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .campaign-item-info p {
+      font-size: 0.78rem;
+      color: var(--grey-400);
+    }
+    .campaign-item-count {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main { padding: 1rem; }
+      .creator-form { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stats-bar { flex-direction: column; }
+      .campaign-actions { width: 100%; }
+      .campaign-actions .btn { flex: 1; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Outreach Dashboard</h1>
+  <div class="header-nav">
+    <a href="/admin.html">Blog CMS</a>
+    <a href="/outreach.html" class="active">Outreach</a>
+    <a href="/">Website</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- VIEW: Campaign List / Creator -->
+  <div id="viewHome" class="view active">
+    <div class="creator">
+      <h2>New Campaign</h2>
+      <p>Find local businesses, qualify them, and generate personalized outreach.</p>
+      <div class="creator-form">
+        <div class="form-group">
+          <label for="companyType">Company Type</label>
+          <input type="text" id="companyType" placeholder="e.g. Cleaning Services, Accountants, Estate Agents" list="typeList">
+          <datalist id="typeList">
+            <option value="Cleaning Services">
+            <option value="Accountants">
+            <option value="Estate Agents">
+            <option value="Plumbers">
+            <option value="Electricians">
+            <option value="Recruitment Agencies">
+            <option value="Marketing Agencies">
+            <option value="Construction Companies">
+            <option value="IT Support Companies">
+            <option value="Dental Practices">
+            <option value="Law Firms">
+            <option value="Financial Advisors">
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label for="region">Region / County</label>
+          <input type="text" id="region" placeholder="e.g. Surrey, Kent, Hampshire" list="regionList">
+          <datalist id="regionList">
+            <option value="Surrey">
+            <option value="Kent">
+            <option value="Hampshire">
+            <option value="Sussex">
+            <option value="Berkshire">
+            <option value="Essex">
+            <option value="Hertfordshire">
+            <option value="Buckinghamshire">
+            <option value="Oxfordshire">
+            <option value="London">
+          </datalist>
+        </div>
+        <button class="btn btn-primary" id="btnDiscover" onclick="discover()">Find Companies</button>
+      </div>
+    </div>
+
+    <h2 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--ink); margin-bottom: 0.5rem;">Previous Campaigns</h2>
+    <div id="campaignList" class="campaign-list">
+      <p style="font-size: 0.85rem; color: var(--grey-400);">Loading...</p>
+    </div>
+  </div>
+
+  <!-- VIEW: Campaign Pipeline -->
+  <div id="viewPipeline" class="view">
+    <div class="campaign-header">
+      <div>
+        <div class="campaign-title" id="pipelineTitle">Campaign</div>
+        <div class="campaign-meta" id="pipelineMeta"></div>
+      </div>
+      <div class="campaign-actions">
+        <button class="btn btn-secondary btn-sm" onclick="showView('viewHome')">Back</button>
+        <button class="btn btn-primary btn-sm" id="btnQualify" onclick="qualifyAll()">Qualify All</button>
+        <button class="btn btn-primary btn-sm" id="btnAnalyze" onclick="analyzeAll()">Analyze All</button>
+        <button class="btn btn-success btn-sm" id="btnSendAll" onclick="sendAll()">Send All Approved</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar"></div>
+
+    <div id="progressArea" class="progress-container" style="display:none;">
+      <div class="progress-label" id="progressLabel">Processing...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <table class="prospect-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Website</th>
+          <th>Rating</th>
+          <th>Accounts</th>
+          <th>Owner</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="prospectBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner" style="width:40px;height:40px;border-width:3px;"></div>
+  <div class="loading-text" id="loadingText">Searching Google Maps...</div>
+</div>
+
+<script>
+  let currentCampaignId = null;
+  let prospects = [];
+
+  // ---- API helpers ----
+  async function api(method, path, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.detail || 'Request failed');
+    return data;
+  }
+
+  // ---- View management ----
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function showLoading(text) {
+    document.getElementById('loadingText').textContent = text;
+    document.getElementById('loadingOverlay').classList.add('active');
+  }
+
+  function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('active');
+  }
+
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  // ---- Discover ----
+  async function discover() {
+    const companyType = document.getElementById('companyType').value.trim();
+    const region = document.getElementById('region').value.trim();
+    if (!companyType || !region) {
+      toast('Please fill in both fields', 'error');
+      return;
+    }
+
+    showLoading(`Searching for ${companyType} in ${region}...`);
+    try {
+      const data = await api('POST', '/api/outreach/discover', { company_type: companyType, region });
+      toast(`Found ${data.prospect_count} companies`);
+      currentCampaignId = data.campaign_id;
+      await loadPipeline(data.campaign_id, companyType, region);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ---- Load pipeline view ----
+  async function loadPipeline(campaignId, companyType, region) {
+    currentCampaignId = campaignId;
+    document.getElementById('pipelineTitle').textContent = `${companyType || 'Campaign'} in ${region || ''}`;
+    document.getElementById('pipelineMeta').textContent = `Campaign ${campaignId.substring(0, 8)}`;
+
+    const data = await api('GET', `/api/outreach/campaigns?campaign_id=${campaignId}`);
+    prospects = data.prospects || [];
+    renderProspects();
+    showView('viewPipeline');
+  }
+
+  // ---- Render prospects ----
+  function renderProspects() {
+    const tbody = document.getElementById('prospectBody');
+    tbody.innerHTML = '';
+
+    // Stats
+    const stats = { discovered: 0, qualified: 0, disqualified: 0, email_drafted: 0, approved: 0, sent: 0, failed: 0 };
+    prospects.forEach(p => {
+      const key = p.pipeline_status || 'discovered';
+      if (stats[key] !== undefined) stats[key]++;
+    });
+
+    document.getElementById('statsBar').innerHTML = `
+      <div class="stat-card"><div class="stat-label">Discovered</div><div class="stat-value">${stats.discovered}</div></div>
+      <div class="stat-card"><div class="stat-label">Qualified</div><div class="stat-value">${stats.qualified}</div></div>
+      <div class="stat-card"><div class="stat-label">Analyzed</div><div class="stat-value">${stats.email_drafted}</div></div>
+      <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value">${stats.approved}</div></div>
+      <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value">${stats.sent}</div></div>
+    `;
+
+    // Button states
+    document.getElementById('btnQualify').disabled = stats.discovered === 0;
+    document.getElementById('btnAnalyze').disabled = stats.qualified === 0;
+    document.getElementById('btnSendAll').disabled = stats.approved === 0;
+
+    prospects.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.id = `row-${p.id}`;
+      tr.innerHTML = `
+        <td><span class="company-name">${esc(p.company_name)}</span></td>
+        <td>${p.website ? `<a href="${esc(p.website)}" target="_blank" class="website-link">${shortUrl(p.website)}</a>` : '-'}</td>
+        <td>${p.google_rating ? p.google_rating + '/5' : '-'}</td>
+        <td>${p.accounts_type ? esc(p.accounts_type) : '-'}</td>
+        <td>${p.owner_name ? esc(p.owner_name) : '-'}</td>
+        <td><span class="badge badge-${p.pipeline_status}">${formatStatus(p.pipeline_status)}</span></td>
+        <td>
+          ${p.pipeline_status === 'email_drafted' || p.pipeline_status === 'approved' || p.pipeline_status === 'sent' ?
+            `<button class="btn btn-secondary btn-sm" onclick="toggleDetail('${p.id}')">View</button>` : ''}
+          ${p.pipeline_status === 'discovered' ?
+            `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}')">Qualify</button>` : ''}
+          ${p.pipeline_status === 'qualified' ?
+            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}')">Analyze</button>` : ''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      // Detail row (hidden by default)
+      if (p.pipeline_status === 'email_drafted' || p.pipeline_status === 'approved' || p.pipeline_status === 'sent') {
+        const detailTr = document.createElement('tr');
+        detailTr.id = `detail-${p.id}`;
+        detailTr.className = 'detail-row';
+        detailTr.style.display = 'none';
+        detailTr.innerHTML = `<td colspan="7">${buildDetailPanel(p)}</td>`;
+        tbody.appendChild(detailTr);
+      }
+    });
+  }
+
+  function buildDetailPanel(p) {
+    const analysis = p.website_analysis || {};
+    const ideas = p.improvement_ideas || [];
+    const isSent = p.pipeline_status === 'sent';
+    const isApproved = p.pipeline_status === 'approved';
+
+    let ideasHtml = ideas.map(idea => `
+      <div class="idea-card">
+        <h5>${esc(idea.title)}</h5>
+        <p>${esc(idea.description)}</p>
+        <div class="impact">${esc(idea.impact)}</div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="detail-panel">
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h4>Website Analysis</h4>
+            <ul>
+              <li><strong>Score:</strong> ${esc(analysis.overall_score || '-')}/10</li>
+              <li><strong>Design:</strong> ${esc(analysis.design_quality || '-')}</li>
+              <li><strong>Lead capture:</strong> ${esc(analysis.lead_capture || '-')}</li>
+              <li><strong>Contact ease:</strong> ${esc(analysis.contact_ease || '-')}</li>
+              <li><strong>Mobile:</strong> ${esc(analysis.mobile_friendly || '-')}</li>
+              <li><strong>Key observation:</strong> ${esc(analysis.key_observation || '-')}</li>
+            </ul>
+            ${p.company_number ? `<p style="margin-top:0.8rem;"><strong>Companies House:</strong> ${esc(p.company_number)}</p>` : ''}
+            ${p.sic_codes && p.sic_codes.length ? `<p><strong>SIC:</strong> ${p.sic_codes.join(', ')}</p>` : ''}
+          </div>
+          <div class="detail-section">
+            <h4>Improvement Ideas</h4>
+            ${ideasHtml}
+          </div>
+        </div>
+
+        <div class="email-editor" id="editor-${p.id}">
+          <h4 style="font-family: var(--font-heading); font-size: 0.95rem; color: var(--ink); margin-bottom: 0.8rem;">
+            ${isSent ? 'Sent Email' : 'Draft Email'}
+          </h4>
+          <label>To</label>
+          <input type="email" id="email-to-${p.id}" value="${esc(p.owner_email || '')}" ${isSent ? 'disabled' : ''}>
+          <label>Subject</label>
+          <input type="text" id="email-subj-${p.id}" value="${esc(p.draft_subject || '')}" ${isSent ? 'disabled' : ''}>
+          <label>Body</label>
+          <textarea id="email-body-${p.id}" ${isSent ? 'disabled' : ''}>${esc(p.draft_body || '')}</textarea>
+          ${!isSent ? `
+            <div class="email-actions">
+              <button class="btn btn-secondary btn-sm" onclick="skipProspect('${p.id}')">Skip</button>
+              ${isApproved ? '' : `<button class="btn btn-success btn-sm" onclick="approveProspect('${p.id}')">Approve</button>`}
+              ${isApproved ? `<button class="btn btn-success btn-sm" onclick="sendOne('${p.id}')">Send Now</button>` : ''}
+            </div>
+          ` : `<p style="font-size:0.8rem; color:var(--green); margin-top:0.5rem;">Sent on ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : '-'}</p>`}
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleDetail(id) {
+    const row = document.getElementById(`detail-${id}`);
+    const mainRow = document.getElementById(`row-${id}`);
+    if (row.style.display === 'none') {
+      row.style.display = '';
+      mainRow.classList.add('expanded');
+    } else {
+      row.style.display = 'none';
+      mainRow.classList.remove('expanded');
+    }
+  }
+
+  // ---- Qualify ----
+  async function qualifyOne(id) {
+    try {
+      const data = await api('POST', '/api/outreach/qualify', { prospect_id: id });
+      const p = prospects.find(x => x.id === id);
+      if (p) {
+        Object.assign(p, {
+          pipeline_status: data.status,
+          company_number: data.company_number,
+          accounts_type: data.accounts_type,
+          sic_codes: data.sic_codes,
+          owner_name: data.owner_name,
+          owner_role: data.owner_role,
+        });
+      }
+      renderProspects();
+      toast(`${p.company_name}: ${data.status}${data.note ? ' - ' + data.note : ''}`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function qualifyAll() {
+    const toQualify = prospects.filter(p => p.pipeline_status === 'discovered');
+    if (toQualify.length === 0) return;
+
+    const progress = document.getElementById('progressArea');
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    progress.style.display = 'block';
+
+    for (let i = 0; i < toQualify.length; i++) {
+      label.textContent = `Qualifying ${i + 1} of ${toQualify.length}: ${toQualify[i].company_name}`;
+      fill.style.width = `${((i + 1) / toQualify.length) * 100}%`;
+      await qualifyOne(toQualify[i].id);
+      // Small delay to respect rate limits
+      if (i < toQualify.length - 1) await sleep(300);
+    }
+
+    progress.style.display = 'none';
+    toast(`Qualification complete. ${prospects.filter(p => p.pipeline_status === 'qualified').length} qualified.`);
+  }
+
+  // ---- Analyze ----
+  async function analyzeOne(id) {
+    try {
+      const data = await api('POST', '/api/outreach/analyze', { prospect_id: id });
+      const p = prospects.find(x => x.id === id);
+      if (p) {
+        Object.assign(p, {
+          pipeline_status: data.status,
+          website_analysis: data.website_analysis,
+          improvement_ideas: data.improvement_ideas,
+          draft_subject: data.draft_email?.subject,
+          draft_body: data.draft_email?.body,
+          owner_email: data.owner_email,
+        });
+      }
+      renderProspects();
+      toast(`${p.company_name}: Analysis complete`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function analyzeAll() {
+    const toAnalyze = prospects.filter(p => p.pipeline_status === 'qualified');
+    if (toAnalyze.length === 0) return;
+
+    const progress = document.getElementById('progressArea');
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    progress.style.display = 'block';
+
+    for (let i = 0; i < toAnalyze.length; i++) {
+      label.textContent = `Analyzing ${i + 1} of ${toAnalyze.length}: ${toAnalyze[i].company_name}`;
+      fill.style.width = `${((i + 1) / toAnalyze.length) * 100}%`;
+      await analyzeOne(toAnalyze[i].id);
+    }
+
+    progress.style.display = 'none';
+    toast(`Analysis complete. ${prospects.filter(p => p.pipeline_status === 'email_drafted').length} emails drafted.`);
+  }
+
+  // ---- Approve / Send ----
+  async function approveProspect(id) {
+    const emailTo = document.getElementById(`email-to-${id}`)?.value;
+    const subject = document.getElementById(`email-subj-${id}`)?.value;
+    const body = document.getElementById(`email-body-${id}`)?.value;
+
+    try {
+      await api('POST', '/api/outreach/approve', {
+        prospect_id: id,
+        subject,
+        body,
+        owner_email: emailTo,
+      });
+      const p = prospects.find(x => x.id === id);
+      if (p) {
+        p.pipeline_status = 'approved';
+        p.draft_subject = subject;
+        p.draft_body = body;
+        p.owner_email = emailTo;
+      }
+      renderProspects();
+      toast(`${p.company_name}: Approved`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function sendOne(id) {
+    try {
+      const data = await api('POST', '/api/outreach/send', { prospect_id: id });
+      const p = prospects.find(x => x.id === id);
+      if (p) {
+        p.pipeline_status = 'sent';
+        p.sent_at = new Date().toISOString();
+      }
+      renderProspects();
+      toast(`Sent to ${data.to}`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function sendAll() {
+    const toSend = prospects.filter(p => p.pipeline_status === 'approved');
+    if (toSend.length === 0) return;
+    if (!confirm(`Send ${toSend.length} emails via Gmail?`)) return;
+
+    const progress = document.getElementById('progressArea');
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    progress.style.display = 'block';
+
+    for (let i = 0; i < toSend.length; i++) {
+      label.textContent = `Sending ${i + 1} of ${toSend.length}: ${toSend[i].company_name}`;
+      fill.style.width = `${((i + 1) / toSend.length) * 100}%`;
+      await sendOne(toSend[i].id);
+      if (i < toSend.length - 1) await sleep(1000);
+    }
+
+    progress.style.display = 'none';
+    toast(`All ${toSend.length} emails sent.`);
+  }
+
+  async function skipProspect(id) {
+    try {
+      await api('POST', '/api/outreach/approve', { prospect_id: id, status: 'disqualified' });
+      const p = prospects.find(x => x.id === id);
+      if (p) p.pipeline_status = 'disqualified';
+      renderProspects();
+      toast(`${p?.company_name}: Skipped`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  // ---- Load campaigns ----
+  async function loadCampaigns() {
+    try {
+      const data = await api('GET', '/api/outreach/campaigns');
+      const list = document.getElementById('campaignList');
+      if (!data.campaigns || data.campaigns.length === 0) {
+        list.innerHTML = '<p style="font-size: 0.85rem; color: var(--grey-400);">No campaigns yet. Create one above.</p>';
+        return;
+      }
+      list.innerHTML = data.campaigns.map(c => `
+        <div class="campaign-item" onclick="loadPipeline('${c.id}', '${esc(c.company_type)}', '${esc(c.region)}')">
+          <div class="campaign-item-info">
+            <h3>${esc(c.company_type)} in ${esc(c.region)}</h3>
+            <p>${new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          </div>
+          <div class="campaign-item-count">${c.prospect_count}</div>
+        </div>
+      `).join('');
+    } catch (err) {
+      document.getElementById('campaignList').innerHTML = `<p style="color: var(--red); font-size: 0.85rem;">${err.message}</p>`;
+    }
+  }
+
+  // ---- Utilities ----
+  function esc(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  function shortUrl(url) {
+    try {
+      return new URL(url).hostname.replace('www.', '');
+    } catch {
+      return url;
+    }
+  }
+
+  function formatStatus(status) {
+    const map = {
+      discovered: 'Discovered',
+      qualified: 'Qualified',
+      disqualified: 'Disqualified',
+      email_drafted: 'Email Ready',
+      approved: 'Approved',
+      sent: 'Sent',
+      failed: 'Failed',
+      unregistered: 'Unregistered',
+    };
+    return map[status] || status;
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ---- Init ----
+  loadCampaigns();
+</script>
+
+</body>
+</html>
