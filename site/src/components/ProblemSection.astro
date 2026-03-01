@@ -1,0 +1,82 @@
+<section class="section-dark" style="position:relative;overflow:hidden;">
+  <div class="problem-ring"></div>
+  <div class="problem-ring-inner"></div>
+  <div class="container">
+    <p class="eyebrow reveal">The Ceiling</p>
+    <h2 class="reveal">You can feel it. The business works, but it's maxed out.</h2>
+    <ul class="problem-list reveal">
+      <li>Growth only happens when you push it. It stops when you stop.</li>
+      <li>Sales lives in your head. Operations depend on you remembering.</li>
+      <li>You know AI could change things, but you don't have the time or the guide to make it real.</li>
+      <li>You've hired people, but the work still flows through you.</li>
+    </ul>
+    <p class="problem-kicker reveal">The problem isn't effort. You've got plenty of that. The problem is infrastructure.</p>
+  </div>
+</section>
+
+<style>
+  section {
+    padding: 7rem 0;
+  }
+
+  .problem-ring {
+    position: absolute;
+    top: 50%;
+    right: -120px;
+    transform: translateY(-50%);
+    width: 400px;
+    height: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .problem-ring-inner {
+    position: absolute;
+    top: 50%;
+    right: 40px;
+    transform: translateY(-50%);
+    width: 200px;
+    height: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .problem-list {
+    list-style: none;
+    margin: 2.5rem 0;
+    max-width: 680px;
+    padding: 0;
+  }
+
+  .problem-list li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-bottom: 1.2rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .problem-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65rem;
+    width: 6px;
+    height: 6px;
+    background: var(--teal-bright);
+    border-radius: 50%;
+  }
+
+  .problem-kicker {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.75) !important;
+    margin-top: 2.5rem;
+    max-width: 580px;
+    line-height: 1.6;
+  }
+</style>

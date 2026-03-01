@@ -5,14 +5,18 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#1D3A2B',
-          hover: '#2A5240',
-          light: '#F0F5F1',
+          DEFAULT: '#115e59',
+          hover: '#0d4a46',
+          light: '#f3f3f1',
+          bright: '#2dd4bf',
+          glow: 'rgba(45, 212, 191, 0.12)',
         },
+        ink: '#111111',
+        bg: '#fafaf9',
       },
       fontFamily: {
-        serif: ['Playfair Display', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Fraunces', 'Georgia', 'serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
       },
     },
   },

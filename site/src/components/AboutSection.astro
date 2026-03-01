@@ -1,0 +1,150 @@
+<section class="section-dark" id="about" style="padding:7rem 0;">
+  <div class="container">
+    <p class="eyebrow reveal">About</p>
+    <div class="about-grid">
+      <div class="about-left reveal">
+        <div class="about-photo">
+          <img src="/images/headshot.jpg" alt="Will Harvey, Fractional Growth Partner" />
+        </div>
+        <div class="stats-grid">
+          <div class="stat-block">
+            <div class="stat-number">8+</div>
+            <div class="stat-label">Years with founders</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">&pound;3m</div>
+            <div class="stat-label">Client revenue growth</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">480+</div>
+            <div class="stat-label">Hours saved annually</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-bio reveal">
+        <p>I've spent the last eight years working with founders who run real businesses. Not startups chasing funding. Real, profitable companies where the owner does too much and the business depends on them being in the room.</p>
+        <p>I started in sales. Led teams, built processes, designed the systems that made revenue predictable instead of hopeful. Then I moved into coaching and advisory work, helping founders step back from the day-to-day.</p>
+        <p>Now I combine both. I sit inside your business, understand how it actually runs, and build the AI-powered tools and systems that remove you from the middle of it. The result is a business that moves faster, operates without you in every loop, and gives you the space to lead instead of manage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-photo {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .about-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .stat-block {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.2rem;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--teal-bright);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+  }
+
+  .about-bio {
+    padding-top: 0.5rem;
+  }
+
+  .about-bio p {
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .about-bio p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 900px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .about-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+
+    .about-photo {
+      width: 180px;
+      flex-shrink: 0;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+      flex: 1;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .about-left {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .about-photo {
+      width: 200px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .stat-block {
+      padding: 0.8rem;
+    }
+
+    .stat-number {
+      font-size: 1.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+    }
+  }
+</style>

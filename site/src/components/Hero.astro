@@ -1,0 +1,379 @@
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="container">
+    <div class="hero-layout">
+      <div class="hero-content">
+        <div class="badge hero-animate">Fractional Growth Partner</div>
+        <h1 class="hero-animate">Your business runs on effort. It should run on systems.</h1>
+        <p class="hero-animate">We embed in your business and build the tools, automations, and workflows that save you time, make you money, and help you operate like a team ten times your size.</p>
+        <div class="hero-buttons hero-animate">
+          <a href="https://calendly.com/will-leadershipgrowthconsulting/30min" target="_blank" rel="noopener" class="btn-primary">Book a Call</a>
+          <a href="#projects" class="btn-ghost">See Example Projects</a>
+        </div>
+      </div>
+
+      <div class="hero-capture" id="heroCapture">
+        <!-- Question state -->
+        <div id="heroCaptureQuestion">
+          <span class="hero-capture-label">Free Audit</span>
+          <p class="hero-capture-question">What if you could save <span class="hero-capture-highlight">40+ hours</span> a month and never touch the busywork again?</p>
+          <div class="hero-capture-buttons">
+            <button type="button" class="hero-capture-yes" id="heroCaptureYes">Yes, show me</button>
+            <button type="button" class="hero-capture-no" id="heroCaptureNo">Tell me more</button>
+          </div>
+          <p class="hero-capture-sub">Takes 60 seconds. Free. No strings.</p>
+        </div>
+
+        <!-- Form state (shown after "Yes") -->
+        <div class="hero-capture-form" id="heroCaptureForm">
+          <div class="form-group">
+            <label for="hero-name">First name</label>
+            <input type="text" id="hero-name" placeholder="Jane">
+          </div>
+          <div class="form-group">
+            <label for="hero-email">Email</label>
+            <input type="email" id="hero-email" placeholder="jane@company.com">
+          </div>
+          <div class="form-group">
+            <label for="hero-phone">Phone (optional)</label>
+            <input type="tel" id="hero-phone" placeholder="+44 7700 900000">
+          </div>
+          <div class="form-group">
+            <label for="hero-website">Website</label>
+            <input type="url" id="hero-website" placeholder="https://yourcompany.com">
+          </div>
+          <button type="button" class="form-next form-submit" id="heroToAudit" style="width:100%;text-align:center;">Get My Free Audit</button>
+          <p class="hero-capture-sub">We'll show you exactly what to automate.</p>
+        </div>
+      </div>
+    </div>
+    <p class="hero-proof hero-animate">Currently working with founders across professional services, SaaS, and trades.</p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 10rem 0 7rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 300%;
+    height: 200%;
+    background: linear-gradient(
+      105deg,
+      transparent 25%,
+      rgba(45, 212, 191, 0.08) 35%,
+      rgba(45, 212, 191, 0.18) 50%,
+      rgba(45, 212, 191, 0.08) 65%,
+      transparent 75%
+    );
+    animation: shimmer 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-grid {
+    position: absolute;
+    top: 2rem;
+    right: -2rem;
+    width: 420px;
+    height: 420px;
+    background-image: radial-gradient(circle, rgba(17, 94, 89, 0.15) 1.5px, transparent 1.5px);
+    background-size: 28px 28px;
+    opacity: 1;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 70%);
+    pointer-events: none;
+    animation: floatGrid 12s ease-in-out infinite;
+  }
+
+  .hero-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3.5rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-content {
+    max-width: 740px;
+  }
+
+  .hero h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--teal-bright), var(--teal), transparent);
+    margin-top: 1.2rem;
+    animation: drawLine 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.8s forwards;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    max-width: 620px;
+    margin-bottom: 2.2rem;
+  }
+
+  .hero-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-proof {
+    margin-top: 4rem;
+    font-size: 0.82rem;
+    color: var(--grey-400);
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero .badge {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Hero mini lead capture */
+  .hero-capture {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 2.2rem;
+    padding-top: 2rem;
+    color: var(--white);
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 0 40px rgba(45, 212, 191, 0.08),
+      0 0 80px rgba(45, 212, 191, 0.04);
+    opacity: 0;
+    animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.7s forwards;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-capture::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--teal-bright), var(--teal), transparent);
+  }
+
+  .hero-capture-label {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--teal-bright);
+    padding: 0.3rem 0.7rem;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+  }
+
+  .hero-capture-question {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.55rem;
+    color: var(--white);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    margin-bottom: 1.4rem;
+  }
+
+  .hero-capture-highlight {
+    color: var(--teal-bright);
+    white-space: nowrap;
+  }
+
+  .hero-capture-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0;
+  }
+
+  .hero-capture-yes,
+  .hero-capture-no {
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .hero-capture-yes {
+    background: var(--teal-bright);
+    color: var(--ink);
+    animation: ctaPulse 2.5s ease-in-out 1.5s infinite;
+  }
+
+  .hero-capture-yes:hover {
+    background: #5eead4;
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+    animation: none;
+  }
+
+  .hero-capture-no {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .hero-capture-no:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .hero-capture-sub {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  /* Hero capture form */
+  .hero-capture-form {
+    display: none;
+  }
+
+  .hero-capture-form.active {
+    display: block;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .hero-capture-form .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .hero-capture-form .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.3rem;
+  }
+
+  .hero-capture-form .form-group input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: 0.7rem 0.9rem;
+    outline: none;
+    transition: border-color 0.25s ease;
+  }
+
+  .hero-capture-form .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .hero-capture-form .form-group input:focus {
+    border-color: var(--teal-bright);
+  }
+
+  .hero-capture-form .form-next {
+    width: 100%;
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      padding: 8rem 0 5rem;
+    }
+
+    .hero-layout {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .hero-capture {
+      max-width: 400px;
+    }
+
+    .hero-proof {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero {
+      padding: 7rem 0 4rem;
+    }
+
+    .hero-buttons {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<script>
+  // Hero mini capture - show form on "Yes"
+  document.getElementById('heroCaptureYes')?.addEventListener('click', () => {
+    document.getElementById('heroCaptureQuestion')!.style.display = 'none';
+    document.getElementById('heroCaptureForm')!.classList.add('active');
+  });
+
+  // "Tell me more" scrolls to audit
+  document.getElementById('heroCaptureNo')?.addEventListener('click', () => {
+    document.getElementById('audit')?.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Hero form -> pre-fill audit and scroll
+  document.getElementById('heroToAudit')?.addEventListener('click', () => {
+    const name = (document.getElementById('hero-name') as HTMLInputElement).value.trim();
+    const email = (document.getElementById('hero-email') as HTMLInputElement).value.trim();
+    const phone = (document.getElementById('hero-phone') as HTMLInputElement).value.trim();
+    const website = (document.getElementById('hero-website') as HTMLInputElement).value.trim();
+
+    if (name) (document.getElementById('audit-name') as HTMLInputElement).value = name;
+    if (email) (document.getElementById('audit-email') as HTMLInputElement).value = email;
+    if (phone) (document.getElementById('audit-phone') as HTMLInputElement).value = phone;
+    if (website) (document.getElementById('audit-website') as HTMLInputElement).value = website;
+
+    document.getElementById('audit')?.scrollIntoView({ behavior: 'smooth' });
+
+    if (name && email) {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('audit-skip-to-step', { detail: 2 }));
+      }, 600);
+    }
+  });
+
+  // Badge pulse after fade-in
+  const badge = document.querySelector('.hero .badge');
+  if (badge) {
+    badge.addEventListener('animationend', () => {
+      (badge as HTMLElement).style.opacity = '1';
+      (badge as HTMLElement).style.transform = 'translateY(0)';
+      (badge as HTMLElement).style.animation = 'badgePulse 2s ease-in-out 0.3s 1';
+    }, { once: true });
+  }
+</script>

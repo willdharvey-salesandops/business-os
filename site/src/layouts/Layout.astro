@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -24,7 +26,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="theme-color" content="#1D3A2B" />
+    <meta name="theme-color" content="#115e59" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -52,12 +54,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <slot name="head" />
   </head>
-  <body class="bg-white text-zinc-900 font-sans antialiased">
+  <body class="bg-bg text-zinc-600 font-sans antialiased">
     <slot />
   </body>
 </html>

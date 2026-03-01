@@ -1,0 +1,745 @@
+<section class="section-audit" id="audit">
+  <div class="container">
+    <p class="eyebrow reveal">Free in 60 Seconds</p>
+    <h2 class="reveal" style="margin-bottom:1rem;">How much is your business losing to manual work?</h2>
+    <p class="audit-intro reveal">Drop in your website and answer three quick questions. We'll show you exactly what to automate and how much you'd save this year.</p>
+
+    <div class="audit-grid">
+      <div class="audit-copy reveal">
+        <ul class="audit-selling-points">
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Personalised to your business, not generic advice</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>See your estimated annual savings in pounds</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Results generated instantly by AI. No waiting for a callback.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>No commitment. Just clarity on what's possible.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="audit-form-container reveal">
+        <div class="audit-progress" id="auditProgress">
+          <span class="audit-progress-dot active" data-step="1"></span>
+          <span class="audit-progress-dot" data-step="2"></span>
+          <span class="audit-progress-dot" data-step="3"></span>
+          <span class="audit-progress-dot" data-step="4"></span>
+        </div>
+        <p class="audit-step-label" id="stepLabel">Step 1 of 4</p>
+
+        <!-- Step 1: You -->
+        <div class="audit-step active" data-step="1">
+          <h3>About you</h3>
+          <div class="form-group">
+            <label for="audit-name">First name</label>
+            <input type="text" id="audit-name" placeholder="Jane" required>
+            <p class="form-error">Please enter your name.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-email">Email</label>
+            <input type="email" id="audit-email" placeholder="jane@company.com" required>
+            <p class="form-error">Please enter a valid email.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-phone">Phone (optional)</label>
+            <input type="tel" id="audit-phone" placeholder="+44 7700 900000">
+          </div>
+          <div class="form-nav">
+            <button type="button" class="form-next" data-next="2">Next</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Your Business -->
+        <div class="audit-step" data-step="2">
+          <h3>Your business</h3>
+          <div class="form-group">
+            <label for="audit-website">Website or domain</label>
+            <input type="url" id="audit-website" placeholder="https://yourcompany.com" required>
+            <p class="form-error">Please enter your website address.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-industry">What does your business do?</label>
+            <input type="text" id="audit-industry" placeholder="e.g. Accounting firm, SaaS product, Recruitment" required>
+            <p class="form-error">Please describe your business.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-team">Team size</label>
+            <select id="audit-team" required>
+              <option value="">Select...</option>
+              <option value="1-5">1 - 5 people</option>
+              <option value="6-10">6 - 10 people</option>
+              <option value="11-20">11 - 20 people</option>
+              <option value="20+">20+ people</option>
+            </select>
+            <p class="form-error">Please select your team size.</p>
+          </div>
+          <div class="form-nav">
+            <button type="button" class="form-back" data-back="1">&larr; Back</button>
+            <button type="button" class="form-next" data-next="3">Next</button>
+          </div>
+        </div>
+
+        <!-- Step 3: The Problem -->
+        <div class="audit-step" data-step="3">
+          <h3>The bottleneck</h3>
+          <div class="form-group">
+            <label for="audit-challenge">What's the biggest operational challenge right now?</label>
+            <textarea id="audit-challenge" placeholder="e.g. We spend hours chasing invoices, onboarding is all manual, leads fall through the cracks..." required></textarea>
+            <p class="form-error">Please describe your challenge.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-area">What takes up most of your time?</label>
+            <select id="audit-area" required>
+              <option value="">Select...</option>
+              <option value="Sales & lead generation">Sales &amp; lead generation</option>
+              <option value="Admin & operations">Admin &amp; operations</option>
+              <option value="Client delivery">Client delivery</option>
+              <option value="Hiring & onboarding">Hiring &amp; onboarding</option>
+              <option value="Content & marketing">Content &amp; marketing</option>
+            </select>
+            <p class="form-error">Please select an area.</p>
+          </div>
+          <div class="form-nav">
+            <button type="button" class="form-back" data-back="2">&larr; Back</button>
+            <button type="button" class="form-next" data-next="4">Next</button>
+          </div>
+        </div>
+
+        <!-- Step 4: The Cost -->
+        <div class="audit-step" data-step="4">
+          <h3>The cost</h3>
+          <div class="form-group">
+            <label for="audit-hours">How many hours per week does this cost you?</label>
+            <select id="audit-hours" required>
+              <option value="">Select...</option>
+              <option value="3">2 - 5 hours</option>
+              <option value="7">5 - 10 hours</option>
+              <option value="15">10 - 20 hours</option>
+              <option value="25">20+ hours</option>
+            </select>
+            <p class="form-error">Please select an estimate.</p>
+          </div>
+          <div class="form-group">
+            <label for="audit-value">Estimated hourly value of your time (&pound;)</label>
+            <input type="number" id="audit-value" placeholder="75" min="1">
+          </div>
+          <div class="form-nav">
+            <button type="button" class="form-back" data-back="3">&larr; Back</button>
+            <button type="button" class="form-next form-submit" id="auditSubmitBtn">Get My Free Results</button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="audit-loading" id="auditLoading">
+          <div class="audit-spinner"></div>
+          <p>Analysing your business...</p>
+        </div>
+
+        <!-- Results -->
+        <div class="audit-results" id="auditResults">
+          <h3>Here's what we'd build for you.</h3>
+          <div id="auditIdeas"></div>
+          <div class="result-total">
+            <p class="result-total-label">Estimated Annual Savings</p>
+            <p class="result-total-number" id="auditSavings"></p>
+            <p class="result-total-sub" id="auditHoursSaved"></p>
+          </div>
+          <div class="result-cta">
+            <a href="https://calendly.com/will-leadershipgrowthconsulting/30min" target="_blank" rel="noopener" class="btn-primary">Book a Call to Discuss These Ideas</a>
+            <p class="result-footnote">Your results have been saved. We'll follow up with more detail.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<style>
+  .section-audit {
+    background: linear-gradient(180deg, #0a1a19 0%, #0f1f1e 40%, #111 100%);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+    border-top: 2px solid var(--teal-bright);
+    padding: 6rem 0 7rem;
+  }
+
+  .section-audit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -100px;
+    transform: translateY(-50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .section-audit::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(rgba(45, 212, 191, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  .section-audit h2 {
+    color: var(--white);
+    text-align: center;
+  }
+
+  .section-audit .eyebrow {
+    color: var(--teal-bright);
+    text-align: center;
+  }
+
+  .section-audit p,
+  .section-audit li {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .audit-intro {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto 3.5rem;
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .section-divider {
+    height: 3px;
+    background: linear-gradient(to right, transparent, rgba(45, 212, 191, 0.25), transparent);
+  }
+
+  .audit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .audit-selling-points {
+    list-style: none;
+    margin-top: 1rem;
+    padding: 0;
+  }
+
+  .audit-selling-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.92rem;
+    padding: 0.9rem 1.1rem;
+    background: rgba(45, 212, 191, 0.04);
+    border-left: 2px solid rgba(45, 212, 191, 0.25);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  .audit-selling-points li svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--teal-bright);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .audit-form-container {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(45, 212, 191, 0.15);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: 0 0 60px rgba(45, 212, 191, 0.08), 0 4px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .audit-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.6rem;
+  }
+
+  .audit-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.3s ease;
+  }
+
+  .audit-progress-dot.active {
+    background: var(--teal-bright);
+  }
+
+  .audit-step-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 1.8rem;
+    font-weight: 500;
+  }
+
+  .audit-step {
+    display: none;
+  }
+
+  .audit-step.active {
+    display: block;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .audit-step h3 {
+    color: var(--white);
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    outline: none;
+    transition: border-color 0.25s ease;
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--teal-bright);
+  }
+
+  .form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .form-group select option {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.8rem;
+  }
+
+  .form-back {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.25s ease;
+  }
+
+  .form-back:hover {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .form-next {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: var(--teal);
+    border: none;
+    padding: 0.75rem 1.8rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-left: auto;
+  }
+
+  .form-next:hover {
+    background: var(--teal-hover);
+    transform: translateY(-1px);
+  }
+
+  .form-submit {
+    background: var(--teal-bright) !important;
+    color: var(--ink) !important;
+    font-size: 0.88rem !important;
+    padding: 0.85rem 2.2rem !important;
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .form-submit:hover {
+    background: #5eead4 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 0 30px rgba(45, 212, 191, 0.45) !important;
+  }
+
+  .form-error {
+    font-size: 0.75rem;
+    color: #f87171;
+    margin-top: 0.3rem;
+    display: none;
+  }
+
+  .form-group.has-error input,
+  .form-group.has-error select,
+  .form-group.has-error textarea {
+    border-color: #f87171;
+  }
+
+  .form-group.has-error .form-error {
+    display: block;
+  }
+
+  /* Loading */
+  .audit-loading {
+    display: none;
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .audit-loading.active {
+    display: block;
+  }
+
+  .audit-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--teal-bright);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1.2rem;
+  }
+
+  .audit-loading p {
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* Results */
+  .audit-results {
+    display: none;
+  }
+
+  .audit-results.active {
+    display: block;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .audit-results h3 {
+    color: var(--white);
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-idea {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .result-idea h4 {
+    color: var(--white);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .result-idea p {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    margin-bottom: 0.6rem;
+  }
+
+  .result-idea .time-saved {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--teal-bright);
+  }
+
+  .result-total {
+    text-align: center;
+    padding: 1.8rem 0;
+    margin: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .result-total-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 0.4rem;
+  }
+
+  .result-total-number {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 2.6rem;
+    color: var(--teal-bright);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .result-total-sub {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.3rem;
+  }
+
+  .result-cta {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .result-cta .btn-primary {
+    margin-bottom: 0.8rem;
+  }
+
+  .result-footnote {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+
+  @media (max-width: 900px) {
+    .audit-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  let currentStep = 1;
+
+  function showStep(step: number) {
+    document.querySelectorAll('.audit-step').forEach(s => s.classList.remove('active'));
+    const target = document.querySelector(`.audit-step[data-step="${step}"]`);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.audit-progress-dot').forEach(d => {
+      const el = d as HTMLElement;
+      el.classList.toggle('active', parseInt(el.dataset.step || '0') <= step);
+    });
+    const label = document.getElementById('stepLabel');
+    if (label) label.textContent = `Step ${step} of 4`;
+    currentStep = step;
+  }
+
+  function validateStep(step: number): boolean {
+    let valid = true;
+    const stepEl = document.querySelector(`.audit-step[data-step="${step}"]`);
+    if (!stepEl) return false;
+    const requiredFields = stepEl.querySelectorAll('[required]');
+
+    requiredFields.forEach(field => {
+      const input = field as HTMLInputElement;
+      const group = input.closest('.form-group');
+      if (!input.value.trim()) {
+        group?.classList.add('has-error');
+        valid = false;
+      } else if (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+        group?.classList.add('has-error');
+        valid = false;
+      } else {
+        group?.classList.remove('has-error');
+      }
+    });
+
+    return valid;
+  }
+
+  // Next buttons
+  document.querySelectorAll('.form-next[data-next]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const next = parseInt((btn as HTMLElement).dataset.next || '0');
+      if (!validateStep(currentStep)) return;
+      showStep(next);
+    });
+  });
+
+  // Back buttons
+  document.querySelectorAll('.form-back[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const back = parseInt((btn as HTMLElement).dataset.back || '0');
+      showStep(back);
+    });
+  });
+
+  // Clear errors on input
+  document.querySelectorAll('.audit-step input, .audit-step select, .audit-step textarea').forEach(field => {
+    field.addEventListener('input', () => {
+      field.closest('.form-group')?.classList.remove('has-error');
+    });
+    field.addEventListener('change', () => {
+      field.closest('.form-group')?.classList.remove('has-error');
+    });
+  });
+
+  // Listen for hero skip-to-step event
+  window.addEventListener('audit-skip-to-step', ((e: CustomEvent) => {
+    showStep(e.detail);
+  }) as EventListener);
+
+  // Submit
+  document.getElementById('auditSubmitBtn')?.addEventListener('click', async () => {
+    if (!validateStep(4)) return;
+
+    const formData = {
+      name: (document.getElementById('audit-name') as HTMLInputElement).value,
+      email: (document.getElementById('audit-email') as HTMLInputElement).value,
+      phone: (document.getElementById('audit-phone') as HTMLInputElement).value,
+      website: (document.getElementById('audit-website') as HTMLInputElement).value,
+      industry: (document.getElementById('audit-industry') as HTMLInputElement).value,
+      team_size: (document.getElementById('audit-team') as HTMLSelectElement).value,
+      challenge: (document.getElementById('audit-challenge') as HTMLTextAreaElement).value,
+      time_area: (document.getElementById('audit-area') as HTMLSelectElement).value,
+      hours_per_week: parseFloat((document.getElementById('audit-hours') as HTMLSelectElement).value),
+      hourly_value: parseFloat((document.getElementById('audit-value') as HTMLInputElement).value) || 75,
+    };
+
+    // Hide form, show loading
+    document.querySelectorAll('.audit-step').forEach(s => s.classList.remove('active'));
+    const progress = document.getElementById('auditProgress');
+    const label = document.getElementById('stepLabel');
+    if (progress) progress.style.display = 'none';
+    if (label) label.style.display = 'none';
+    document.getElementById('auditLoading')?.classList.add('active');
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error('API error');
+
+      const data = await response.json();
+      renderResults(data);
+    } catch {
+      renderFallback(formData);
+    }
+  });
+
+  function renderResults(data: { ideas: Array<{ title: string; description: string; hours_saved_per_week: number }>; total_annual_savings: string; total_hours_saved_per_year: string }) {
+    document.getElementById('auditLoading')?.classList.remove('active');
+
+    const ideasContainer = document.getElementById('auditIdeas');
+    if (!ideasContainer) return;
+    ideasContainer.innerHTML = '';
+
+    data.ideas.forEach(idea => {
+      const ideaEl = document.createElement('div');
+      ideaEl.className = 'result-idea';
+      ideaEl.innerHTML = `
+        <h4>${idea.title}</h4>
+        <p>${idea.description}</p>
+        <span class="time-saved">${idea.hours_saved_per_week}h saved per week</span>
+      `;
+      ideasContainer.appendChild(ideaEl);
+    });
+
+    const savings = document.getElementById('auditSavings');
+    const hours = document.getElementById('auditHoursSaved');
+    if (savings) savings.textContent = data.total_annual_savings;
+    if (hours) hours.textContent = data.total_hours_saved_per_year;
+
+    document.getElementById('auditResults')?.classList.add('active');
+  }
+
+  function renderFallback(formData: { hours_per_week: number; hourly_value: number }) {
+    document.getElementById('auditLoading')?.classList.remove('active');
+
+    const ideasContainer = document.getElementById('auditIdeas');
+    if (ideasContainer) {
+      ideasContainer.innerHTML = `
+        <div class="result-idea">
+          <p style="color:rgba(255,255,255,0.7)">We've captured your details and will be in touch within 24 hours with your personalised automation audit.</p>
+        </div>
+      `;
+    }
+
+    const weeklySavings = formData.hours_per_week * 0.6;
+    const annualSavings = Math.round(weeklySavings * formData.hourly_value * 48);
+    const savings = document.getElementById('auditSavings');
+    const hours = document.getElementById('auditHoursSaved');
+    if (savings) savings.textContent = `\u00A3${annualSavings.toLocaleString()}`;
+    if (hours) hours.textContent = `Based on ${Math.round(weeklySavings * 48)} hours recovered per year`;
+
+    document.getElementById('auditResults')?.classList.add('active');
+  }
+</script>

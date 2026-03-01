@@ -1,0 +1,320 @@
+/* ========================================
+   DESIGN TOKENS
+======================================== */
+:root {
+  --bg: #fafaf9;
+  --white: #ffffff;
+  --ink: #111111;
+  --teal: #115e59;
+  --teal-hover: #0d4a46;
+  --teal-bright: #2dd4bf;
+  --teal-glow: rgba(45, 212, 191, 0.12);
+  --grey-600: #555555;
+  --grey-400: #888888;
+  --grey-200: #e5e5e3;
+  --grey-100: #f3f3f1;
+
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 100px;
+
+  --max-width: 1140px;
+}
+
+/* ========================================
+   BASE
+======================================== */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--teal);
+  color: var(--white);
+}
+
+/* ========================================
+   TYPOGRAPHY
+======================================== */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  letter-spacing: -0.035em;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.03em;
+}
+
+h3 {
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  letter-spacing: -0.025em;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 1rem;
+}
+
+/* ========================================
+   LAYOUT
+======================================== */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+/* ========================================
+   COMPONENTS: BUTTONS
+======================================== */
+.btn-primary {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--teal);
+  padding: 0.9rem 2rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  background: var(--teal-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17, 94, 89, 0.2);
+}
+
+.btn-ghost {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey-600);
+  background: none;
+  padding: 0.9rem 2rem;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.btn-ghost:hover {
+  color: var(--ink);
+}
+
+/* ========================================
+   COMPONENTS: CARDS
+======================================== */
+.card {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+  border-color: rgba(17, 94, 89, 0.15);
+}
+
+/* ========================================
+   COMPONENTS: BADGES
+======================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--teal);
+  background: var(--teal-glow);
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-pill);
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--teal-bright);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.step-badge {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--teal-glow);
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* ========================================
+   COMPONENTS: ICON CONTAINERS
+======================================== */
+.icon-box {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal-glow);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.2rem;
+  flex-shrink: 0;
+}
+
+.icon-box svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--teal);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+/* ========================================
+   ANIMATIONS: KEYFRAMES
+======================================== */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatGrid {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, 14px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-30%); }
+  100% { transform: translateX(30%); }
+}
+
+@keyframes drawLine {
+  to { width: 140px; }
+}
+
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
+  50% { box-shadow: 0 0 18px 4px rgba(45, 212, 191, 0.25); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(45, 212, 191, 0); }
+  50% { box-shadow: 0 0 24px rgba(45, 212, 191, 0.2); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(45, 212, 191, 0.3); }
+  50% { box-shadow: 0 0 35px rgba(45, 212, 191, 0.5); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   ANIMATIONS: HERO
+======================================== */
+.hero-animate {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-animate:nth-child(1) { animation-delay: 0.1s; }
+.hero-animate:nth-child(2) { animation-delay: 0.25s; }
+.hero-animate:nth-child(3) { animation-delay: 0.4s; }
+.hero-animate:nth-child(4) { animation-delay: 0.55s; }
+.hero-animate:nth-child(5) { animation-delay: 0.7s; }
+
+/* ========================================
+   ANIMATIONS: SCROLL REVEAL
+======================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========================================
+   SECTION VARIANTS
+======================================== */
+.section-dark {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.section-dark h2 {
+  color: var(--white);
+  max-width: 600px;
+}
+
+.section-dark .eyebrow {
+  color: var(--teal-bright);
+}
+
+.section-dark p,
+.section-dark li {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.section-alt {
+  background: var(--grey-100);
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+@media (max-width: 900px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
