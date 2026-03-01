@@ -85,20 +85,48 @@ export const POST: APIRoute = async ({ request }) => {
       pageToken = data.nextPageToken;
     }
 
-    const places = allPlaces;
-
-    if (places.length === 0) {
+    if (allPlaces.length === 0) {
       return new Response(JSON.stringify({ error: 'No businesses found for that search' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Create campaign
     const supabase = getSupabase();
+
+    // Deduplicate: check which place_ids already exist in any campaign
+    const placeIds = allPlaces.map(p => p.id).filter(Boolean) as string[];
+    const existingPlaceIds = new Set<string>();
+
+    // Query in batches of 100 (Supabase .in() limit)
+    for (let i = 0; i < placeIds.length; i += 100) {
+      const batch = placeIds.slice(i, i + 100);
+      const { data: existing } = await supabase
+        .from('outreach_prospects')
+        .select('place_id')
+        .in('place_id', batch);
+      if (existing) {
+        existing.forEach((row: { place_id: string }) => existingPlaceIds.add(row.place_id));
+      }
+    }
+
+    // Filter to only new businesses
+    const newPlaces = allPlaces.filter(p => !p.id || !existingPlaceIds.has(p.id));
+    const skippedCount = allPlaces.length - newPlaces.length;
+
+    if (newPlaces.length === 0) {
+      return new Response(JSON.stringify({
+        error: `All ${allPlaces.length} businesses found have already been processed in previous campaigns. Try a different region or company type.`,
+      }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Create campaign
     const { data: campaign, error: campaignError } = await supabase
       .from('outreach_campaigns')
-      .insert({ company_type, region, prospect_count: places.length })
+      .insert({ company_type, region, prospect_count: newPlaces.length })
       .select('id')
       .single();
 
@@ -110,8 +138,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Insert prospects
-    const prospects = places.map((place) => ({
+    // Insert only new prospects
+    const prospects = newPlaces.map((place) => ({
       campaign_id: campaign.id,
       company_name: place.displayName?.text || 'Unknown',
       address: place.formattedAddress || '',
@@ -138,7 +166,8 @@ export const POST: APIRoute = async ({ request }) => {
       campaign_id: campaign.id,
       company_type,
       region,
-      prospect_count: places.length,
+      prospect_count: newPlaces.length,
+      skipped_duplicates: skippedCount,
       prospects: prospects.map(p => ({
         company_name: p.company_name,
         website: p.website,

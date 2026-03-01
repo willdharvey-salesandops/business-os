@@ -723,7 +723,8 @@
     showLoading(`Searching for ${companyType} in ${region}...`);
     try {
       const data = await api('POST', '/api/outreach/discover', { company_type: companyType, region });
-      toast(`Found ${data.prospect_count} companies`);
+      const dupMsg = data.skipped_duplicates > 0 ? ` (${data.skipped_duplicates} already in previous campaigns)` : '';
+      toast(`Found ${data.prospect_count} new companies${dupMsg}`);
       currentCampaignId = data.campaign_id;
       await loadPipeline(data.campaign_id, companyType, region);
     } catch (err) {
