@@ -275,7 +275,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-sonnet-4-5-20241022',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: buildUserPrompt(data) }],
@@ -344,14 +344,12 @@ export const POST: APIRoute = async ({ request }) => {
             email: data.email,
             phone: data.phone,
             website: data.website,
-            industry: data.industry,
             team_size: data.team_size,
-            challenge: data.challenge,
-            time_area: data.time_area,
-            hours_per_week: data.hours_per_week,
-            hourly_value: data.hourly_value,
-            ideas: ideaTitles,
-            annual_savings: result.total_annual_savings,
+            hours: String(data.hours_per_week || ''),
+            tasks: `${data.industry || ''} | ${data.challenge || ''} | ${data.time_area || ''}`,
+            hourly_value: String(data.hourly_value || ''),
+            total_savings: result.total_annual_savings,
+            ideas: result.ideas,
           });
         }
       } catch (err) {
@@ -366,9 +364,9 @@ export const POST: APIRoute = async ({ request }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (err) {
-    console.error('API error:', err);
-    return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
+  } catch (err: any) {
+    console.error('API error:', err?.message || err, err?.status, err?.error);
+    return new Response(JSON.stringify({ error: 'AI service unavailable', detail: err?.message || 'Unknown error' }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' },
     });
