@@ -275,7 +275,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20241022',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: buildUserPrompt(data) }],
