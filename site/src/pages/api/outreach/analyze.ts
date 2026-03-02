@@ -21,26 +21,34 @@ You are NOT a web developer offering site fixes. You are identifying where simpl
 1. READ THE FULL CONTENT CAREFULLY. List what IS on the site before identifying what is absent. Always.
 2. NEVER claim something is missing unless you are certain it is not in the content. If you cannot confirm something is absent, say "I could not find X in the content provided" not "X is missing." If unsure, flag uncertainty. Never state an unverified observation as fact.
 3. For every site, explicitly confirm or deny the presence of each:
-   - Reviews/testimonials (exact count and star rating, e.g. "28 Google reviews, 5.0 stars displayed on homepage")
-   - Lead magnets (including exit popups, downloadable resources, free consultation offers)
+   - Reviews/testimonials (exact count and star rating, e.g. "28 Google reviews, 5.0 stars displayed on homepage with full review text"). If a reviews widget exists, state the exact plugin name, rating, and review count.
+   - Lead magnets (including exit popups, downloadable resources, free consultation offers, PDF guides)
    - Client portals or login areas
-   - Newsletter signups
+   - Newsletter signups (check both body and footer of every page)
    - Booking/scheduling tools or contact forms
    - Interactive tools (calculators, estimators, quote generators)
    - Webinar or events sections
-   - Blog/news (note most recent post date and topics. If stale, over 12 months, note as context but never reference negatively)
+   - Blog/news (list the 3-5 most recent post TITLES and dates. If stale, over 12 months, note as context but never reference negatively in the email)
    - Technology partnerships or certifications (e.g. Xero, QuickBooks, Sage)
-   - Service lines and sector lists (capture exact sector names for bullet personalisation)
-   - Service promises and commitments (response times, turnaround guarantees, free consultations). These are HIGH-PRIORITY hooks because they are manual commitments that automations can help deliver.
-4. Be deeply specific. "28 five-star Google reviews displayed on homepage with full review text" not "good reviews."
+   - Service lines and sector lists (list ALL sector names verbatim for bullet personalisation)
+   - Service promises and commitments (response times, turnaround guarantees, free consultations, fixed fees, unlimited support offers). These are HIGH-PRIORITY hooks because they are manual commitments that automations can help deliver consistently.
+   - Footer content: check for newsletter signup forms, social links, accreditation logos, contact details
+   NOTE: Exit popups and dynamically loaded widgets may not appear in the content provided. If you see references to popup scripts or modal elements but cannot confirm the content, note this limitation.
+4. Be deeply specific. "28 five-star Google reviews displayed on homepage via Business Reviews Bundle widget with full review text" not "good reviews."
 5. When the firm has existing digital tools, client portals, email programmes, or proprietary systems, flag as an existing digital signal. Reference as a compliment in the email and position automations as complementary, not remedial.
-6. When client reviews are visible, scan for recurring themes, specific team members mentioned by name, and language revealing what clients value most. If reviews consistently praise a specific team member whose role overlaps with suggested automations, frame automations as freeing that person for higher-value work, never replacing them.
-7. Star ratings: always verify the exact rating and review count. Round DOWN, never up. 4.9 is 4.9, not 5.0. If you cannot verify, do not reference a specific number. Also note whether the rating is displayed ON the site or only exists externally on Google.
-8. When visible typos or errors exist on the site, note in the assessment as context but NEVER reference them in the email.
+6. REVIEW MINING: When client reviews are visible, extract:
+   - Recurring themes and language (what clients consistently praise)
+   - Specific team members mentioned by name and what they are praised for
+   - Emotional language revealing what clients value most
+   If reviews consistently praise a specific team member whose role overlaps with suggested automations, frame automations as freeing that person for higher-value work, never replacing them. Use exact review language as personalisation material.
+7. GOOGLE RATING VERIFICATION: A Google Maps rating is provided in the prompt. You MUST separately verify whether this rating appears ON the website itself (via a widget, badge, or text). State clearly: "X.X stars from Y reviews displayed on the website via [widget name]" OR "Google rating not displayed on the website, only exists externally." NEVER reference a star rating in the email or improvement ideas unless you have confirmed it is displayed on the website. Round DOWN, never up. 4.9 is 4.9, not 5.0.
+8. ABOUT PAGE DEPTH: The About page often contains the richest personalisation material. Thoroughly parse for: founding story and year, team member names with roles, service promises and guarantees (fixed fees, response times, unlimited support), sector lists, certifications, accreditations, partner bios with career backgrounds, and any email programmes or content mentioned ("FREE Tax Tips", newsletters, guides). If the About page was provided, every relevant detail must appear in the assessment.
+9. When visible typos or errors exist on the site, note in the assessment as context but NEVER reference them in the email.
 
 ## FRANCHISE AND STRUCTURE RECOGNITION
 - Recognise franchise structures (AIMS, TaxAssist, Crunch, etc.). Flag that the prospect does not control their own website. Shift the angle entirely to operational automations that help the individual practitioner. Never reference website elements the prospect cannot personally change.
-- When the URL does not match the firm's trading name, flag this in the assessment. Use the trading name from the rendered website.
+- For franchise operators, use the INDIVIDUAL practitioner's personal story for personalisation: their career background, years of experience, specialisms, geographic coverage, and client reviews mentioning them by name. Generic franchise content is not personalisation.
+- When the URL/domain does not match the firm's trading name, flag this prominently in the assessment as a RISK. The email domain being used may belong to a different or defunct entity. State: "URL [x] does not match trading name [y]. Email to this domain may not reach the intended firm."
 - When multiple contacts share the same surname, flag as a likely family-run business.
 
 ## FOUR EMAIL ANGLES (choose the right one, do NOT default to Angle 2)
@@ -85,7 +93,10 @@ SIGN-OFF: "Will" (no company name on any email).
 - Often a noun or concept, not a full sentence.
 - No company name unless possessive makes it personal (e.g. "Greentree's pricing gap").
 - Create curiosity without being clickbaity.
-- When in doubt, go shorter.
+- NEVER use subject lines that sound diagnostic or negative (e.g. "30 years, one problem"). The subject line must not undercut a carefully observational email body.
+- NEVER use subject lines that could be mistaken for spam or phishing (e.g. "Paying too much tax", "Save money now"). Financial or tax-related claims in subject lines trigger spam filters and suspicion.
+- Safe patterns: firm name + "systems", a service promise back to them ("Same-day, every time"), a niche reference, the practitioner's name if personal.
+- When in doubt, go shorter and safer.
 
 ## TONE RULES (apply to ALL emails)
 - OBSERVATIONAL, not diagnostic. Never tell a prospect what their problem is. Share observations, not diagnoses.
@@ -114,14 +125,16 @@ The first sentence after the greeting must BE the hook itself: a tagline, a busi
 - Short paragraphs.
 
 ## DEEP PERSONALISATION (sources in order of impact)
-1. Their own words from their site (philosophy, tagline, mission statement, service promises)
-2. Business events (acquisitions, awards, growth, capacity constraints, recent hires with dates)
-3. Their target audience named specifically ("a SaaS founder and a landlord land on the same homepage")
-4. Specific numbers from their site (exact review counts, years in business, number of services, team size)
-5. Service commitments that map to automation opportunities ("24-hour response time" becomes "what if a system could do that in seconds")
-6. Client review language and themes (reflect their clients' words back)
-7. Existing digital tools or programmes (client portals, email newsletters, proprietary systems, reference as a compliment)
-8. Team details and individual bios (match personalisation to the recipient's specific background)
+1. Their own words from their site (philosophy, tagline, mission statement, service promises, founding story)
+2. Service commitments that map to automation opportunities ("24-hour response time" becomes "what if a system could do that in seconds", "same-day response guarantee" becomes "a bold promise to put on the homepage")
+3. Business events (acquisitions, awards, growth, capacity constraints, recent hires with dates, new partners joining)
+4. Their target audience named specifically ("a SaaS founder and a landlord land on the same homepage")
+5. Specific numbers from their site (exact review counts verified on-site, years in business, number of services, team size, partner count)
+6. Client review language and themes: extract exact phrases from reviews, name team members praised, reflect their clients' words back. "Your clients call Dan 'patient and thorough'" is better than "you have good reviews."
+7. Existing digital tools or programmes (client portals, email newsletters, proprietary systems, review widgets, reference as a compliment and build on what exists)
+8. Team details and individual bios: match personalisation to the RECIPIENT's specific background, career history, and specialisms. If emailing a practice manager, reference practice operations. If emailing a partner, reference growth and client relationships.
+9. Specific blog post titles and topics: name the actual posts in nurture bullets. "Your salary sacrifice article" not "your blog content." "Posts on school fees VAT and ecommerce accounting" not "content from the Resources section."
+10. Sector names verbatim: if the firm lists "Manufacturing, Construction, Property, IT" as sectors, mirror those exact names in qualifying/routing automation bullets.
 
 ## IMPROVEMENT IDEAS
 - Every idea must be framed as a system or automation, not a website feature.
@@ -140,7 +153,7 @@ Follow-up 2 (day 5, 30-50 words): Must open with "Hi [first name],\\n\\n". Final
 - Has every claim about what is "missing" been verified against the content provided?
 - Is the tone observational rather than diagnostic?
 - Are all ideas framed as systems/automations, not website features?
-- Is the subject line 2-4 words?
+- Is the subject line 2-4 words, safe (not diagnostic, not spammy), and intriguing?
 - Zero em dashes in all emails?
 - Does the opening lead with the hook, not "I came across" or how you found them?
 - Ideas listed as bullets under "Things like:" only, everything else prose?
@@ -151,8 +164,13 @@ Follow-up 2 (day 5, 30-50 words): Must open with "Hi [first name],\\n\\n". Final
 - If Angle 1 or 2, is the claim verifiably true from the content?
 - Deep personalisation beyond firm name and location?
 - Opening earns the right to make the observations that follow?
-- Star rating verified with exact number (rounded down)?
+- Google rating ONLY referenced if verified as displayed ON the website?
 - Personalisation matches the RECIPIENT, not just the firm?
+- Service promises from the About page captured and used as hooks?
+- Specific blog post titles used in nurture bullets (not generic "your blog")?
+- Sector names mirrored verbatim from the site?
+- Client review themes and team member mentions extracted?
+- For franchise operators, personalisation uses the individual's story, not the brand?
 
 Respond with valid JSON only, no markdown formatting or code fences.`;
 
@@ -214,18 +232,26 @@ async function fetchSiteContent(websiteUrl: string): Promise<string> {
   const fullUrl = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`;
   const baseUrl = fullUrl.replace(/\/$/, '');
 
-  // Fetch homepage and about/team pages in parallel for richer context
-  const [homepage, about1, about2, team] = await Promise.all([
-    fetchPageHTML(fullUrl, 20000),
-    fetchPageHTML(`${baseUrl}/about`, 10000),
-    fetchPageHTML(`${baseUrl}/about-us`, 10000),
-    fetchPageHTML(`${baseUrl}/team`, 5000),
+  // Fetch homepage and key subpages in parallel for comprehensive context
+  const [homepage, about1, about2, team1, team2, services, reviews, blog] = await Promise.all([
+    fetchPageHTML(fullUrl, 25000),
+    fetchPageHTML(`${baseUrl}/about`, 15000),
+    fetchPageHTML(`${baseUrl}/about-us`, 15000),
+    fetchPageHTML(`${baseUrl}/team`, 10000),
+    fetchPageHTML(`${baseUrl}/our-team`, 10000),
+    fetchPageHTML(`${baseUrl}/services`, 10000),
+    fetchPageHTML(`${baseUrl}/reviews`, 8000),
+    fetchPageHTML(`${baseUrl}/blog`, 5000),
   ]);
 
   let content = homepage;
   const aboutPage = about1 || about2;
   if (aboutPage) content += `\n\n--- ABOUT PAGE ---\n\n${aboutPage}`;
-  if (team) content += `\n\n--- TEAM PAGE ---\n\n${team}`;
+  const teamPage = team1 || team2;
+  if (teamPage) content += `\n\n--- TEAM PAGE ---\n\n${teamPage}`;
+  if (services) content += `\n\n--- SERVICES PAGE ---\n\n${services}`;
+  if (reviews) content += `\n\n--- REVIEWS PAGE ---\n\n${reviews}`;
+  if (blog) content += `\n\n--- BLOG PAGE ---\n\n${blog}`;
   return content;
 }
 
@@ -443,21 +469,26 @@ async function findVerifiedContact(
       if (searchResults.length > 0) {
         // Try to enrich the top 2 most senior people
         let enrichedCount = 0;
+        const enrichedNames: string[] = [];
         for (const person of searchResults.slice(0, 2)) {
           const enriched = await prospeoEnrich({ personId: person.personId }, prospeoKey);
 
           if (enriched && enriched.email && mapProspeoStatus(enriched.status) !== 'invalid') {
             const verified = mapProspeoStatus(enriched.status);
             const personName = person.fullName || enriched.fullName;
+            const emailDomain = enriched.email.split('@')[1]?.toLowerCase() || '';
+            const domainMatch = emailDomain === domain || emailDomain.endsWith(`.${domain}`) || domain.endsWith(`.${emailDomain}`);
+
             candidates.push({
               email: enriched.email,
-              source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})`,
+              source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})${!domainMatch ? ' ⚠ different domain' : ''}`,
               confidence: verified === 'valid' ? 'high' : 'medium',
               verified,
               name: personName,
               title: person.title || enriched.title || '',
             });
             added.add(enriched.email.toLowerCase());
+            enrichedNames.push(`${personName} (${person.title || 'contact'})`);
 
             // Use first verified contact as the primary
             if (enrichedCount === 0) {
@@ -469,7 +500,11 @@ async function findVerifiedContact(
         }
 
         if (enrichedCount > 0) {
-          prospeoNote = `Prospeo: ${searchNote}. Found ${enrichedCount} verified contact(s) via company search`;
+          const namesStr = enrichedNames.join(', ');
+          const chWarning = ownerName && !enrichedNames.some(n => n.toLowerCase().includes(firstName.toLowerCase()))
+            ? ` NOTE: CH director ${ownerName} not among Prospeo contacts. Check if this is the right person to email.`
+            : '';
+          prospeoNote = `Prospeo: ${searchNote}. Found: ${namesStr}${chWarning}`;
         } else {
           prospeoNote = `Prospeo: ${searchNote}. Found ${searchResults.length} people but no verified emails`;
         }
