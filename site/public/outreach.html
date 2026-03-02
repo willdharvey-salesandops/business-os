@@ -955,7 +955,7 @@
             `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}', this)">Qualify</button>` : ''}
           ${p.pipeline_status === 'qualified' ?
             `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}', this)">Analyze</button>` : ''}
-          ${p.pipeline_status === 'email_drafted' ?
+          ${p.pipeline_status === 'email_drafted' || p.pipeline_status === 'needs_contact' ?
             `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}', this)">Re-analyze</button>` : ''}
         </td>
       `;
