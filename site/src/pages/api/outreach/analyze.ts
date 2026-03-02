@@ -293,6 +293,8 @@ interface ProspeoSearchResult {
   fullName: string;
   title: string;
   seniority: string;
+  companyName: string;
+  companyDomain: string;
 }
 
 const GENERIC_PREFIXES = ['info', 'contact', 'hello', 'admin', 'office', 'enquiries', 'enquiry', 'sales', 'support', 'team', 'general', 'mail', 'reception'];
@@ -386,6 +388,8 @@ async function prospeoSearchPerson(domain: string, companyName: string, apiKey: 
           fullName: r.person?.full_name || `${r.person?.first_name || ''} ${r.person?.last_name || ''}`.trim(),
           title: r.person?.current_job_title || '',
           seniority: r.person?.job_history?.[0]?.seniority || '',
+          companyName: r.company?.name || r.person?.job_history?.[0]?.company_name || '',
+          companyDomain: r.company?.domain || '',
         }))
         .filter((p: ProspeoSearchResult) => p.personId);
 
@@ -491,21 +495,32 @@ async function findVerifiedContact(
     const searchResults = await prospeoSearchPerson(domain, companyName, prospeoKey);
 
     if (searchResults.length > 0) {
-      // Enrich the top 3 results to get verified emails
+      // Filter search results: only keep people whose Prospeo company domain matches the prospect's domain
+      // This prevents false matches where Prospeo returns people from unrelated companies
+      const validResults = searchResults.filter(person => {
+        const personDomain = person.companyDomain?.toLowerCase() || '';
+        if (!personDomain) return false;
+        return personDomain === domain || personDomain.endsWith(`.${domain}`) || domain.endsWith(`.${personDomain}`);
+      });
+
+      const skippedCount = searchResults.length - validResults.length;
+      if (skippedCount > 0) {
+        console.log(`Prospeo: filtered out ${skippedCount} of ${searchResults.length} results (wrong company domain). Target: ${domain}`);
+      }
+
+      // Enrich the top 3 validated results to get verified emails
       let enrichedCount = 0;
       const enrichedNames: string[] = [];
-      for (const person of searchResults.slice(0, 3)) {
+      for (const person of validResults.slice(0, 3)) {
         const enriched = await prospeoEnrich({ personId: person.personId }, prospeoKey);
 
         if (enriched && enriched.email && mapProspeoStatus(enriched.status) !== 'invalid') {
           const verified = mapProspeoStatus(enriched.status);
           const personName = person.fullName || enriched.fullName;
-          const emailDomain = enriched.email.split('@')[1]?.toLowerCase() || '';
-          const domainMatch = emailDomain === domain || emailDomain.endsWith(`.${domain}`) || domain.endsWith(`.${emailDomain}`);
 
           candidates.push({
             email: enriched.email,
-            source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})${!domainMatch ? ' ⚠ different domain' : ''}`,
+            source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})`,
             confidence: verified === 'valid' ? 'high' : 'medium',
             verified,
             name: personName,
@@ -531,7 +546,8 @@ async function findVerifiedContact(
           : '';
         prospeoNote = `Prospeo search: found ${namesStr}${chWarning}`;
       } else {
-        prospeoNote = `Prospeo search: found ${searchResults.length} people but could not verify emails`;
+        const filterNote = skippedCount > 0 ? ` (${skippedCount} results filtered out, wrong company)` : '';
+        prospeoNote = `Prospeo search: found ${searchResults.length} people but none matched ${domain}${filterNote}`;
       }
     }
 
