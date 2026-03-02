@@ -849,6 +849,8 @@
             `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}')">Qualify</button>` : ''}
           ${p.pipeline_status === 'qualified' ?
             `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}')">Analyze</button>` : ''}
+          ${p.pipeline_status === 'email_drafted' ?
+            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}')" title="Re-run analysis with updated prompt">Re-analyze</button>` : ''}
         </td>
       `;
       tbody.appendChild(tr);
