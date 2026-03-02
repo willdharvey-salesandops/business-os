@@ -404,10 +404,22 @@ async function prospeoSearchPerson(domain: string, companyName: string, apiKey: 
 
   const seniorityFilter = ['Founder/Owner', 'C-Suite', 'Partner', 'Vice President', 'Head', 'Director', 'Manager'];
 
-  // Attempt 1: Senior people by company name (most reliable for small firms)
+  // Attempt 1: Senior people by domain (most reliable for small UK firms)
+  let results = await doSearch({
+    company: { websites: { include: [domain] } },
+    person_seniority: { include: seniorityFilter },
+  }, `domain:${domain} +senior`);
+  if (results.length > 0) return results;
+
+  // Attempt 2: Any person by domain (no seniority filter)
+  results = await doSearch({
+    company: { websites: { include: [domain] } },
+  }, `domain:${domain} any`);
+  if (results.length > 0) return results;
+
+  // Attempt 3: Senior people by company name (fallback for firms not indexed by domain)
   if (companyName) {
-    // Try full company name
-    let results = await doSearch({
+    results = await doSearch({
       company: { names: { include: [companyName] } },
       person_seniority: { include: seniorityFilter },
     }, `name:"${companyName}" +senior`);
@@ -427,19 +439,6 @@ async function prospeoSearchPerson(domain: string, companyName: string, apiKey: 
       if (results.length > 0) return results;
     }
   }
-
-  // Attempt 2: Senior people by domain
-  let results = await doSearch({
-    company: { websites: { include: [domain] } },
-    person_seniority: { include: seniorityFilter },
-  }, `domain:${domain} +senior`);
-  if (results.length > 0) return results;
-
-  // Attempt 3: Any person by domain (no seniority filter)
-  results = await doSearch({
-    company: { websites: { include: [domain] } },
-  }, `domain:${domain} any`);
-  if (results.length > 0) return results;
 
   // Attempt 4: Any person by company name (no seniority filter)
   if (companyName) {
