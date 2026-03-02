@@ -123,59 +123,37 @@ interface EmailCandidate {
 
 const GENERIC_PREFIXES = ['info', 'contact', 'hello', 'admin', 'office', 'enquiries', 'enquiry', 'sales', 'support', 'team', 'general', 'mail', 'reception'];
 
-// Prospeo Email Finder: find the director's verified email from name + domain
-async function prospeoFindEmail(firstName: string, lastName: string, domain: string, apiKey: string): Promise<{ email: string; status: string } | null> {
+// Prospeo Enrich Person: find the director's verified email from name + company domain
+async function prospeoEnrichPerson(firstName: string, lastName: string, domain: string, apiKey: string): Promise<{ email: string; status: string } | null> {
   try {
-    const res = await fetch('https://api.prospeo.io/email-finder', {
+    const res = await fetch('https://api.prospeo.io/enrich-person', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'X-KEY': apiKey,
       },
       body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        company: domain,
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          company_website: domain,
+        },
       }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
-      console.error('Prospeo finder error:', res.status, await res.text());
+      console.error('Prospeo enrich error:', res.status, await res.text());
       return null;
     }
     const data = await res.json();
-    if (data.error || !data.response?.email) return null;
+    if (data.error || !data.person?.email?.email) return null;
     return {
-      email: data.response.email,
-      status: data.response.email_status || 'unknown',
+      email: data.person.email.email,
+      status: data.person.email.status || 'unknown',
     };
   } catch (err) {
-    console.error('Prospeo finder failed:', err);
+    console.error('Prospeo enrich failed:', err);
     return null;
-  }
-}
-
-// Prospeo Email Verifier: check if a specific email address exists
-async function prospeoVerifyEmail(email: string, apiKey: string): Promise<string> {
-  try {
-    const res = await fetch('https://api.prospeo.io/email-verifier', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ email }),
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!res.ok) return 'unknown';
-    const data = await res.json();
-    const status = (data.response?.email_status || data.email_status || 'unknown').toLowerCase();
-    if (status === 'valid') return 'valid';
-    if (status === 'catch_all' || status === 'catch-all' || status === 'accept_all') return 'catch-all';
-    if (status === 'invalid' || status === 'disposable') return 'invalid';
-    return 'unknown';
-  } catch {
-    return 'unknown';
   }
 }
 
@@ -207,9 +185,9 @@ async function generateEmailCandidates(
   const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
   const added = new Set<string>();
 
-  // Step 1: Try Prospeo Email Finder (best source: verified email for this person)
+  // Step 1: Try Prospeo Enrich Person (best source: verified email for this person)
   if (prospeoKey && firstName && lastName) {
-    const found = await prospeoFindEmail(firstName, lastName, domain, prospeoKey);
+    const found = await prospeoEnrichPerson(firstName, lastName, domain, prospeoKey);
     if (found && found.email) {
       const verified = mapProspeoStatus(found.status);
       if (verified !== 'invalid') {
@@ -283,17 +261,6 @@ async function generateEmailCandidates(
     if (!added.has(e.toLowerCase())) {
       candidates.push({ email: e, source: 'Website (generic)', confidence: 'low', verified: 'unchecked' });
       added.add(e.toLowerCase());
-    }
-  }
-
-  // Step 6: Verify unchecked candidates via Prospeo (top 3 only to conserve credits)
-  if (prospeoKey) {
-    const toVerify = candidates.filter(c => c.verified === 'unchecked').slice(0, 3);
-    for (const candidate of toVerify) {
-      const status = await prospeoVerifyEmail(candidate.email, prospeoKey);
-      candidate.verified = status as EmailCandidate['verified'];
-      if (status === 'valid') candidate.confidence = 'high';
-      else if (status === 'invalid') candidate.confidence = 'low';
     }
   }
 

@@ -950,11 +950,11 @@
           ${['email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status) ?
             `<button class="btn btn-secondary btn-sm" onclick="toggleDetail('${p.id}')">View</button>` : ''}
           ${p.pipeline_status === 'discovered' ?
-            `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}')">Qualify</button>` : ''}
+            `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}', this)">Qualify</button>` : ''}
           ${p.pipeline_status === 'qualified' ?
-            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}')">Analyze</button>` : ''}
+            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}', this)">Analyze</button>` : ''}
           ${p.pipeline_status === 'email_drafted' ?
-            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}')" title="Re-run analysis with updated prompt">Re-analyze</button>` : ''}
+            `<button class="btn btn-secondary btn-sm" onclick="analyzeOne('${p.id}', this)">Re-analyze</button>` : ''}
         </td>
       `;
       tbody.appendChild(tr);
@@ -1135,30 +1135,28 @@
     }
   }
 
-  // ---- Row loading state ----
-  function setRowLoading(id, label) {
-    const row = document.getElementById(`row-${id}`);
-    if (!row) return;
-    const actionCell = row.querySelector('td:last-child');
-    if (actionCell) {
-      actionCell.dataset.prevHtml = actionCell.innerHTML;
-      actionCell.innerHTML = `<span class="btn btn-secondary btn-sm" style="pointer-events:none;opacity:0.7;"><span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>${label}</span>`;
-    }
+  // ---- Button loading state ----
+  function setBtnLoading(btn, label) {
+    if (!btn) return;
+    btn.disabled = true;
+    btn.dataset.origText = btn.textContent;
+    btn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>${label}`;
+    btn.style.opacity = '0.7';
+    btn.style.pointerEvents = 'none';
   }
 
-  function clearRowLoading(id) {
-    const row = document.getElementById(`row-${id}`);
-    if (!row) return;
-    const actionCell = row.querySelector('td:last-child');
-    if (actionCell && actionCell.dataset.prevHtml) {
-      actionCell.innerHTML = actionCell.dataset.prevHtml;
-      delete actionCell.dataset.prevHtml;
-    }
+  function clearBtnLoading(btn) {
+    if (!btn || !btn.dataset.origText) return;
+    btn.textContent = btn.dataset.origText;
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+    delete btn.dataset.origText;
   }
 
   // ---- Qualify ----
-  async function qualifyOne(id) {
-    setRowLoading(id, 'Qualifying...');
+  async function qualifyOne(id, btn) {
+    setBtnLoading(btn, 'Qualifying...');
     try {
       const data = await api('POST', '/api/outreach/qualify', { prospect_id: id });
       const p = prospects.find(x => x.id === id);
@@ -1175,7 +1173,7 @@
       renderProspects();
       toast(`${p.company_name}: ${data.status}${data.note ? ' - ' + data.note : ''}`);
     } catch (err) {
-      clearRowLoading(id);
+      clearBtnLoading(btn);
       toast(err.message, 'error');
     }
   }
@@ -1202,8 +1200,8 @@
   }
 
   // ---- Analyze ----
-  async function analyzeOne(id) {
-    setRowLoading(id, 'Analyzing...');
+  async function analyzeOne(id, btn) {
+    setBtnLoading(btn, 'Analyzing...');
     try {
       const data = await api('POST', '/api/outreach/analyze', { prospect_id: id });
       const p = prospects.find(x => x.id === id);
@@ -1225,7 +1223,7 @@
       renderProspects();
       toast(`${p.company_name}: Analysis complete`);
     } catch (err) {
-      clearRowLoading(id);
+      clearBtnLoading(btn);
       toast(err.message, 'error');
     }
   }
