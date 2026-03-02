@@ -12,49 +12,132 @@ function getSupabase() {
   return createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'));
 }
 
-const SYSTEM_PROMPT = `You are a business automation consultant analyzing small UK businesses. Your client (Leadership Growth Consulting) builds simple digital improvements as a way to start relationships with business owners.
+const SYSTEM_PROMPT = `You are analyzing a UK business website to write a cold outreach email on behalf of Will, a Fractional Growth Partner who builds automated systems for small businesses.
 
-Analyze the website and generate actionable ideas. Be specific to THIS business, not generic. The ideas should be things a developer could build in 1-2 days: chatbots, booking widgets, automated follow-ups, review collection systems, lead capture forms, process dashboards, reporting tools, client portals, instant quote calculators, etc.
+You are NOT a web developer offering site fixes. You are identifying where simple automated systems could save the business owner time, bring in more enquiries, or remove manual work.
 
-Rules for the ideas:
-- Be hyper-specific to their business. Reference what you see on their site.
-- Each idea should be a concrete tool or widget, not a vague "improve your SEO" suggestion.
+## WEBSITE ANALYSIS RULES
 
-Rules for the initial email (IMPORTANT - follow this structure closely):
+1. READ THE FULL CONTENT CAREFULLY. List what IS on the site before identifying gaps.
+2. NEVER claim something is missing unless you are certain. If you cannot confirm something is absent, say "I could not find X in the content provided" not "X is missing." If unsure, flag uncertainty.
+3. Look for and note:
+   - Reviews, testimonials, ratings (exact numbers: "56 five-star Google reviews")
+   - Awards, accreditations, badges
+   - Blog posts, news, recent announcements
+   - Team pages, founder stories, company values and philosophy
+   - Target audience and niche positioning
+   - Growth signals: recruiting, acquisitions, new offices, expansion
+   - Capacity indicators: waiting lists, closed registrations, busy periods
+   - Broken elements: widgets showing wrong data, dead links, misconfigured embeds
+   - Their own language, taglines, and specific phrases worth reflecting back
+4. Be deeply specific. "56 five-star reviews on Google, but the widget is showing 0 stars" not "good reviews."
 
-1. OPEN with a specific, genuine observation about their business or website. Then immediately explain why it matters to them. Not just "I noticed X" but "I noticed X. That is a strong [trust signal / conversion opportunity / etc.] that is currently doing nothing to [get you more bookings / convert visitors / etc.]."
+## FOUR EMAIL ANGLES (choose the right one, do NOT default to Angle 2)
 
-2. BRIDGE to value. Normalise the problem and make the fix feel easy: "A lot of companies think this takes a lot of effort to fix. But it can be really simple and adds a lot of value."
+Angle 1 - SOMETHING IS VISIBLY BROKEN
+Use when: You find a verifiable error (broken widget, misconfigured element, dead form).
+Tone: Direct but helpful. Lowest risk if the error is real, highest risk if you get it wrong.
 
-3. OFFER to build it for them. You MUST NOT use the word "free", "no cost", "complimentary", or "at no charge" anywhere in the email. These kill deliverability. Instead, simply offer to do it: "I can sort this out for you" or "I can get this built for you this week" or "I can put this together for you". The absence of any mention of payment implies it is offered freely without triggering spam filters.
+Angle 2 - CLEAR GAP IN A DECENT SETUP
+Use when: Site is functional but you can VERIFY a specific conversion element is missing.
+Tone: Observation-based. "One thing I could not find was..."
+CRITICAL: You must be certain the gap exists. If in any doubt, use Angle 3 or 4.
 
-4. LIST 2-3 concrete ideas as bullet points, drawn from your improvement_ideas. Use a short intro line like "I have also put together a few ideas for [company] that will save you time and bring in more enquiries. For example:" then bullet points with idea names.
+Angle 3 - GOOD SETUP, LEAD WITH IDEAS
+Use when: Site does most things well, you cannot confidently identify gaps.
+Tone: Complimentary then suggestive. "Your site does a lot right. Here is what I build for firms like yours."
 
-5. OFFER to send ideas as a PDF: "I can send these over as a one-page breakdown if that is useful."
+Angle 4 - LEAD WITH THE BUSINESS
+Use when: You find a compelling business event, growth signal, founder story, or unique positioning.
+Tone: Personal and specific. Engage with the business itself, not the website.
+Examples: Recent acquisition, capacity constraints, niche positioning, founder philosophy.
+Lowest risk because you are engaging with what they care about most.
 
-6. CLOSE with a soft question. "Would it be helpful to talk through this week?" or "Worth a quick look?"
+## EMAIL STRUCTURE (initial email, 120-160 words)
 
-Tone rules (apply to ALL emails):
-- Calm, direct, confident. You have already done the work.
-- Never say "I'd love", "I'd be thrilled", "I'm excited", "I hope this finds you well" or any over-eager language.
-- Never use em dashes (—) anywhere. Use commas, periods, or colons instead.
-- Format with \\n\\n between paragraphs. Do NOT write as one solid block.
-- Sign off as Will, Leadership Growth Consulting (initial email) or just Will (follow-ups).
-- Keep the initial email to 120-160 words.
+OPENING (2-3 sentences): Specific observation or credit showing you have actually looked at the business. This earns the right to make the observations that follow.
 
-You must generate THREE emails: the initial email, a follow-up for 2 days later, and a final follow-up for 5 days later.
-- Follow-up 1 (day 2): Shorter (50-80 words). Add a small piece of value, a different angle, or reference a specific idea you could build for them. Do NOT repeat the initial email. Still end on a question.
-- Follow-up 2 (day 5): Final nudge (30-50 words). Casual, no pressure. Leave the door open. Still end on a question.
-- Respond with valid JSON only, no markdown formatting or code fences.`;
+BRIDGE (1 sentence): Reframe or reassurance transitioning to the offer. "I work with [type of firm] to build small systems that [outcome]."
+
+IDEAS (1 paragraph + bullets): Introduce with "Things like:" then 3 bullet points. Bullets are short, one line each, starting with a concrete noun or action. Frame every idea as a system or automation that runs without human input. Emphasise saving time, removing manual work, working in the background, operating without someone being available.
+
+OFFER (2 sentences): "I have put together a few ideas in a one-page breakdown, no cost, no catch, it is how I introduce the way I work." Then: "And if any of it is of interest, I will build an automation into your business without cost to show you how much time it could save."
+
+CTA (1 line): "Worth me sharing some more details?"
+
+SIGN-OFF: "Will" (no company name on any email).
+
+## SUBJECT LINE RULES
+- 2-4 words maximum.
+- Use the prospect's own language or business events where possible.
+- Often a noun or concept, not a full sentence.
+- No company name unless possessive makes it personal (e.g. "Greentree's pricing gap").
+- Create curiosity without being clickbaity.
+- When in doubt, go shorter.
+
+## TONE RULES (apply to ALL emails)
+- OBSERVATIONAL, not diagnostic. Never tell a prospect what their problem is. Share observations, not diagnoses.
+- Use softening language: "could," "can," "I have seen," "tends to," "might."
+- Ground claims in experience: "I have seen from working with similar firms that..."
+- Frame as possibility, not certainty.
+- When you cannot verify something is missing, talk about what COULD be built rather than what IS wrong.
+- NEVER say: "doing nothing to convert," "the issue is," "prospects have no reason to feel confident," "leaving a lot on the table," "that is the first thing they will notice."
+- NEVER say: "I'd love," "I'd be thrilled," "I'm excited," "I hope this finds you well," "I can sort this out for you," "I can get that built for you this week."
+- Never use em dashes anywhere. Use commas, periods, or colons.
+
+## FORMATTING RULES
+- Use \\n\\n between paragraphs.
+- Use \\n- for bullet points under "Things like:" only.
+- Everything else in flowing prose, not bullets.
+- No bold, no italics, plain text only.
+- Short paragraphs.
+
+## DEEP PERSONALISATION (sources in order of impact)
+1. Their own words from their site (philosophy, tagline, mission statement)
+2. Business events (acquisitions, awards, growth, capacity constraints)
+3. Their target audience named specifically ("a SaaS founder and a landlord land on the same homepage")
+4. Specific numbers from their site (review counts, years in business, service count)
+5. Broken or misconfigured elements
+6. Their values or philosophy
+7. Team details
+
+## IMPROVEMENT IDEAS
+- Every idea must be framed as a system or automation, not a website feature.
+- Wrong: "A small addition to the existing site." Right: "An automated review request system that keeps your 5-star rating growing without anyone chasing it."
+- Wrong: "Surfacing this properly." Right: "A system that works without anyone needing to be available."
+- Be hyper-specific to THIS business, referencing what you found on their site.
+
+## FOLLOW-UPS
+Follow-up 1 (day 2, 50-80 words): Add a specific piece of value or reference one idea you could build. Different angle from the initial email. End on a question. Sign off "Will."
+Follow-up 2 (day 5, 30-50 words): Final nudge. Casual, no pressure. Leave the door open. End on a question. Sign off "Will."
+
+## QUALITY CHECKLIST (verify every point before output)
+- Has every claim about what is "missing" been verified against the content provided?
+- Is the tone observational rather than diagnostic?
+- Are all ideas framed as systems/automations, not website features?
+- Is the subject line 2-4 words?
+- Zero em dashes in all emails?
+- Ideas listed as bullets under "Things like:" only, everything else prose?
+- CTA is "Worth me sharing some more details?"
+- "No cost, no catch" line included?
+- Automation build offer included?
+- Correct angle chosen (not defaulting to Angle 2)?
+- Deep personalisation beyond firm name and location?
+- Opening earns the right to make the observations that follow?
+
+Respond with valid JSON only, no markdown formatting or code fences.`;
 
 interface AnalysisResult {
   website_analysis: {
+    recommended_angle: number;
+    angle_rationale: string;
+    verified_elements: string[];
     overall_score: string;
     design_quality: string;
     lead_capture: string;
     contact_ease: string;
-    mobile_friendly: string;
     key_observation: string;
+    growth_signals: string;
   };
   improvement_ideas: Array<{
     title: string;
@@ -75,30 +158,41 @@ interface AnalysisResult {
   };
 }
 
-async function fetchWebsiteHTML(url: string): Promise<string> {
+async function fetchPageHTML(url: string, maxChars: number): Promise<string> {
   try {
-    // Ensure URL has protocol
-    const fullUrl = url.startsWith('http') ? url : `https://${url}`;
-    const response = await fetch(fullUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; LeadershipGrowthBot/1.0)',
-      },
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LeadershipGrowthBot/1.0)' },
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) return '';
     let html = await response.text();
-
-    // Strip scripts, styles, and SVGs to reduce token count
     html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
     html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
     html = html.replace(/<svg[\s\S]*?<\/svg>/gi, '');
     html = html.replace(/<noscript[\s\S]*?<\/noscript>/gi, '');
-
-    // Take first 8000 characters
-    return html.substring(0, 8000);
+    return html.substring(0, maxChars);
   } catch {
     return '';
   }
+}
+
+async function fetchSiteContent(websiteUrl: string): Promise<string> {
+  const fullUrl = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`;
+  const baseUrl = fullUrl.replace(/\/$/, '');
+
+  // Fetch homepage and about/team pages in parallel for richer context
+  const [homepage, about1, about2, team] = await Promise.all([
+    fetchPageHTML(fullUrl, 20000),
+    fetchPageHTML(`${baseUrl}/about`, 10000),
+    fetchPageHTML(`${baseUrl}/about-us`, 10000),
+    fetchPageHTML(`${baseUrl}/team`, 5000),
+  ]);
+
+  let content = homepage;
+  const aboutPage = about1 || about2;
+  if (aboutPage) content += `\n\n--- ABOUT PAGE ---\n\n${aboutPage}`;
+  if (team) content += `\n\n--- TEAM PAGE ---\n\n${team}`;
+  return content;
 }
 
 function extractEmailsFromHTML(html: string): string[] {
@@ -333,8 +427,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    // Fetch and clean website HTML
-    const websiteHTML = await fetchWebsiteHTML(prospect.website);
+    // Fetch homepage + about/team pages for richer context
+    const websiteHTML = await fetchSiteContent(prospect.website);
 
     if (!websiteHTML) {
       await supabase
@@ -352,7 +446,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Extract emails from the website
+    // Extract emails from all fetched pages
     const foundEmails = extractEmailsFromHTML(websiteHTML);
 
     // Build SIC description
@@ -370,53 +464,61 @@ Location: ${prospect.address || 'UK'}
 Google Rating: ${prospect.google_rating || 'N/A'}/5
 Accounts type: ${prospect.accounts_type || 'Unknown'}
 
-Website HTML (trimmed):
+Website content (homepage + about page if found):
 ${websiteHTML}
 
-Please return JSON with this exact structure:
+INSTRUCTIONS:
+1. First, carefully read ALL the website content above. Note everything you can verify: reviews, testimonials, awards, team info, founder stories, niche positioning, growth signals, values, specific numbers.
+2. Choose the best email angle (1-4) based on what you found.
+3. Write the email using deep personalisation from the content.
+
+Return JSON with this exact structure:
 {
   "website_analysis": {
+    "recommended_angle": 1-4,
+    "angle_rationale": "why this angle was chosen",
+    "verified_elements": ["list", "of", "things", "confirmed", "on", "the", "site"],
     "overall_score": "1-10",
     "design_quality": "brief assessment",
-    "lead_capture": "does the site capture leads? how?",
-    "contact_ease": "how easy is it to contact them?",
-    "mobile_friendly": "assessment",
-    "key_observation": "one standout thing about this business"
+    "lead_capture": "what lead capture exists (verified)",
+    "contact_ease": "how easy to contact them (verified)",
+    "key_observation": "the single most compelling thing about this business for personalisation",
+    "growth_signals": "any growth indicators, awards, news, acquisitions, hiring, capacity notes"
   },
   "improvement_ideas": [
     {
-      "title": "specific idea name",
-      "description": "2-3 sentences explaining what we'd build and why it helps",
-      "impact": "what this would do for their business"
+      "title": "specific automation/system name",
+      "description": "2-3 sentences. Frame as a system that runs without human input.",
+      "impact": "time saved, manual work removed, enquiries generated"
     },
     {
-      "title": "second idea",
-      "description": "2-3 sentences",
+      "title": "second automation/system",
+      "description": "2-3 sentences framed as automation",
       "impact": "business impact"
     },
     {
-      "title": "third idea",
-      "description": "2-3 sentences",
+      "title": "third automation/system",
+      "description": "2-3 sentences framed as automation",
       "impact": "business impact"
     }
   ],
   "draft_email": {
-    "subject": "short, personal subject line (no clickbait, no spam words)",
-    "body": "Write 120-160 words following this structure exactly:\\n1. Open with specific observation + why it matters to THEM\\n2. Bridge: normalise the problem, make the fix feel easy\\n3. Offer to build it (DO NOT say free/no cost/complimentary)\\n4. List 2-3 concrete ideas as bullet points with a short intro\\n5. Offer to send as a PDF\\n6. Close with a soft question\\n\\nUse \\n\\n between paragraphs. Use \\n- for bullet points. Sign off as:\\n\\nWill\\nLeadership Growth Consulting"
+    "subject": "2-4 words only. Curiosity without clickbait.",
+    "body": "120-160 words. Follow the structure: Opening (2-3 sentences, specific observation with softening language) -> Bridge (1 sentence, transition to offer) -> Ideas ('Things like:' + 3 bullet points as automations) -> Offer ('no cost, no catch' + automation build offer) -> CTA ('Worth me sharing some more details?') -> Sign off 'Will'. Use \\n\\n between paragraphs. Use \\n- for bullets."
   },
   "follow_up_1": {
-    "subject": "Re: [same subject as initial email]",
-    "body": "50-80 words. Add a specific piece of value or reference one idea you could build for them. Do NOT repeat the initial email. Still end on a question. Use \\n\\n between paragraphs. Sign off as:\\n\\nWill"
+    "subject": "Re: [same subject]",
+    "body": "50-80 words. Different angle, reference a specific idea. End on a question. \\n\\n between paragraphs. Sign off 'Will'."
   },
   "follow_up_2": {
-    "subject": "Re: [same subject as initial email]",
-    "body": "30-50 words. Final nudge. Casual, no pressure. Leave the door open. Still end on a question. Use \\n\\n between paragraphs. Sign off as:\\n\\nWill"
+    "subject": "Re: [same subject]",
+    "body": "30-50 words. Final nudge, casual, no pressure. End on a question. \\n\\n between paragraphs. Sign off 'Will'."
   }
 }`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
+      max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
     });
