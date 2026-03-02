@@ -620,9 +620,64 @@
       .campaign-actions { width: 100%; }
       .campaign-actions .btn { flex: 1; justify-content: center; }
     }
+
+    /* Login */
+    .login-view {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+      padding: 2.5rem;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .login-box p {
+      font-size: 0.88rem;
+      color: var(--grey-400);
+      margin-bottom: 1.8rem;
+    }
+    .login-error {
+      color: var(--red);
+      font-size: 0.82rem;
+      margin-top: 0.8rem;
+    }
+    .btn-full { width: 100%; justify-content: center; }
   </style>
 </head>
 <body>
+
+<!-- LOGIN -->
+<div class="login-view" id="loginView">
+  <div class="login-box">
+    <h1>Outreach</h1>
+    <p>Sign in to access the dashboard.</p>
+    <div class="form-group">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="handleLogin()">Sign In</button>
+    <p class="login-error" id="loginError" style="display:none;"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardView" style="display:none;">
 
 <div class="header">
   <h1>Outreach Dashboard</h1>
@@ -630,6 +685,7 @@
     <a href="/admin.html">Blog CMS</a>
     <a href="/outreach.html" class="active">Outreach</a>
     <a href="/">Website</a>
+    <a href="#" onclick="handleLogout(); return false;" style="color: rgba(255,255,255,0.5);">Sign Out</a>
   </div>
 </div>
 
@@ -731,7 +787,55 @@
   <div class="loading-text" id="loadingText">Searching Google Maps...</div>
 </div>
 
+</div><!-- /dashboardView -->
+
 <script>
+  // ---- AUTH ----
+  const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+
+  async function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.style.display = 'none';
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error_description || data.msg || 'Login failed');
+
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      loadCampaigns();
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.style.display = 'block';
+    }
+  }
+
+  document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  function handleLogout() {
+    document.getElementById('dashboardView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'flex';
+    document.getElementById('loginPassword').value = '';
+  }
+
+  // ---- APP ----
   let currentCampaignId = null;
   let prospects = [];
 
@@ -1277,8 +1381,6 @@
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  // ---- Init ----
-  loadCampaigns();
 </script>
 
 </body>
