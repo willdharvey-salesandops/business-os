@@ -998,6 +998,7 @@
               <li><strong>Mobile:</strong> ${esc(analysis.mobile_friendly || '-')}</li>
               <li><strong>Key observation:</strong> ${esc(analysis.key_observation || '-')}</li>
             </ul>
+            ${analysis.ch_director && analysis.ch_director !== p.owner_name ? `<p style="margin-top:0.8rem;"><strong>CH Director:</strong> ${esc(analysis.ch_director)} <span style="color:var(--muted); font-size:0.75rem;">(Prospeo found different contact)</span></p>` : ''}
             ${p.company_number ? `<p style="margin-top:0.8rem;"><strong>Companies House:</strong> ${esc(p.company_number)}</p>` : ''}
             ${p.sic_codes && p.sic_codes.length ? `<p><strong>SIC:</strong> ${p.sic_codes.join(', ')}</p>` : ''}
           </div>
@@ -1072,6 +1073,7 @@
               onchange="pickEmail('${p.id}', '${esc(c.email)}')">
             <span class="confidence-dot confidence-${c.confidence}"></span>
             <span class="email-candidate-email">${esc(c.email)}</span>
+            ${c.name ? `<span style="color:var(--muted); font-size:0.7rem; margin-left:0.25rem;">${esc(c.name)}${c.title ? ' · ' + esc(c.title) : ''}</span>` : ''}
             <span class="verified-badge verified-${c.verified || 'unchecked'}">${verifiedLabels[c.verified] || 'Not checked'}</span>
             <span class="email-candidate-source">${esc(c.source)}</span>
           </label>
@@ -1232,6 +1234,7 @@
           follow_up_1_body: data.follow_up_1?.body,
           follow_up_2_subject: data.follow_up_2?.subject,
           follow_up_2_body: data.follow_up_2?.body,
+          owner_name: data.owner_name || p.owner_name,
           owner_email: data.owner_email,
           email_candidates: data.email_candidates,
         });

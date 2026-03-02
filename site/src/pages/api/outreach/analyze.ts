@@ -247,37 +247,69 @@ interface EmailCandidate {
   source: string;
   confidence: 'high' | 'medium' | 'low';
   verified: 'valid' | 'catch-all' | 'invalid' | 'unknown' | 'unchecked';
+  name?: string;
+  title?: string;
+}
+
+interface ProspeoEnrichResult {
+  email: string;
+  status: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+}
+
+interface ProspeoSearchResult {
+  personId: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  title: string;
+  seniority: string;
 }
 
 const GENERIC_PREFIXES = ['info', 'contact', 'hello', 'admin', 'office', 'enquiries', 'enquiry', 'sales', 'support', 'team', 'general', 'mail', 'reception'];
 
-// Prospeo Enrich Person: find the director's verified email from name + company domain
-async function prospeoEnrichPerson(firstName: string, lastName: string, domain: string, apiKey: string): Promise<{ email: string; status: string } | null> {
+// Prospeo Enrich Person: accepts name+domain OR person_id from search results
+async function prospeoEnrich(
+  params: { firstName: string; lastName: string; domain: string } | { personId: string },
+  apiKey: string,
+): Promise<ProspeoEnrichResult | null> {
   try {
+    let data: Record<string, string>;
+    if ('personId' in params) {
+      data = { person_id: params.personId };
+    } else {
+      data = {
+        first_name: params.firstName,
+        last_name: params.lastName,
+        company_website: params.domain,
+      };
+    }
+
     const res = await fetch('https://api.prospeo.io/enrich-person', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-KEY': apiKey,
       },
-      body: JSON.stringify({
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          company_website: domain,
-        },
-      }),
+      body: JSON.stringify({ data }),
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
       console.error('Prospeo enrich error:', res.status, await res.text());
       return null;
     }
-    const data = await res.json();
-    if (data.error || !data.person?.email?.email) return null;
+    const result = await res.json();
+    if (result.error || !result.person?.email?.email) return null;
     return {
-      email: data.person.email.email,
-      status: data.person.email.status || 'unknown',
+      email: result.person.email.email,
+      status: result.person.email.status || 'unknown',
+      title: result.person.current_job_title || '',
+      firstName: result.person.first_name || '',
+      lastName: result.person.last_name || '',
+      fullName: result.person.full_name || '',
     };
   } catch (err) {
     console.error('Prospeo enrich failed:', err);
@@ -285,129 +317,186 @@ async function prospeoEnrichPerson(firstName: string, lastName: string, domain: 
   }
 }
 
+// Prospeo Search Person: find senior people at a company by domain
+async function prospeoSearchPerson(domain: string, apiKey: string): Promise<ProspeoSearchResult[]> {
+  try {
+    const res = await fetch('https://api.prospeo.io/search-person', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-KEY': apiKey,
+      },
+      body: JSON.stringify({
+        page: 1,
+        filters: {
+          company: {
+            websites: {
+              include: [domain],
+            },
+          },
+          person_seniority: {
+            include: ['Founder/Owner', 'C-Level', 'Director', 'VP'],
+          },
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!res.ok) {
+      console.error('Prospeo search error:', res.status, await res.text());
+      return [];
+    }
+
+    const data = await res.json();
+    if (data.error || !data.results?.length) return [];
+
+    return data.results
+      .map((r: any) => ({
+        personId: r.person?.person_id || '',
+        firstName: r.person?.first_name || '',
+        lastName: r.person?.last_name || '',
+        fullName: r.person?.full_name || `${r.person?.first_name || ''} ${r.person?.last_name || ''}`.trim(),
+        title: r.person?.current_job_title || '',
+        seniority: r.person?.job_history?.[0]?.seniority || '',
+      }))
+      .filter((p: ProspeoSearchResult) => p.personId);
+  } catch (err) {
+    console.error('Prospeo search failed:', err);
+    return [];
+  }
+}
+
 function mapProspeoStatus(status: string): EmailCandidate['verified'] {
   const s = status.toLowerCase();
-  if (s === 'valid') return 'valid';
+  if (s === 'valid' || s === 'verified') return 'valid';
   if (s === 'catch_all' || s === 'catch-all' || s === 'accept_all') return 'catch-all';
   if (s === 'invalid' || s === 'disposable') return 'invalid';
   return 'unknown';
 }
 
-async function generateEmailCandidates(
+interface ContactResult {
+  candidates: EmailCandidate[];
+  prospeoNote: string;
+  contactName: string;
+  contactTitle: string;
+}
+
+async function findVerifiedContact(
   ownerName: string,
   websiteUrl: string,
   foundEmails: string[],
   prospeoKey: string,
-): Promise<{ candidates: EmailCandidate[]; prospeoNote: string }> {
+): Promise<ContactResult> {
   const candidates: EmailCandidate[] = [];
   let prospeoNote = '';
+  let contactName = ownerName || '';
+  let contactTitle = '';
   let domain = '';
 
   try {
     domain = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname.replace('www.', '');
   } catch { /* ignore */ }
 
-  if (!domain) return { candidates, prospeoNote: 'Prospeo: skipped (no domain)' };
+  if (!domain) return { candidates, prospeoNote: 'Prospeo: skipped (no domain)', contactName, contactTitle };
 
-  const nameParts = (ownerName || '').toLowerCase().trim().split(/\s+/);
-  const firstName = nameParts[0] || '';
-  const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
   const added = new Set<string>();
 
-  // Step 1: Try Prospeo Enrich Person (best source: verified email for this person)
-  if (prospeoKey && firstName && lastName) {
-    const found = await prospeoEnrichPerson(firstName, lastName, domain, prospeoKey);
-    if (found && found.email) {
-      const verified = mapProspeoStatus(found.status);
-      if (verified !== 'invalid') {
+  if (prospeoKey) {
+    const nameParts = (ownerName || '').trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
+
+    // Step 1: Try Prospeo enrich with CH director name
+    let directorFound = false;
+    if (firstName && lastName) {
+      const found = await prospeoEnrich(
+        { firstName: firstName.toLowerCase(), lastName: lastName.toLowerCase(), domain },
+        prospeoKey,
+      );
+
+      if (found && found.email && mapProspeoStatus(found.status) !== 'invalid') {
+        const verified = mapProspeoStatus(found.status);
         candidates.push({
           email: found.email,
-          source: 'Prospeo (verified)',
+          source: `Prospeo verified (${ownerName})`,
           confidence: verified === 'valid' ? 'high' : 'medium',
           verified,
+          name: ownerName,
+          title: found.title || 'Director (Companies House)',
         });
         added.add(found.email.toLowerCase());
-        prospeoNote = `Prospeo: found ${found.email} (${verified})`;
+        contactName = ownerName;
+        contactTitle = found.title || 'Director';
+        prospeoNote = `Prospeo: found ${found.email} for ${ownerName} (${verified})`;
+        directorFound = true;
+      }
+    }
+
+    // Step 2: CH director not found (or no name) - search for senior people at the company
+    if (!directorFound) {
+      const searchNote = firstName && lastName
+        ? `${firstName} ${lastName} not found at ${domain}`
+        : 'no director name';
+
+      const searchResults = await prospeoSearchPerson(domain, prospeoKey);
+
+      if (searchResults.length > 0) {
+        // Try to enrich the top 2 most senior people
+        let enrichedCount = 0;
+        for (const person of searchResults.slice(0, 2)) {
+          const enriched = await prospeoEnrich({ personId: person.personId }, prospeoKey);
+
+          if (enriched && enriched.email && mapProspeoStatus(enriched.status) !== 'invalid') {
+            const verified = mapProspeoStatus(enriched.status);
+            const personName = person.fullName || enriched.fullName;
+            candidates.push({
+              email: enriched.email,
+              source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})`,
+              confidence: verified === 'valid' ? 'high' : 'medium',
+              verified,
+              name: personName,
+              title: person.title || enriched.title || '',
+            });
+            added.add(enriched.email.toLowerCase());
+
+            // Use first verified contact as the primary
+            if (enrichedCount === 0) {
+              contactName = personName;
+              contactTitle = person.title || enriched.title || '';
+            }
+            enrichedCount++;
+          }
+        }
+
+        if (enrichedCount > 0) {
+          prospeoNote = `Prospeo: ${searchNote}. Found ${enrichedCount} verified contact(s) via company search`;
+        } else {
+          prospeoNote = `Prospeo: ${searchNote}. Found ${searchResults.length} people but no verified emails`;
+        }
       } else {
-        prospeoNote = 'Prospeo: email found but marked invalid';
+        prospeoNote = `Prospeo: ${searchNote}, no contacts found at company`;
       }
-    } else {
-      prospeoNote = `Prospeo: no match for ${firstName} ${lastName} at ${domain}`;
     }
-  } else if (!prospeoKey) {
-    prospeoNote = 'Prospeo: skipped (no API key)';
   } else {
-    prospeoNote = 'Prospeo: skipped (no director name)';
+    prospeoNote = 'Prospeo: skipped (no API key)';
   }
 
-  // Split found website emails into personal vs generic
-  const personalWebEmails: string[] = [];
-  const genericWebEmails: string[] = [];
-
+  // Website emails as secondary candidates (informational, not primary send targets)
   for (const email of foundEmails) {
-    const prefix = email.split('@')[0].toLowerCase();
-    if (GENERIC_PREFIXES.includes(prefix)) {
-      genericWebEmails.push(email);
-    } else {
-      personalWebEmails.push(email);
+    if (!added.has(email.toLowerCase())) {
+      const prefix = email.split('@')[0].toLowerCase();
+      const isGeneric = GENERIC_PREFIXES.includes(prefix);
+      candidates.push({
+        email,
+        source: isGeneric ? 'Website (generic)' : 'Website (personal)',
+        confidence: 'low',
+        verified: 'unchecked',
+      });
+      added.add(email.toLowerCase());
     }
   }
 
-  // Step 2: Personal email from website matching director name
-  if (firstName) {
-    const matching = personalWebEmails.filter(e => {
-      const prefix = e.split('@')[0].toLowerCase();
-      return prefix.includes(firstName) || (lastName && prefix.includes(lastName));
-    });
-    for (const e of matching) {
-      if (!added.has(e.toLowerCase())) {
-        candidates.push({ email: e, source: 'Website (matches director)', confidence: 'high', verified: 'unchecked' });
-        added.add(e.toLowerCase());
-      }
-    }
-  }
-
-  // Step 3: Guessed personal patterns from owner name + domain
-  if (firstName && domain) {
-    const patterns = firstName && lastName
-      ? [
-          `${firstName}@${domain}`,
-          `${firstName}.${lastName}@${domain}`,
-          `${firstName[0]}${lastName}@${domain}`,
-          `${firstName[0]}.${lastName}@${domain}`,
-        ]
-      : [`${firstName}@${domain}`];
-
-    for (const p of patterns) {
-      if (!added.has(p.toLowerCase())) {
-        candidates.push({ email: p, source: 'Guessed from director name', confidence: 'low', verified: 'unchecked' });
-        added.add(p.toLowerCase());
-      }
-    }
-  }
-
-  // Step 4: Other personal emails from website
-  for (const e of personalWebEmails) {
-    if (!added.has(e.toLowerCase())) {
-      candidates.push({ email: e, source: 'Website (personal)', confidence: 'medium', verified: 'unchecked' });
-      added.add(e.toLowerCase());
-    }
-  }
-
-  // Step 5: Generic emails as last resort
-  for (const e of genericWebEmails) {
-    if (!added.has(e.toLowerCase())) {
-      candidates.push({ email: e, source: 'Website (generic)', confidence: 'low', verified: 'unchecked' });
-      added.add(e.toLowerCase());
-    }
-  }
-
-  // Sort: valid verified first, then catch-all, then unchecked, then invalid last
-  const verifiedOrder: Record<string, number> = { valid: 0, 'catch-all': 1, unknown: 2, unchecked: 3, invalid: 4 };
-  candidates.sort((a, b) => (verifiedOrder[a.verified] ?? 3) - (verifiedOrder[b.verified] ?? 3));
-
-  // Remove any that came back invalid
-  return { candidates: candidates.filter(c => c.verified !== 'invalid'), prospeoNote };
+  return { candidates, prospeoNote, contactName, contactTitle };
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -483,21 +572,36 @@ export const POST: APIRoute = async ({ request }) => {
     // Extract emails from all fetched pages
     const foundEmails = extractEmailsFromHTML(websiteHTML);
 
+    // Step 1: Find verified contact via Prospeo BEFORE drafting the email
+    // This ensures the email is addressed to the right person
+    const prospeoKey = getEnv('PROSPEO_API_KEY');
+    const {
+      candidates: emailCandidates,
+      prospeoNote,
+      contactName,
+      contactTitle,
+    } = await findVerifiedContact(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
+    const ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
+
+    // Use the verified contact name (may differ from CH director)
+    const contactFirstName = contactName.split(/\s+/)[0] || '';
+
     // Build SIC description
     const sicCodes = prospect.sic_codes || [];
     const sicDescription = sicCodes.length > 0 ? `SIC codes: ${sicCodes.join(', ')}` : 'Industry unknown';
 
-    // Call Claude
+    // Step 2: Call Claude with the verified contact's name
     const anthropic = new Anthropic({ apiKey: anthropicKey });
 
-    // Extract first name for greeting
-    const ownerName = prospect.owner_name || '';
-    const contactFirstName = ownerName.split(/\s+/)[0] || '';
+    const contactLine = contactName
+      ? `${contactName}${contactTitle ? ` (${contactTitle})` : ''}`
+      : 'Unknown';
 
     const userPrompt = `Company: ${prospect.company_name}
 Industry: ${sicDescription}
 Website: ${prospect.website}
-Owner/Director: ${ownerName || 'Unknown'}
+CH Director: ${prospect.owner_name || 'Unknown'}
+Contact person for email: ${contactLine}
 Contact first name for greeting: ${contactFirstName || 'NONE - use "Hi there" and flag in assessment'}
 Location: ${prospect.address || 'UK'}
 Google Rating from Google Maps: ${prospect.google_rating || 'N/A'}/5 (IMPORTANT: verify whether this rating is displayed ON the website or only exists externally. Do not round up.)
@@ -511,7 +615,7 @@ INSTRUCTIONS:
 2. Check if the firm operates within a franchise. Check if the URL matches the trading name.
 3. Note service promises and commitments that map to automation opportunities.
 4. Choose the best email angle (1-4) based on verified findings. If you cannot verify a gap, do NOT use Angle 1 or 2.
-5. Write the email addressed to ${contactFirstName || 'the director'}. The greeting, opening, and personalisation must be specific to this person where possible.
+5. Write the email addressed to ${contactFirstName || 'the director'}. The greeting, opening, and personalisation must be specific to this person where possible. If the contact person differs from the CH Director, personalise to the contact person.
 
 Return JSON with this exact structure:
 {
@@ -578,15 +682,14 @@ Return JSON with this exact structure:
 
     const analysis: AnalysisResult = JSON.parse(responseText);
 
-    // Generate ranked email candidates with Prospeo verification where possible
-    const prospeoKey = getEnv('PROSPEO_API_KEY');
-    const { candidates: emailCandidates, prospeoNote } = await generateEmailCandidates(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
-    const ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
+    // Store prospeo note and CH director in website_analysis for reference
+    const websiteAnalysis = {
+      ...analysis.website_analysis,
+      prospeo_note: prospeoNote,
+      ch_director: prospect.owner_name || '',
+    };
 
-    // Store prospeo note in website_analysis for persistence
-    const websiteAnalysis = { ...analysis.website_analysis, prospeo_note: prospeoNote };
-
-    // Update prospect
+    // Update prospect (owner_name becomes the verified contact we're emailing)
     await supabase
       .from('outreach_prospects')
       .update({
@@ -598,6 +701,7 @@ Return JSON with this exact structure:
         follow_up_1_body: analysis.follow_up_1?.body || '',
         follow_up_2_subject: analysis.follow_up_2?.subject || '',
         follow_up_2_body: analysis.follow_up_2?.body || '',
+        owner_name: contactName || prospect.owner_name,
         owner_email: ownerEmail,
         email_candidates: emailCandidates,
         pipeline_status: 'email_drafted',
@@ -612,6 +716,7 @@ Return JSON with this exact structure:
       draft_email: analysis.draft_email,
       follow_up_1: analysis.follow_up_1,
       follow_up_2: analysis.follow_up_2,
+      owner_name: contactName || prospect.owner_name,
       owner_email: ownerEmail,
       email_candidates: emailCandidates,
     }), {
