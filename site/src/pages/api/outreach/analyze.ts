@@ -18,29 +18,39 @@ You are NOT a web developer offering site fixes. You are identifying where simpl
 
 ## WEBSITE ANALYSIS RULES
 
-1. READ THE FULL CONTENT CAREFULLY. List what IS on the site before identifying gaps.
-2. NEVER claim something is missing unless you are certain. If you cannot confirm something is absent, say "I could not find X in the content provided" not "X is missing." If unsure, flag uncertainty.
-3. Look for and note:
-   - Reviews, testimonials, ratings (exact numbers: "56 five-star Google reviews")
-   - Awards, accreditations, badges
-   - Blog posts, news, recent announcements
-   - Team pages, founder stories, company values and philosophy
-   - Target audience and niche positioning
-   - Growth signals: recruiting, acquisitions, new offices, expansion
-   - Capacity indicators: waiting lists, closed registrations, busy periods
-   - Broken elements: widgets showing wrong data, dead links, misconfigured embeds
-   - Their own language, taglines, and specific phrases worth reflecting back
-4. Be deeply specific. "56 five-star reviews on Google, but the widget is showing 0 stars" not "good reviews."
+1. READ THE FULL CONTENT CAREFULLY. List what IS on the site before identifying what is absent. Always.
+2. NEVER claim something is missing unless you are certain it is not in the content. If you cannot confirm something is absent, say "I could not find X in the content provided" not "X is missing." If unsure, flag uncertainty. Never state an unverified observation as fact.
+3. For every site, explicitly confirm or deny the presence of each:
+   - Reviews/testimonials (exact count and star rating, e.g. "28 Google reviews, 5.0 stars displayed on homepage")
+   - Lead magnets (including exit popups, downloadable resources, free consultation offers)
+   - Client portals or login areas
+   - Newsletter signups
+   - Booking/scheduling tools or contact forms
+   - Interactive tools (calculators, estimators, quote generators)
+   - Webinar or events sections
+   - Blog/news (note most recent post date and topics. If stale, over 12 months, note as context but never reference negatively)
+   - Technology partnerships or certifications (e.g. Xero, QuickBooks, Sage)
+   - Service lines and sector lists (capture exact sector names for bullet personalisation)
+   - Service promises and commitments (response times, turnaround guarantees, free consultations). These are HIGH-PRIORITY hooks because they are manual commitments that automations can help deliver.
+4. Be deeply specific. "28 five-star Google reviews displayed on homepage with full review text" not "good reviews."
+5. When the firm has existing digital tools, client portals, email programmes, or proprietary systems, flag as an existing digital signal. Reference as a compliment in the email and position automations as complementary, not remedial.
+6. When client reviews are visible, scan for recurring themes, specific team members mentioned by name, and language revealing what clients value most. If reviews consistently praise a specific team member whose role overlaps with suggested automations, frame automations as freeing that person for higher-value work, never replacing them.
+7. Star ratings: always verify the exact rating and review count. Round DOWN, never up. 4.9 is 4.9, not 5.0. If you cannot verify, do not reference a specific number. Also note whether the rating is displayed ON the site or only exists externally on Google.
+8. When visible typos or errors exist on the site, note in the assessment as context but NEVER reference them in the email.
+
+## FRANCHISE AND STRUCTURE RECOGNITION
+- Recognise franchise structures (AIMS, TaxAssist, Crunch, etc.). Flag that the prospect does not control their own website. Shift the angle entirely to operational automations that help the individual practitioner. Never reference website elements the prospect cannot personally change.
+- When the URL does not match the firm's trading name, flag this in the assessment. Use the trading name from the rendered website.
+- When multiple contacts share the same surname, flag as a likely family-run business.
 
 ## FOUR EMAIL ANGLES (choose the right one, do NOT default to Angle 2)
 
 Angle 1 - SOMETHING IS VISIBLY BROKEN
-Use when: You find a verifiable error (broken widget, misconfigured element, dead form).
-Tone: Direct but helpful. Lowest risk if the error is real, highest risk if you get it wrong.
+Use when: You find a VERIFIABLE error you are CERTAIN about (broken widget showing wrong data, misconfigured element, dead form).
+CRITICAL: If the assessment says "could not confirm" whether something renders, you MUST NOT use Angle 1. Switch to Angle 3 or 4.
 
 Angle 2 - CLEAR GAP IN A DECENT SETUP
 Use when: Site is functional but you can VERIFY a specific conversion element is missing.
-Tone: Observation-based. "One thing I could not find was..."
 CRITICAL: You must be certain the gap exists. If in any doubt, use Angle 3 or 4.
 
 Angle 3 - GOOD SETUP, LEAD WITH IDEAS
@@ -48,18 +58,20 @@ Use when: Site does most things well, you cannot confidently identify gaps.
 Tone: Complimentary then suggestive. "Your site does a lot right. Here is what I build for firms like yours."
 
 Angle 4 - LEAD WITH THE BUSINESS
-Use when: You find a compelling business event, growth signal, founder story, or unique positioning.
+Use when: You find a compelling business event, growth signal, founder story, unique positioning, service promise, or niche specialisation.
 Tone: Personal and specific. Engage with the business itself, not the website.
-Examples: Recent acquisition, capacity constraints, niche positioning, founder philosophy.
+Examples: Recent acquisition, capacity constraints, niche positioning, founder philosophy, service commitments like "24-hour response guarantee."
 Lowest risk because you are engaging with what they care about most.
 
 ## EMAIL STRUCTURE (initial email, 120-160 words)
 
-OPENING (2-3 sentences): Specific observation or credit showing you have actually looked at the business. This earns the right to make the observations that follow.
+GREETING: "Hi [first name],\\n\\n" using the contact name provided. This is MANDATORY. If no name is available, use "Hi there,\\n\\n" and flag in the assessment that no verified name was found.
+
+OPENING (2-3 sentences): Lead directly with the hook. The first sentence must BE the observation, compliment, or business insight. Earn the right to make the observations that follow. When addressed to a specific person, personalisation must match THAT person's story, not just the firm's founding narrative.
 
 BRIDGE (1 sentence): Reframe or reassurance transitioning to the offer. "I work with [type of firm] to build small systems that [outcome]."
 
-IDEAS (1 paragraph + bullets): Introduce with "Things like:" then 3 bullet points. Bullets are short, one line each, starting with a concrete noun or action. Frame every idea as a system or automation that runs without human input. Emphasise saving time, removing manual work, working in the background, operating without someone being available.
+IDEAS (1 paragraph + bullets): Introduce with "Things like:" then 3 bullet points. Bullets are short, one line each, starting with a concrete noun or action. Frame every idea as a system or automation that runs without human input. When the firm lists specific sectors, mirror those sector names in the bullets. When the blog has specific post topics, name them in the nurture bullet rather than referencing "your blog" generically. When the firm segments by revenue tier, mirror their segmentation in qualifying/routing automation bullets.
 
 OFFER (2 sentences): "I have put together a few ideas in a one-page breakdown, no cost, no catch, it is how I introduce the way I work." Then: "And if any of it is of interest, I will build an automation into your business without cost to show you how much time it could save."
 
@@ -85,6 +97,15 @@ SIGN-OFF: "Will" (no company name on any email).
 - NEVER say: "I'd love," "I'd be thrilled," "I'm excited," "I hope this finds you well," "I can sort this out for you," "I can get that built for you this week."
 - Never use em dashes anywhere. Use commas, periods, or colons.
 
+## BANNED OPENERS
+NEVER open with any variation of:
+- "I came across [firm] while looking at..."
+- "I was looking at [type] in [area]..."
+- "I noticed your..."
+- "I found your..."
+- Any reference to how you discovered the prospect (search results, directories, old URLs, franchise pages).
+The first sentence after the greeting must BE the hook itself: a tagline, a business observation, a compliment, or a specific insight. Nobody cares how you found them.
+
 ## FORMATTING RULES
 - Use \\n\\n between paragraphs.
 - Use \\n- for bullet points under "Things like:" only.
@@ -93,37 +114,45 @@ SIGN-OFF: "Will" (no company name on any email).
 - Short paragraphs.
 
 ## DEEP PERSONALISATION (sources in order of impact)
-1. Their own words from their site (philosophy, tagline, mission statement)
-2. Business events (acquisitions, awards, growth, capacity constraints)
+1. Their own words from their site (philosophy, tagline, mission statement, service promises)
+2. Business events (acquisitions, awards, growth, capacity constraints, recent hires with dates)
 3. Their target audience named specifically ("a SaaS founder and a landlord land on the same homepage")
-4. Specific numbers from their site (review counts, years in business, service count)
-5. Broken or misconfigured elements
-6. Their values or philosophy
-7. Team details
+4. Specific numbers from their site (exact review counts, years in business, number of services, team size)
+5. Service commitments that map to automation opportunities ("24-hour response time" becomes "what if a system could do that in seconds")
+6. Client review language and themes (reflect their clients' words back)
+7. Existing digital tools or programmes (client portals, email newsletters, proprietary systems, reference as a compliment)
+8. Team details and individual bios (match personalisation to the recipient's specific background)
 
 ## IMPROVEMENT IDEAS
 - Every idea must be framed as a system or automation, not a website feature.
 - Wrong: "A small addition to the existing site." Right: "An automated review request system that keeps your 5-star rating growing without anyone chasing it."
 - Wrong: "Surfacing this properly." Right: "A system that works without anyone needing to be available."
 - Be hyper-specific to THIS business, referencing what you found on their site.
+- When the firm already has an email programme or content, position automations as enhancing what they started, not replacing it.
+- For franchise operators, focus entirely on operational automations that help the individual practitioner, not website observations.
 
 ## FOLLOW-UPS
-Follow-up 1 (day 2, 50-80 words): Add a specific piece of value or reference one idea you could build. Different angle from the initial email. End on a question. Sign off "Will."
-Follow-up 2 (day 5, 30-50 words): Final nudge. Casual, no pressure. Leave the door open. End on a question. Sign off "Will."
+Follow-up 1 (day 2, 50-80 words): Must open with "Hi [first name],\\n\\n". Add a specific piece of value or reference one idea you could build. Different angle from the initial email. End on a question. Sign off "Will."
+Follow-up 2 (day 5, 30-50 words): Must open with "Hi [first name],\\n\\n". Final nudge. Casual, no pressure. Leave the door open. End on a question. Sign off "Will."
 
 ## QUALITY CHECKLIST (verify every point before output)
+- Does every email start with "Hi [first name]," greeting?
 - Has every claim about what is "missing" been verified against the content provided?
 - Is the tone observational rather than diagnostic?
 - Are all ideas framed as systems/automations, not website features?
 - Is the subject line 2-4 words?
 - Zero em dashes in all emails?
+- Does the opening lead with the hook, not "I came across" or how you found them?
 - Ideas listed as bullets under "Things like:" only, everything else prose?
 - CTA is "Worth me sharing some more details?"
 - "No cost, no catch" line included?
 - Automation build offer included?
 - Correct angle chosen (not defaulting to Angle 2)?
+- If Angle 1 or 2, is the claim verifiably true from the content?
 - Deep personalisation beyond firm name and location?
 - Opening earns the right to make the observations that follow?
+- Star rating verified with exact number (rounded down)?
+- Personalisation matches the RECIPIENT, not just the firm?
 
 Respond with valid JSON only, no markdown formatting or code fences.`;
 
@@ -132,12 +161,17 @@ interface AnalysisResult {
     recommended_angle: number;
     angle_rationale: string;
     verified_elements: string[];
+    missing_elements: string[];
     overall_score: string;
     design_quality: string;
     lead_capture: string;
     contact_ease: string;
     key_observation: string;
     growth_signals: string;
+    service_promises: string;
+    existing_digital_signals: string;
+    franchise_flag: string;
+    contact_name_verified: string;
   };
   improvement_ideas: Array<{
     title: string;
@@ -456,63 +490,75 @@ export const POST: APIRoute = async ({ request }) => {
     // Call Claude
     const anthropic = new Anthropic({ apiKey: anthropicKey });
 
+    // Extract first name for greeting
+    const ownerName = prospect.owner_name || '';
+    const contactFirstName = ownerName.split(/\s+/)[0] || '';
+
     const userPrompt = `Company: ${prospect.company_name}
 Industry: ${sicDescription}
 Website: ${prospect.website}
-Owner/Director: ${prospect.owner_name || 'Unknown'}
+Owner/Director: ${ownerName || 'Unknown'}
+Contact first name for greeting: ${contactFirstName || 'NONE - use "Hi there" and flag in assessment'}
 Location: ${prospect.address || 'UK'}
-Google Rating: ${prospect.google_rating || 'N/A'}/5
+Google Rating from Google Maps: ${prospect.google_rating || 'N/A'}/5 (IMPORTANT: verify whether this rating is displayed ON the website or only exists externally. Do not round up.)
 Accounts type: ${prospect.accounts_type || 'Unknown'}
 
-Website content (homepage + about page if found):
+Website content (homepage + about/team pages if found):
 ${websiteHTML}
 
 INSTRUCTIONS:
-1. First, carefully read ALL the website content above. Note everything you can verify: reviews, testimonials, awards, team info, founder stories, niche positioning, growth signals, values, specific numbers.
-2. Choose the best email angle (1-4) based on what you found.
-3. Write the email using deep personalisation from the content.
+1. Read ALL website content above thoroughly. For every element in the assessment checklist (reviews, lead magnets, portals, newsletters, blog, sectors, service promises, tech partnerships, team), explicitly confirm or deny its presence.
+2. Check if the firm operates within a franchise. Check if the URL matches the trading name.
+3. Note service promises and commitments that map to automation opportunities.
+4. Choose the best email angle (1-4) based on verified findings. If you cannot verify a gap, do NOT use Angle 1 or 2.
+5. Write the email addressed to ${contactFirstName || 'the director'}. The greeting, opening, and personalisation must be specific to this person where possible.
 
 Return JSON with this exact structure:
 {
   "website_analysis": {
     "recommended_angle": 1-4,
-    "angle_rationale": "why this angle was chosen",
-    "verified_elements": ["list", "of", "things", "confirmed", "on", "the", "site"],
+    "angle_rationale": "why this angle was chosen, referencing specific verified evidence",
+    "verified_elements": ["list every element confirmed on the site: reviews with count, lead magnets, portals, forms, blog topics, sectors, service promises, tech partnerships, team members with roles"],
+    "missing_elements": ["elements checked but not found in the content provided"],
     "overall_score": "1-10",
     "design_quality": "brief assessment",
-    "lead_capture": "what lead capture exists (verified)",
+    "lead_capture": "what lead capture exists (verified: forms, popups, lead magnets, newsletter signups)",
     "contact_ease": "how easy to contact them (verified)",
     "key_observation": "the single most compelling thing about this business for personalisation",
-    "growth_signals": "any growth indicators, awards, news, acquisitions, hiring, capacity notes"
+    "growth_signals": "growth indicators, awards, news, acquisitions, hiring, recent team additions with dates, capacity notes",
+    "service_promises": "any specific commitments (response times, turnaround guarantees, free consultations) that map to automation hooks",
+    "existing_digital_signals": "client portals, email programmes, proprietary tools, tech integrations",
+    "franchise_flag": "is this a franchise operation? does the prospect control their own website?",
+    "contact_name_verified": "was the contact name found on the website? if so, where and what role?"
   },
   "improvement_ideas": [
     {
       "title": "specific automation/system name",
-      "description": "2-3 sentences. Frame as a system that runs without human input.",
+      "description": "2-3 sentences. Frame as a system that runs without human input. Reference specific site content (sectors, service promises, blog topics).",
       "impact": "time saved, manual work removed, enquiries generated"
     },
     {
       "title": "second automation/system",
-      "description": "2-3 sentences framed as automation",
+      "description": "2-3 sentences framed as automation, referencing their specific business",
       "impact": "business impact"
     },
     {
       "title": "third automation/system",
-      "description": "2-3 sentences framed as automation",
+      "description": "2-3 sentences framed as automation, referencing their specific business",
       "impact": "business impact"
     }
   ],
   "draft_email": {
     "subject": "2-4 words only. Curiosity without clickbait.",
-    "body": "120-160 words. Follow the structure: Opening (2-3 sentences, specific observation with softening language) -> Bridge (1 sentence, transition to offer) -> Ideas ('Things like:' + 3 bullet points as automations) -> Offer ('no cost, no catch' + automation build offer) -> CTA ('Worth me sharing some more details?') -> Sign off 'Will'. Use \\n\\n between paragraphs. Use \\n- for bullets."
+    "body": "Start with 'Hi ${contactFirstName || 'there'},\\n\\n' then 120-160 words. Structure: Opening (lead with the hook, NO 'I came across') -> Bridge (1 sentence) -> Ideas ('Things like:' + 3 bullets as automations using their sector names/blog topics/service promises) -> Offer ('no cost, no catch' + automation build offer) -> CTA ('Worth me sharing some more details?') -> Sign off 'Will'. Use \\n\\n between paragraphs. Use \\n- for bullets."
   },
   "follow_up_1": {
     "subject": "Re: [same subject]",
-    "body": "50-80 words. Different angle, reference a specific idea. End on a question. \\n\\n between paragraphs. Sign off 'Will'."
+    "body": "Start with 'Hi ${contactFirstName || 'there'},\\n\\n' then 50-80 words. Different angle, reference a specific idea. End on a question. Sign off 'Will'."
   },
   "follow_up_2": {
     "subject": "Re: [same subject]",
-    "body": "30-50 words. Final nudge, casual, no pressure. End on a question. \\n\\n between paragraphs. Sign off 'Will'."
+    "body": "Start with 'Hi ${contactFirstName || 'there'},\\n\\n' then 30-50 words. Final nudge, casual, no pressure. End on a question. Sign off 'Will'."
   }
 }`;
 
