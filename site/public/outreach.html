@@ -1013,7 +1013,7 @@
           </h4>
           <label>To</label>
           <input type="email" id="email-to-${p.id}" value="${esc(p.owner_email || '')}" ${isSent ? 'disabled' : ''}>
-          ${!isSent && p.email_candidates && p.email_candidates.length > 1 ? buildEmailCandidates(p) : ''}
+          ${!isSent ? buildEmailCandidates(p) : ''}
           <label>Subject</label>
           <input type="text" id="email-subj-${p.id}" value="${esc(p.draft_subject || '')}" ${isSent ? 'disabled' : ''}>
           <label>Body</label>
@@ -1040,16 +1040,32 @@
   function buildEmailCandidates(p) {
     const candidates = p.email_candidates || [];
     const currentEmail = p.owner_email || '';
+    const prospeoNote = p.website_analysis?.prospeo_note || '';
+    const hasProspeoMatch = candidates.some(c => c.source && c.source.includes('Prospeo'));
     const verifiedLabels = {
       'valid': 'Verified',
       'catch-all': 'Catch-all',
       'unknown': 'Unverified',
       'unchecked': 'Not checked',
     };
+
+    // Prospeo status line
+    let prospeoHtml = '';
+    if (prospeoNote) {
+      const isSuccess = hasProspeoMatch;
+      prospeoHtml = `<div style="font-size:0.75rem; padding:0.4rem 0.6rem; margin-bottom:0.5rem; border-radius:6px; background:${isSuccess ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.06)'}; color:${isSuccess ? 'var(--green)' : '#b91c1c'}; display:flex; align-items:center; gap:0.4rem;">
+        <span style="font-size:0.85rem;">${isSuccess ? '&#10003;' : '&#10007;'}</span>
+        ${esc(prospeoNote)}
+      </div>`;
+    }
+
+    if (candidates.length <= 1 && !prospeoNote) return '';
+
     return `
       <div class="email-candidates">
-        <div class="email-candidates-label">Email candidates (pick the best match)</div>
-        ${candidates.map((c, i) => `
+        ${prospeoHtml}
+        ${candidates.length > 1 ? `<div class="email-candidates-label">Email candidates (pick the best match)</div>` : ''}
+        ${candidates.length > 1 ? candidates.map((c, i) => `
           <label class="email-candidate ${c.email === currentEmail ? 'selected' : ''}">
             <input type="radio" name="email-pick-${p.id}" value="${esc(c.email)}"
               ${c.email === currentEmail ? 'checked' : ''}
@@ -1059,7 +1075,7 @@
             <span class="verified-badge verified-${c.verified || 'unchecked'}">${verifiedLabels[c.verified] || 'Not checked'}</span>
             <span class="email-candidate-source">${esc(c.source)}</span>
           </label>
-        `).join('')}
+        `).join('') : ''}
       </div>
     `;
   }

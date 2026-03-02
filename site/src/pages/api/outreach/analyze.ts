@@ -170,15 +170,16 @@ async function generateEmailCandidates(
   websiteUrl: string,
   foundEmails: string[],
   prospeoKey: string,
-): Promise<EmailCandidate[]> {
+): Promise<{ candidates: EmailCandidate[]; prospeoNote: string }> {
   const candidates: EmailCandidate[] = [];
+  let prospeoNote = '';
   let domain = '';
 
   try {
     domain = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname.replace('www.', '');
   } catch { /* ignore */ }
 
-  if (!domain) return candidates;
+  if (!domain) return { candidates, prospeoNote: 'Prospeo: skipped (no domain)' };
 
   const nameParts = (ownerName || '').toLowerCase().trim().split(/\s+/);
   const firstName = nameParts[0] || '';
@@ -198,8 +199,17 @@ async function generateEmailCandidates(
           verified,
         });
         added.add(found.email.toLowerCase());
+        prospeoNote = `Prospeo: found ${found.email} (${verified})`;
+      } else {
+        prospeoNote = 'Prospeo: email found but marked invalid';
       }
+    } else {
+      prospeoNote = `Prospeo: no match for ${firstName} ${lastName} at ${domain}`;
     }
+  } else if (!prospeoKey) {
+    prospeoNote = 'Prospeo: skipped (no API key)';
+  } else {
+    prospeoNote = 'Prospeo: skipped (no director name)';
   }
 
   // Split found website emails into personal vs generic
@@ -269,7 +279,7 @@ async function generateEmailCandidates(
   candidates.sort((a, b) => (verifiedOrder[a.verified] ?? 3) - (verifiedOrder[b.verified] ?? 3));
 
   // Remove any that came back invalid
-  return candidates.filter(c => c.verified !== 'invalid');
+  return { candidates: candidates.filter(c => c.verified !== 'invalid'), prospeoNote };
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -422,14 +432,17 @@ Please return JSON with this exact structure:
 
     // Generate ranked email candidates with Prospeo verification where possible
     const prospeoKey = getEnv('PROSPEO_API_KEY');
-    const emailCandidates = await generateEmailCandidates(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
+    const { candidates: emailCandidates, prospeoNote } = await generateEmailCandidates(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
     const ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
+
+    // Store prospeo note in website_analysis for persistence
+    const websiteAnalysis = { ...analysis.website_analysis, prospeo_note: prospeoNote };
 
     // Update prospect
     await supabase
       .from('outreach_prospects')
       .update({
-        website_analysis: analysis.website_analysis,
+        website_analysis: websiteAnalysis,
         improvement_ideas: analysis.improvement_ideas,
         draft_subject: analysis.draft_email.subject,
         draft_body: analysis.draft_email.body,
@@ -446,7 +459,7 @@ Please return JSON with this exact structure:
     return new Response(JSON.stringify({
       prospect_id,
       status: 'email_drafted',
-      website_analysis: analysis.website_analysis,
+      website_analysis: websiteAnalysis,
       improvement_ideas: analysis.improvement_ideas,
       draft_email: analysis.draft_email,
       follow_up_1: analysis.follow_up_1,
