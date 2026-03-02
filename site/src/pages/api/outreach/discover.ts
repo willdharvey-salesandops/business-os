@@ -110,13 +110,23 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
+    // Filter out non-UK results (regionCode is a bias, not a hard filter)
+    const ukPlaces = allPlaces.filter(p => {
+      const addr = (p.formattedAddress || '').toUpperCase();
+      return addr.includes('UK') || addr.includes('UNITED KINGDOM') || addr.includes('ENGLAND') || addr.includes('SCOTLAND') || addr.includes('WALES') || addr.includes('NORTHERN IRELAND');
+    });
+
     // Filter to only new businesses
-    const newPlaces = allPlaces.filter(p => !p.id || !existingPlaceIds.has(p.id));
-    const skippedCount = allPlaces.length - newPlaces.length;
+    const newPlaces = ukPlaces.filter(p => !p.id || !existingPlaceIds.has(p.id));
+    const skippedNonUK = allPlaces.length - ukPlaces.length;
+    const skippedCount = ukPlaces.length - newPlaces.length;
 
     if (newPlaces.length === 0) {
+      const reason = ukPlaces.length === 0
+        ? `Found ${allPlaces.length} results but none were UK businesses. Try a more specific UK region.`
+        : `All ${ukPlaces.length} UK businesses found have already been processed in previous campaigns. Try a different region or company type.`;
       return new Response(JSON.stringify({
-        error: `All ${allPlaces.length} businesses found have already been processed in previous campaigns. Try a different region or company type.`,
+        error: reason,
       }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
@@ -168,6 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
       region,
       prospect_count: newPlaces.length,
       skipped_duplicates: skippedCount,
+      skipped_non_uk: skippedNonUK,
       prospects: prospects.map(p => ({
         company_name: p.company_name,
         website: p.website,
