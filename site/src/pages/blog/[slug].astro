@@ -36,7 +36,15 @@ if (!post) {
   return Astro.redirect('/blog');
 }
 
-const contentHtml = marked.parse(post.content || '');
+// Strip YAML frontmatter if present (content should be pure markdown)
+let rawContent = post.content || '';
+if (rawContent.startsWith('---')) {
+  const end = rawContent.indexOf('---', 3);
+  if (end !== -1) {
+    rawContent = rawContent.slice(end + 3).trim();
+  }
+}
+const contentHtml = marked.parse(rawContent);
 
 let faqs: any[] = [];
 if (post.faqs) {
