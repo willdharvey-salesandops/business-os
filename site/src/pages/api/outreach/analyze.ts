@@ -398,7 +398,7 @@ async function prospeoSearchPerson(domain: string, companyName: string, apiKey: 
     }
   }
 
-  const seniorityFilter = ['Founder/Owner', 'C-Level', 'Director', 'VP', 'Manager'];
+  const seniorityFilter = ['Founder/Owner', 'C-Suite', 'Partner', 'Vice President', 'Head', 'Director', 'Manager'];
 
   // Attempt 1: Senior people by company name (most reliable for small firms)
   if (companyName) {
