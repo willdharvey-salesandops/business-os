@@ -344,52 +344,70 @@ async function prospeoEnrich(
 }
 
 // Prospeo Search Person: find senior people at a company by domain
+// Tries senior filter first, then falls back to unfiltered search
 async function prospeoSearchPerson(domain: string, apiKey: string): Promise<ProspeoSearchResult[]> {
-  try {
-    const res = await fetch('https://api.prospeo.io/search-person', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-KEY': apiKey,
-      },
-      body: JSON.stringify({
-        page: 1,
-        filters: {
-          company: {
-            websites: {
-              include: [domain],
-            },
-          },
-          person_seniority: {
-            include: ['Founder/Owner', 'C-Level', 'Director', 'VP'],
-          },
+  async function doSearch(filters: Record<string, any>): Promise<ProspeoSearchResult[]> {
+    try {
+      const res = await fetch('https://api.prospeo.io/search-person', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-KEY': apiKey,
         },
-      }),
-      signal: AbortSignal.timeout(15000),
-    });
+        body: JSON.stringify({ page: 1, filters }),
+        signal: AbortSignal.timeout(15000),
+      });
 
-    if (!res.ok) {
-      console.error('Prospeo search error:', res.status, await res.text());
+      if (!res.ok) {
+        console.error('Prospeo search error:', res.status, await res.text());
+        return [];
+      }
+
+      const data = await res.json();
+      if (data.error || !data.results?.length) return [];
+
+      return data.results
+        .map((r: any) => ({
+          personId: r.person?.person_id || '',
+          firstName: r.person?.first_name || '',
+          lastName: r.person?.last_name || '',
+          fullName: r.person?.full_name || `${r.person?.first_name || ''} ${r.person?.last_name || ''}`.trim(),
+          title: r.person?.current_job_title || '',
+          seniority: r.person?.job_history?.[0]?.seniority || '',
+        }))
+        .filter((p: ProspeoSearchResult) => p.personId);
+    } catch (err) {
+      console.error('Prospeo search failed:', err);
       return [];
     }
-
-    const data = await res.json();
-    if (data.error || !data.results?.length) return [];
-
-    return data.results
-      .map((r: any) => ({
-        personId: r.person?.person_id || '',
-        firstName: r.person?.first_name || '',
-        lastName: r.person?.last_name || '',
-        fullName: r.person?.full_name || `${r.person?.first_name || ''} ${r.person?.last_name || ''}`.trim(),
-        title: r.person?.current_job_title || '',
-        seniority: r.person?.job_history?.[0]?.seniority || '',
-      }))
-      .filter((p: ProspeoSearchResult) => p.personId);
-  } catch (err) {
-    console.error('Prospeo search failed:', err);
-    return [];
   }
+
+  // Attempt 1: Senior people at this domain
+  const seniorFilters = {
+    company: { websites: { include: [domain] } },
+    person_seniority: { include: ['Founder/Owner', 'C-Level', 'Director', 'VP'] },
+  };
+  let results = await doSearch(seniorFilters);
+  if (results.length > 0) return results;
+
+  // Attempt 2: Any person at this domain (no seniority filter)
+  const anyPersonFilters = {
+    company: { websites: { include: [domain] } },
+  };
+  results = await doSearch(anyPersonFilters);
+  if (results.length > 0) return results;
+
+  // Attempt 3: Try company name from domain (strip TLD, e.g. "smithaccountants.co.uk" -> "smithaccountants")
+  const companyNameGuess = domain.split('.')[0];
+  if (companyNameGuess && companyNameGuess.length > 3) {
+    const nameFilters = {
+      company: { names: { include: [companyNameGuess] } },
+      person_seniority: { include: ['Founder/Owner', 'C-Level', 'Director', 'VP'] },
+    };
+    results = await doSearch(nameFilters);
+  }
+
+  return results;
 }
 
 function mapProspeoStatus(status: string): EmailCandidate['verified'] {
@@ -535,7 +553,7 @@ async function findVerifiedContact(
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  const { prospect_id } = await request.json();
+  const { prospect_id, manual_name, manual_email } = await request.json();
 
   if (!prospect_id) {
     return new Response(JSON.stringify({ error: 'prospect_id is required' }), {
@@ -607,16 +625,68 @@ export const POST: APIRoute = async ({ request }) => {
     // Extract emails from all fetched pages
     const foundEmails = extractEmailsFromHTML(websiteHTML);
 
-    // Step 1: Find verified contact via Prospeo BEFORE drafting the email
-    // This ensures the email is addressed to the right person
-    const prospeoKey = getEnv('PROSPEO_API_KEY');
-    const {
-      candidates: emailCandidates,
-      prospeoNote,
-      contactName,
-      contactTitle,
-    } = await findVerifiedContact(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
-    const ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
+    // Step 1: Find verified contact
+    // If manual contact provided (from dashboard resolution), skip Prospeo
+    let emailCandidates: EmailCandidate[];
+    let prospeoNote: string;
+    let contactName: string;
+    let contactTitle: string;
+    let ownerEmail: string;
+    let hasVerifiedContact: boolean;
+
+    if (manual_name && manual_email) {
+      // Manual contact from dashboard - treat as verified
+      emailCandidates = [{
+        email: manual_email,
+        source: 'Manual (dashboard)',
+        confidence: 'high' as const,
+        verified: 'unchecked' as const,
+        name: manual_name,
+        title: '',
+      }];
+      prospeoNote = `Manual contact set: ${manual_name} <${manual_email}>`;
+      contactName = manual_name;
+      contactTitle = '';
+      ownerEmail = manual_email;
+      hasVerifiedContact = true;
+    } else {
+      // Normal Prospeo lookup
+      const prospeoKey = getEnv('PROSPEO_API_KEY');
+      const result = await findVerifiedContact(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
+      emailCandidates = result.candidates;
+      prospeoNote = result.prospeoNote;
+      contactName = result.contactName;
+      contactTitle = result.contactTitle;
+      ownerEmail = emailCandidates.length > 0 ? emailCandidates[0].email : '';
+      hasVerifiedContact = emailCandidates.some(c => c.source && c.source.includes('Prospeo'));
+    }
+
+    if (!hasVerifiedContact) {
+      // Store what we know (website emails as reference) but block the pipeline
+      await supabase
+        .from('outreach_prospects')
+        .update({
+          website_analysis: {
+            prospeo_note: prospeoNote,
+            ch_director: prospect.owner_name || '',
+            needs_contact_reason: 'No Prospeo-verified contact found. Manual contact resolution required before email drafting.',
+          },
+          email_candidates: emailCandidates,
+          pipeline_status: 'needs_contact',
+        })
+        .eq('id', prospect_id);
+
+      return new Response(JSON.stringify({
+        prospect_id,
+        status: 'needs_contact',
+        prospeo_note: prospeoNote,
+        email_candidates: emailCandidates,
+        message: 'No verified contact found. Set a contact manually to proceed.',
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Use the verified contact name (may differ from CH director)
     const contactFirstName = contactName.split(/\s+/)[0] || '';

@@ -222,6 +222,7 @@
     .badge-qualified { background: #dbeafe; color: var(--blue); }
     .badge-disqualified { background: #fee2e2; color: var(--red); }
     .badge-email_drafted { background: var(--teal-glow); color: var(--teal); }
+    .badge-needs_contact { background: #fef3c7; color: #b45309; }
     .badge-approved { background: #dcfce7; color: var(--green); }
     .badge-sent { background: var(--ink); color: var(--white); }
     .badge-failed { background: #fee2e2; color: var(--red); }
@@ -916,7 +917,7 @@
     tbody.innerHTML = '';
 
     // Stats
-    const stats = { discovered: 0, qualified: 0, disqualified: 0, email_drafted: 0, approved: 0, sent: 0, replied: 0, failed: 0 };
+    const stats = { discovered: 0, qualified: 0, disqualified: 0, needs_contact: 0, email_drafted: 0, approved: 0, sent: 0, replied: 0, failed: 0 };
     prospects.forEach(p => {
       const key = p.pipeline_status || 'discovered';
       if (stats[key] !== undefined) stats[key]++;
@@ -925,6 +926,7 @@
     document.getElementById('statsBar').innerHTML = `
       <div class="stat-card"><div class="stat-label">Discovered</div><div class="stat-value">${stats.discovered}</div></div>
       <div class="stat-card"><div class="stat-label">Qualified</div><div class="stat-value">${stats.qualified}</div></div>
+      <div class="stat-card"><div class="stat-label">Needs Contact</div><div class="stat-value">${stats.needs_contact}</div></div>
       <div class="stat-card"><div class="stat-label">Analyzed</div><div class="stat-value">${stats.email_drafted}</div></div>
       <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value">${stats.approved}</div></div>
       <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value">${stats.sent}</div></div>
@@ -947,7 +949,7 @@
         <td>${p.owner_name ? esc(p.owner_name) : '-'}</td>
         <td><span class="badge badge-${p.pipeline_status}">${formatStatus(p.pipeline_status)}</span></td>
         <td>
-          ${['email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status) ?
+          ${['email_drafted', 'needs_contact', 'approved', 'sent', 'replied'].includes(p.pipeline_status) ?
             `<button class="btn btn-secondary btn-sm" onclick="toggleDetail('${p.id}')">View</button>` : ''}
           ${p.pipeline_status === 'discovered' ?
             `<button class="btn btn-secondary btn-sm" onclick="qualifyOne('${p.id}', this)">Qualify</button>` : ''}
@@ -960,7 +962,7 @@
       tbody.appendChild(tr);
 
       // Detail row (hidden by default)
-      if (['email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status)) {
+      if (['needs_contact', 'email_drafted', 'approved', 'sent', 'replied'].includes(p.pipeline_status)) {
         const detailTr = document.createElement('tr');
         detailTr.id = `detail-${p.id}`;
         detailTr.className = 'detail-row';
@@ -976,6 +978,61 @@
     const ideas = p.improvement_ideas || [];
     const isSent = p.pipeline_status === 'sent';
     const isApproved = p.pipeline_status === 'approved';
+    const needsContact = p.pipeline_status === 'needs_contact';
+
+    // For needs_contact, show a contact resolution panel instead of email editor
+    if (needsContact) {
+      const prospeoNote = analysis.prospeo_note || '';
+      const chDirector = analysis.ch_director || p.owner_name || '';
+      const candidates = p.email_candidates || [];
+      const websiteEmails = candidates.filter(c => c.source && !c.source.includes('Prospeo'));
+
+      return `
+        <div class="detail-panel">
+          <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; padding:1.2rem; margin-bottom:1.2rem;">
+            <h4 style="font-family:var(--font-heading); font-size:0.95rem; color:#92400e; margin-bottom:0.5rem;">No Verified Contact Found</h4>
+            <p style="font-size:0.82rem; color:#92400e; margin-bottom:0.6rem;">Prospeo could not find a verified email for this prospect. Enter a contact manually to proceed with email drafting.</p>
+            ${prospeoNote ? `<p style="font-size:0.75rem; color:#b45309; background:rgba(146,64,14,0.06); padding:0.4rem 0.6rem; border-radius:6px;">${esc(prospeoNote)}</p>` : ''}
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div>
+              <p style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-400); margin-bottom:0.3rem;">CH Director</p>
+              <p style="font-size:0.85rem; color:var(--ink);">${chDirector ? esc(chDirector) : 'Unknown'}</p>
+            </div>
+            <div>
+              <p style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-400); margin-bottom:0.3rem;">Website</p>
+              <p style="font-size:0.85rem;"><a href="${esc(p.website || '')}" target="_blank" style="color:var(--teal);">${shortUrl(p.website || '')}</a></p>
+            </div>
+          </div>
+
+          ${websiteEmails.length > 0 ? `
+            <div style="margin-bottom:1rem;">
+              <p style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-400); margin-bottom:0.3rem;">Emails Found on Website</p>
+              ${websiteEmails.map(c => `<span style="display:inline-block; font-size:0.8rem; background:var(--grey-100); padding:0.2rem 0.6rem; border-radius:4px; margin:0.15rem 0.3rem 0.15rem 0;">${esc(c.email)}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div style="border-top:1px solid var(--grey-200); padding-top:1rem;">
+            <h4 style="font-family:var(--font-heading); font-size:0.9rem; color:var(--ink); margin-bottom:0.8rem;">Set Contact Manually</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:0.8rem;">
+              <div>
+                <label style="display:block; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-400); margin-bottom:0.3rem;">Full Name</label>
+                <input type="text" id="manual-name-${p.id}" placeholder="e.g. Sarah Johnson" value="${chDirector ? esc(chDirector) : ''}" style="width:100%; padding:0.6rem 0.8rem; border:1px solid var(--grey-200); border-radius:var(--radius-md); font-family:var(--font-body); font-size:0.85rem;">
+              </div>
+              <div>
+                <label style="display:block; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-400); margin-bottom:0.3rem;">Email Address</label>
+                <input type="email" id="manual-email-${p.id}" placeholder="e.g. sarah@company.com" style="width:100%; padding:0.6rem 0.8rem; border:1px solid var(--grey-200); border-radius:var(--radius-md); font-family:var(--font-body); font-size:0.85rem;">
+              </div>
+            </div>
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn btn-primary btn-sm" onclick="setContactAndAnalyze('${p.id}', this)">Set Contact & Analyze</button>
+              <button class="btn btn-secondary btn-sm" onclick="skipProspect('${p.id}')">Skip</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     let ideasHtml = ideas.map(idea => `
       <div class="idea-card">
@@ -1218,33 +1275,72 @@
   }
 
   // ---- Analyze ----
-  async function analyzeOne(id, btn) {
+  async function analyzeOne(id, btn, manualContact) {
     setBtnLoading(btn, 'Analyzing...');
     try {
-      const data = await api('POST', '/api/outreach/analyze', { prospect_id: id });
+      const payload = { prospect_id: id };
+      if (manualContact) {
+        payload.manual_name = manualContact.name;
+        payload.manual_email = manualContact.email;
+      }
+      const data = await api('POST', '/api/outreach/analyze', payload);
       const p = prospects.find(x => x.id === id);
       if (p) {
-        Object.assign(p, {
-          pipeline_status: data.status,
-          website_analysis: data.website_analysis,
-          improvement_ideas: data.improvement_ideas,
-          draft_subject: data.draft_email?.subject,
-          draft_body: data.draft_email?.body,
-          follow_up_1_subject: data.follow_up_1?.subject,
-          follow_up_1_body: data.follow_up_1?.body,
-          follow_up_2_subject: data.follow_up_2?.subject,
-          follow_up_2_body: data.follow_up_2?.body,
-          owner_name: data.owner_name || p.owner_name,
-          owner_email: data.owner_email,
-          email_candidates: data.email_candidates,
-        });
+        if (data.status === 'needs_contact') {
+          // No verified contact found, update with partial data
+          Object.assign(p, {
+            pipeline_status: 'needs_contact',
+            website_analysis: data.website_analysis || p.website_analysis,
+            email_candidates: data.email_candidates,
+          });
+          if (data.prospeo_note) {
+            p.website_analysis = p.website_analysis || {};
+            p.website_analysis.prospeo_note = data.prospeo_note;
+          }
+          renderProspects();
+          toast(`${p.company_name}: No verified contact found. Set contact manually.`, 'error');
+        } else {
+          Object.assign(p, {
+            pipeline_status: data.status,
+            website_analysis: data.website_analysis,
+            improvement_ideas: data.improvement_ideas,
+            draft_subject: data.draft_email?.subject,
+            draft_body: data.draft_email?.body,
+            follow_up_1_subject: data.follow_up_1?.subject,
+            follow_up_1_body: data.follow_up_1?.body,
+            follow_up_2_subject: data.follow_up_2?.subject,
+            follow_up_2_body: data.follow_up_2?.body,
+            owner_name: data.owner_name || p.owner_name,
+            owner_email: data.owner_email,
+            email_candidates: data.email_candidates,
+          });
+          renderProspects();
+          toast(`${p.company_name}: Analysis complete`);
+        }
       }
-      renderProspects();
-      toast(`${p.company_name}: Analysis complete`);
     } catch (err) {
       clearBtnLoading(btn);
       toast(err.message, 'error');
     }
+  }
+
+  async function setContactAndAnalyze(id, btn) {
+    const nameInput = document.getElementById(`manual-name-${id}`);
+    const emailInput = document.getElementById(`manual-email-${id}`);
+    const name = nameInput?.value?.trim();
+    const email = emailInput?.value?.trim();
+
+    if (!name || !email) {
+      toast('Enter both name and email address.', 'error');
+      return;
+    }
+
+    if (!email.includes('@') || !email.includes('.')) {
+      toast('Enter a valid email address.', 'error');
+      return;
+    }
+
+    await analyzeOne(id, btn, { name, email });
   }
 
   async function analyzeAll() {
@@ -1263,7 +1359,11 @@
     }
 
     progress.style.display = 'none';
-    toast(`Analysis complete. ${prospects.filter(p => p.pipeline_status === 'email_drafted').length} emails drafted.`);
+    const drafted = prospects.filter(p => p.pipeline_status === 'email_drafted').length;
+    const needsContact = prospects.filter(p => p.pipeline_status === 'needs_contact').length;
+    let msg = `Analysis complete. ${drafted} emails drafted.`;
+    if (needsContact > 0) msg += ` ${needsContact} need manual contact.`;
+    toast(msg);
   }
 
   // ---- Approve / Send ----
@@ -1411,6 +1511,7 @@
       discovered: 'Discovered',
       qualified: 'Qualified',
       disqualified: 'Disqualified',
+      needs_contact: 'Needs Contact',
       email_drafted: 'Email Ready',
       approved: 'Approved',
       sent: 'Sent',
