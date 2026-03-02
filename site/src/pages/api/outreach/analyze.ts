@@ -343,10 +343,12 @@ async function prospeoEnrich(
   }
 }
 
-// Prospeo Search Person: find senior people at a company by domain
-// Tries senior filter first, then falls back to unfiltered search
-async function prospeoSearchPerson(domain: string, apiKey: string): Promise<ProspeoSearchResult[]> {
-  async function doSearch(filters: Record<string, any>): Promise<ProspeoSearchResult[]> {
+// Prospeo Search Person: find senior people at a company
+// Searches by company name AND domain with multiple fallback strategies
+async function prospeoSearchPerson(domain: string, companyName: string, apiKey: string): Promise<ProspeoSearchResult[]> {
+  const attempts: string[] = [];
+
+  async function doSearch(filters: Record<string, any>, label: string): Promise<ProspeoSearchResult[]> {
     try {
       const res = await fetch('https://api.prospeo.io/search-person', {
         method: 'POST',
@@ -359,14 +361,24 @@ async function prospeoSearchPerson(domain: string, apiKey: string): Promise<Pros
       });
 
       if (!res.ok) {
-        console.error('Prospeo search error:', res.status, await res.text());
+        const errText = await res.text();
+        console.error(`Prospeo search [${label}] error:`, res.status, errText);
+        attempts.push(`${label}: HTTP ${res.status}`);
         return [];
       }
 
       const data = await res.json();
-      if (data.error || !data.results?.length) return [];
+      if (data.error) {
+        console.error(`Prospeo search [${label}] API error:`, data.error);
+        attempts.push(`${label}: API error`);
+        return [];
+      }
+      if (!data.results?.length) {
+        attempts.push(`${label}: 0 results`);
+        return [];
+      }
 
-      return data.results
+      const mapped = data.results
         .map((r: any) => ({
           personId: r.person?.person_id || '',
           firstName: r.person?.first_name || '',
@@ -376,37 +388,64 @@ async function prospeoSearchPerson(domain: string, apiKey: string): Promise<Pros
           seniority: r.person?.job_history?.[0]?.seniority || '',
         }))
         .filter((p: ProspeoSearchResult) => p.personId);
+
+      attempts.push(`${label}: ${mapped.length} people`);
+      return mapped;
     } catch (err) {
-      console.error('Prospeo search failed:', err);
+      console.error(`Prospeo search [${label}] failed:`, err);
+      attempts.push(`${label}: network error`);
       return [];
     }
   }
 
-  // Attempt 1: Senior people at this domain
-  const seniorFilters = {
-    company: { websites: { include: [domain] } },
-    person_seniority: { include: ['Founder/Owner', 'C-Level', 'Director', 'VP'] },
-  };
-  let results = await doSearch(seniorFilters);
-  if (results.length > 0) return results;
+  const seniorityFilter = ['Founder/Owner', 'C-Level', 'Director', 'VP', 'Manager'];
 
-  // Attempt 2: Any person at this domain (no seniority filter)
-  const anyPersonFilters = {
-    company: { websites: { include: [domain] } },
-  };
-  results = await doSearch(anyPersonFilters);
-  if (results.length > 0) return results;
+  // Attempt 1: Senior people by company name (most reliable for small firms)
+  if (companyName) {
+    // Try full company name
+    let results = await doSearch({
+      company: { names: { include: [companyName] } },
+      person_seniority: { include: seniorityFilter },
+    }, `name:"${companyName}" +senior`);
+    if (results.length > 0) return results;
 
-  // Attempt 3: Try company name from domain (strip TLD, e.g. "smithaccountants.co.uk" -> "smithaccountants")
-  const companyNameGuess = domain.split('.')[0];
-  if (companyNameGuess && companyNameGuess.length > 3) {
-    const nameFilters = {
-      company: { names: { include: [companyNameGuess] } },
-      person_seniority: { include: ['Founder/Owner', 'C-Level', 'Director', 'VP'] },
-    };
-    results = await doSearch(nameFilters);
+    // Try shortened company name (strip Ltd, LLP, Limited, etc.)
+    const shortName = companyName
+      .replace(/\b(ltd|llp|limited|plc|inc|co|company|group|uk|services|consulting|associates)\b/gi, '')
+      .replace(/[&,.\-()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (shortName && shortName !== companyName && shortName.length > 2) {
+      results = await doSearch({
+        company: { names: { include: [shortName] } },
+        person_seniority: { include: seniorityFilter },
+      }, `name:"${shortName}" +senior`);
+      if (results.length > 0) return results;
+    }
   }
 
+  // Attempt 2: Senior people by domain
+  let results = await doSearch({
+    company: { websites: { include: [domain] } },
+    person_seniority: { include: seniorityFilter },
+  }, `domain:${domain} +senior`);
+  if (results.length > 0) return results;
+
+  // Attempt 3: Any person by domain (no seniority filter)
+  results = await doSearch({
+    company: { websites: { include: [domain] } },
+  }, `domain:${domain} any`);
+  if (results.length > 0) return results;
+
+  // Attempt 4: Any person by company name (no seniority filter)
+  if (companyName) {
+    results = await doSearch({
+      company: { names: { include: [companyName] } },
+    }, `name:"${companyName}" any`);
+    if (results.length > 0) return results;
+  }
+
+  console.log('Prospeo search exhausted all attempts:', attempts.join(' | '));
   return results;
 }
 
@@ -427,6 +466,7 @@ interface ContactResult {
 
 async function findVerifiedContact(
   ownerName: string,
+  companyName: string,
   websiteUrl: string,
   foundEmails: string[],
   prospeoKey: string,
@@ -446,88 +486,88 @@ async function findVerifiedContact(
   const added = new Set<string>();
 
   if (prospeoKey) {
-    const nameParts = (ownerName || '').trim().split(/\s+/);
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
+    // Step 1: Search Prospeo for senior people at this company
+    // Uses company name AND domain - ignores CH director name
+    const searchResults = await prospeoSearchPerson(domain, companyName, prospeoKey);
 
-    // Step 1: Try Prospeo enrich with CH director name
-    let directorFound = false;
-    if (firstName && lastName) {
-      const found = await prospeoEnrich(
-        { firstName: firstName.toLowerCase(), lastName: lastName.toLowerCase(), domain },
-        prospeoKey,
-      );
+    if (searchResults.length > 0) {
+      // Enrich the top 3 results to get verified emails
+      let enrichedCount = 0;
+      const enrichedNames: string[] = [];
+      for (const person of searchResults.slice(0, 3)) {
+        const enriched = await prospeoEnrich({ personId: person.personId }, prospeoKey);
 
-      if (found && found.email && mapProspeoStatus(found.status) !== 'invalid') {
-        const verified = mapProspeoStatus(found.status);
-        candidates.push({
-          email: found.email,
-          source: `Prospeo verified (${ownerName})`,
-          confidence: verified === 'valid' ? 'high' : 'medium',
-          verified,
-          name: ownerName,
-          title: found.title || 'Director (Companies House)',
-        });
-        added.add(found.email.toLowerCase());
-        contactName = ownerName;
-        contactTitle = found.title || 'Director';
-        prospeoNote = `Prospeo: found ${found.email} for ${ownerName} (${verified})`;
-        directorFound = true;
+        if (enriched && enriched.email && mapProspeoStatus(enriched.status) !== 'invalid') {
+          const verified = mapProspeoStatus(enriched.status);
+          const personName = person.fullName || enriched.fullName;
+          const emailDomain = enriched.email.split('@')[1]?.toLowerCase() || '';
+          const domainMatch = emailDomain === domain || emailDomain.endsWith(`.${domain}`) || domain.endsWith(`.${emailDomain}`);
+
+          candidates.push({
+            email: enriched.email,
+            source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})${!domainMatch ? ' ⚠ different domain' : ''}`,
+            confidence: verified === 'valid' ? 'high' : 'medium',
+            verified,
+            name: personName,
+            title: person.title || enriched.title || '',
+          });
+          added.add(enriched.email.toLowerCase());
+          enrichedNames.push(`${personName} (${person.title || 'contact'})`);
+
+          if (enrichedCount === 0) {
+            contactName = personName;
+            contactTitle = person.title || enriched.title || '';
+          }
+          enrichedCount++;
+        }
+      }
+
+      if (enrichedCount > 0) {
+        const namesStr = enrichedNames.join(', ');
+        const nameParts = (ownerName || '').trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const chWarning = ownerName && !enrichedNames.some(n => n.toLowerCase().includes(firstName.toLowerCase()))
+          ? ` NOTE: CH director ${ownerName} not among Prospeo contacts.`
+          : '';
+        prospeoNote = `Prospeo search: found ${namesStr}${chWarning}`;
+      } else {
+        prospeoNote = `Prospeo search: found ${searchResults.length} people but could not verify emails`;
       }
     }
 
-    // Step 2: CH director not found (or no name) - search for senior people at the company
-    if (!directorFound) {
-      const searchNote = firstName && lastName
-        ? `${firstName} ${lastName} not found at ${domain}`
-        : 'no director name';
+    // Step 2: If search found nothing, try enriching CH director by name as last resort
+    if (candidates.length === 0) {
+      const nameParts = (ownerName || '').trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.length >= 2 ? nameParts[nameParts.length - 1] : '';
 
-      const searchResults = await prospeoSearchPerson(domain, prospeoKey);
+      if (firstName && lastName) {
+        const found = await prospeoEnrich(
+          { firstName: firstName.toLowerCase(), lastName: lastName.toLowerCase(), domain },
+          prospeoKey,
+        );
 
-      if (searchResults.length > 0) {
-        // Try to enrich the top 2 most senior people
-        let enrichedCount = 0;
-        const enrichedNames: string[] = [];
-        for (const person of searchResults.slice(0, 2)) {
-          const enriched = await prospeoEnrich({ personId: person.personId }, prospeoKey);
-
-          if (enriched && enriched.email && mapProspeoStatus(enriched.status) !== 'invalid') {
-            const verified = mapProspeoStatus(enriched.status);
-            const personName = person.fullName || enriched.fullName;
-            const emailDomain = enriched.email.split('@')[1]?.toLowerCase() || '';
-            const domainMatch = emailDomain === domain || emailDomain.endsWith(`.${domain}`) || domain.endsWith(`.${emailDomain}`);
-
-            candidates.push({
-              email: enriched.email,
-              source: `Prospeo verified (${person.title || person.seniority || 'Senior contact'})${!domainMatch ? ' ⚠ different domain' : ''}`,
-              confidence: verified === 'valid' ? 'high' : 'medium',
-              verified,
-              name: personName,
-              title: person.title || enriched.title || '',
-            });
-            added.add(enriched.email.toLowerCase());
-            enrichedNames.push(`${personName} (${person.title || 'contact'})`);
-
-            // Use first verified contact as the primary
-            if (enrichedCount === 0) {
-              contactName = personName;
-              contactTitle = person.title || enriched.title || '';
-            }
-            enrichedCount++;
-          }
-        }
-
-        if (enrichedCount > 0) {
-          const namesStr = enrichedNames.join(', ');
-          const chWarning = ownerName && !enrichedNames.some(n => n.toLowerCase().includes(firstName.toLowerCase()))
-            ? ` NOTE: CH director ${ownerName} not among Prospeo contacts. Check if this is the right person to email.`
-            : '';
-          prospeoNote = `Prospeo: ${searchNote}. Found: ${namesStr}${chWarning}`;
+        if (found && found.email && mapProspeoStatus(found.status) !== 'invalid') {
+          const verified = mapProspeoStatus(found.status);
+          candidates.push({
+            email: found.email,
+            source: `Prospeo verified (${ownerName})`,
+            confidence: verified === 'valid' ? 'high' : 'medium',
+            verified,
+            name: ownerName,
+            title: found.title || 'Director (Companies House)',
+          });
+          added.add(found.email.toLowerCase());
+          contactName = ownerName;
+          contactTitle = found.title || 'Director';
+          prospeoNote = `Prospeo enrich: found ${found.email} for CH director ${ownerName} (${verified})`;
         } else {
-          prospeoNote = `Prospeo: ${searchNote}. Found ${searchResults.length} people but no verified emails`;
+          const searchMsg = prospeoNote || 'Prospeo search: no results';
+          prospeoNote = `${searchMsg}. Enrich ${ownerName}: not found`;
         }
       } else {
-        prospeoNote = `Prospeo: ${searchNote}, no contacts found at company`;
+        const searchMsg = prospeoNote || 'Prospeo search: no results';
+        prospeoNote = `${searchMsg}. No director name to enrich`;
       }
     }
   } else {
@@ -650,9 +690,9 @@ export const POST: APIRoute = async ({ request }) => {
       ownerEmail = manual_email;
       hasVerifiedContact = true;
     } else {
-      // Normal Prospeo lookup
+      // Normal Prospeo lookup - search by company name first, CH director name last
       const prospeoKey = getEnv('PROSPEO_API_KEY');
-      const result = await findVerifiedContact(prospect.owner_name || '', prospect.website, foundEmails, prospeoKey);
+      const result = await findVerifiedContact(prospect.owner_name || '', prospect.company_name || '', prospect.website, foundEmails, prospeoKey);
       emailCandidates = result.candidates;
       prospeoNote = result.prospeoNote;
       contactName = result.contactName;
