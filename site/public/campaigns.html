@@ -385,6 +385,127 @@
       color: var(--grey-600);
       margin-bottom: 0.5rem;
     }
+
+    /* Multi-select dropdown */
+    .ms-wrap { position: relative; }
+    .ms-trigger {
+      width: 100%;
+      min-height: 42px;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+    .ms-trigger:hover, .ms-trigger.open { border-color: var(--teal); }
+    .ms-trigger .ms-placeholder {
+      font-size: 0.85rem;
+      color: var(--grey-400);
+    }
+    .ms-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.15rem 0.5rem;
+      background: var(--teal-glow);
+      border: 1px solid rgba(17, 94, 89, 0.2);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--teal);
+      white-space: nowrap;
+    }
+    .ms-tag .ms-remove {
+      cursor: pointer;
+      font-size: 0.8rem;
+      line-height: 1;
+      opacity: 0.6;
+    }
+    .ms-tag .ms-remove:hover { opacity: 1; }
+    .ms-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      z-index: 100;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .ms-dropdown.open { display: block; }
+    .ms-dropdown .ms-search {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: none;
+      border-bottom: 1px solid var(--grey-200);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      outline: none;
+      color: var(--ink);
+    }
+    .ms-option {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.15s;
+    }
+    .ms-option:hover { background: var(--grey-100); }
+    .ms-option.selected { background: var(--teal-glow); color: var(--teal); font-weight: 600; }
+    .ms-option .ms-check {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--grey-200);
+      border-radius: 3px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      transition: all 0.15s;
+    }
+    .ms-option.selected .ms-check {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: var(--white);
+    }
+    .ms-add-row {
+      padding: 0.5rem 0.8rem;
+      border-top: 1px solid var(--grey-200);
+      display: flex;
+      gap: 0.4rem;
+    }
+    .ms-add-row input {
+      flex: 1;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      outline: none;
+    }
+    .ms-add-row button {
+      padding: 0.3rem 0.6rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -412,44 +533,26 @@
       </div>
       <div class="form-group">
         <label>Seniority</label>
-        <select id="search-seniority" multiple size="4">
-          <option value="Founder/Owner" selected>Founder / Owner</option>
-          <option value="C-Suite">C-Suite</option>
-          <option value="Partner">Partner</option>
-          <option value="Director" selected>Director</option>
-          <option value="Vice President">Vice President</option>
-          <option value="Head">Head</option>
-          <option value="Manager">Manager</option>
-        </select>
-        <p class="hint">Ctrl/Cmd+click to select multiple</p>
+        <div class="ms-wrap" id="ms-seniority"></div>
       </div>
       <div class="form-group">
         <label>Company Size</label>
-        <select id="search-headcount" multiple size="4">
-          <option value="11-50" selected>11-50</option>
-          <option value="51-200" selected>51-200</option>
-          <option value="201-500">201-500</option>
-          <option value="1-10">1-10</option>
-        </select>
-        <p class="hint">Ctrl/Cmd+click to select multiple</p>
+        <div class="ms-wrap" id="ms-headcount"></div>
       </div>
     </div>
 
     <div class="form-grid">
       <div class="form-group">
         <label>Job Titles</label>
-        <input type="text" id="search-titles" placeholder="e.g. Managing Director, CEO, Owner">
-        <p class="hint">Comma-separated</p>
+        <div class="ms-wrap" id="ms-titles"></div>
       </div>
       <div class="form-group">
         <label>Industries</label>
-        <input type="text" id="search-industries" placeholder="e.g. Accounting, Financial Services">
-        <p class="hint">Comma-separated</p>
+        <div class="ms-wrap" id="ms-industries"></div>
       </div>
       <div class="form-group">
         <label>Locations</label>
-        <input type="text" id="search-locations" placeholder="e.g. London, United Kingdom">
-        <p class="hint">Comma-separated (use Prospeo format)</p>
+        <div class="ms-wrap" id="ms-locations"></div>
       </div>
     </div>
 
@@ -529,6 +632,153 @@ let currentBatchId = null;
 let prospects = [];
 let batches = [];
 let expandedId = null;
+
+// ===== MULTI-SELECT COMPONENT =====
+function createMultiSelect(containerId, options, selected, placeholder, allowCustom) {
+  const wrap = document.getElementById(containerId);
+  const state = { options: [...options], selected: new Set(selected || []) };
+
+  function render() {
+    const tags = Array.from(state.selected).map(v =>
+      `<span class="ms-tag">${v}<span class="ms-remove" data-val="${v}">&times;</span></span>`
+    ).join('');
+
+    wrap.innerHTML = `
+      <div class="ms-trigger" data-id="${containerId}">
+        ${tags || `<span class="ms-placeholder">${placeholder}</span>`}
+      </div>
+      <div class="ms-dropdown" data-id="${containerId}">
+        <input class="ms-search" placeholder="Filter..." data-id="${containerId}">
+        <div class="ms-options"></div>
+        ${allowCustom ? `<div class="ms-add-row"><input placeholder="Add custom..." data-id="${containerId}"><button data-id="${containerId}">Add</button></div>` : ''}
+      </div>
+    `;
+
+    renderOptions('');
+    bindEvents();
+  }
+
+  function renderOptions(filter) {
+    const optionsEl = wrap.querySelector('.ms-options');
+    const f = filter.toLowerCase();
+    optionsEl.innerHTML = state.options
+      .filter(o => !f || o.toLowerCase().includes(f))
+      .map(o => `
+        <div class="ms-option ${state.selected.has(o) ? 'selected' : ''}" data-val="${o}">
+          <span class="ms-check">${state.selected.has(o) ? '✓' : ''}</span>
+          ${o}
+        </div>
+      `).join('');
+  }
+
+  function bindEvents() {
+    const trigger = wrap.querySelector('.ms-trigger');
+    const dropdown = wrap.querySelector('.ms-dropdown');
+    const searchInput = wrap.querySelector('.ms-search');
+
+    trigger.addEventListener('click', (e) => {
+      if (e.target.classList.contains('ms-remove')) {
+        state.selected.delete(e.target.dataset.val);
+        render();
+        return;
+      }
+      closeAllDropdowns();
+      dropdown.classList.add('open');
+      trigger.classList.add('open');
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('input', () => {
+      renderOptions(searchInput.value);
+      // Re-bind option clicks
+      bindOptionClicks();
+    });
+
+    searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+    bindOptionClicks();
+
+    if (allowCustom) {
+      const addInput = wrap.querySelector('.ms-add-row input');
+      const addBtn = wrap.querySelector('.ms-add-row button');
+
+      function addCustom() {
+        const val = addInput.value.trim();
+        if (val && !state.options.includes(val)) {
+          state.options.push(val);
+        }
+        if (val) {
+          state.selected.add(val);
+          render();
+        }
+      }
+
+      addBtn.addEventListener('click', (e) => { e.stopPropagation(); addCustom(); });
+      addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.stopPropagation(); addCustom(); } });
+      addInput.addEventListener('click', (e) => e.stopPropagation());
+    }
+  }
+
+  function bindOptionClicks() {
+    wrap.querySelectorAll('.ms-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const val = opt.dataset.val;
+        if (state.selected.has(val)) state.selected.delete(val);
+        else state.selected.add(val);
+        render();
+        // Re-open after render
+        wrap.querySelector('.ms-dropdown').classList.add('open');
+        wrap.querySelector('.ms-trigger').classList.add('open');
+        wrap.querySelector('.ms-search').focus();
+      });
+    });
+  }
+
+  wrap._getSelected = () => Array.from(state.selected);
+
+  render();
+  return wrap;
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.ms-dropdown').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.ms-trigger').forEach(t => t.classList.remove('open'));
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.ms-wrap')) closeAllDropdowns();
+});
+
+// ===== INIT MULTI-SELECTS =====
+const SENIORITY_OPTIONS = ['Founder/Owner', 'C-Suite', 'Partner', 'Director', 'Vice President', 'Head', 'Manager', 'Senior'];
+const HEADCOUNT_OPTIONS = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000'];
+const TITLE_OPTIONS = ['Managing Director', 'CEO', 'Founder', 'Owner', 'Director', 'General Manager', 'Operations Director', 'Finance Director', 'Commercial Director', 'Sales Director'];
+const INDUSTRY_OPTIONS = [
+  'Accounting', 'Architecture & Planning', 'Automotive', 'Business Consulting', 'Civil Engineering',
+  'Construction', 'Education', 'Electrical & Electronic Manufacturing', 'Environmental Services',
+  'Events Services', 'Facilities Services', 'Financial Services', 'Food & Beverages',
+  'Health, Wellness & Fitness', 'Hospitality', 'Human Resources', 'IT Services',
+  'Insurance', 'Legal Services', 'Logistics & Supply Chain', 'Management Consulting',
+  'Marketing & Advertising', 'Mechanical & Industrial Engineering', 'Medical Practice',
+  'Pharmaceuticals', 'Professional Services', 'Real Estate', 'Renewable Energy',
+  'Retail', 'Software Development', 'Staffing & Recruiting', 'Technology',
+  'Telecommunications', 'Transportation', 'Veterinary', 'Wholesale'
+];
+const LOCATION_OPTIONS = [
+  'United Kingdom', 'England', 'Scotland', 'Wales', 'Northern Ireland',
+  'London', 'Manchester', 'Birmingham', 'Leeds', 'Bristol',
+  'Edinburgh', 'Glasgow', 'Liverpool', 'Sheffield', 'Newcastle upon Tyne',
+  'Nottingham', 'Southampton', 'Brighton', 'Oxford', 'Cambridge',
+  'Surrey', 'Kent', 'Essex', 'Hampshire', 'West Midlands',
+  'Greater Manchester', 'West Yorkshire', 'South East England', 'South West England', 'East of England'
+];
+
+createMultiSelect('ms-seniority', SENIORITY_OPTIONS, ['Founder/Owner', 'Director'], 'Select seniority levels...', false);
+createMultiSelect('ms-headcount', HEADCOUNT_OPTIONS, ['11-50', '51-200'], 'Select company sizes...', false);
+createMultiSelect('ms-titles', TITLE_OPTIONS, [], 'Select or add job titles...', true);
+createMultiSelect('ms-industries', INDUSTRY_OPTIONS, [], 'Select or add industries...', true);
+createMultiSelect('ms-locations', LOCATION_OPTIONS, ['United Kingdom'], 'Select or add locations...', true);
 
 // ===== LOAD BATCHES =====
 async function loadBatches() {
@@ -719,18 +969,11 @@ async function runSearch() {
   btn.disabled = true;
   btn.textContent = 'Searching...';
 
-  const seniorityEl = document.getElementById('search-seniority');
-  const headcountEl = document.getElementById('search-headcount');
-  const seniority = Array.from(seniorityEl.selectedOptions).map(o => o.value);
-  const headcount_ranges = Array.from(headcountEl.selectedOptions).map(o => o.value);
-
-  const titlesRaw = document.getElementById('search-titles').value;
-  const industriesRaw = document.getElementById('search-industries').value;
-  const locationsRaw = document.getElementById('search-locations').value;
-
-  const job_titles = titlesRaw ? titlesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-  const industries = industriesRaw ? industriesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-  const locations = locationsRaw ? locationsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const seniority = document.getElementById('ms-seniority')._getSelected();
+  const headcount_ranges = document.getElementById('ms-headcount')._getSelected();
+  const job_titles = document.getElementById('ms-titles')._getSelected();
+  const industries = document.getElementById('ms-industries')._getSelected();
+  const locations = document.getElementById('ms-locations')._getSelected();
   const limit = parseInt(document.getElementById('search-limit').value) || 500;
   const name = document.getElementById('search-name').value;
 
