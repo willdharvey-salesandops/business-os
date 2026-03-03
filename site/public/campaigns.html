@@ -1253,13 +1253,14 @@ async function qualifySingle(id) {
 }
 
 async function analyzeSingle(id) {
-  // Show spinner on the button
-  const btn = document.querySelector(`button[onclick="analyzeSingle('${id}')"]`);
-  if (btn) {
-    btn.disabled = true;
-    btn.dataset.origText = btn.textContent;
-    btn.innerHTML = '<span class="spinner-sm"></span> Analyzing...';
-  }
+  // Show spinner on the button that was clicked
+  const btns = document.querySelectorAll(`button[onclick="analyzeSingle('${id}')"]`);
+  btns.forEach(b => {
+    b.disabled = true;
+    b.dataset.origText = b.textContent;
+    b.innerHTML = '<span class="spinner-sm"></span> Analyzing...';
+  });
+  log('Analyzing prospect, this takes 30-60 seconds...', 'info');
   try {
     const res = await fetch(`${API_BASE}/analyze`, {
       method: 'POST',
@@ -1269,7 +1270,7 @@ async function analyzeSingle(id) {
     const data = await res.json();
     if (data.error) {
       log(`Analyze failed: ${data.error}${data.detail ? ' - ' + data.detail : ''}`, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText; }
+      btns.forEach(b => { b.disabled = false; b.textContent = b.dataset.origText; });
       return;
     }
     log(`Analyzed: ${data.status}${data.reason ? ' - ' + data.reason : ''}`, data.status === 'analyzed' ? 'success' : 'info');
@@ -1277,7 +1278,7 @@ async function analyzeSingle(id) {
     await loadProspects();
   } catch (err) {
     log('Analyze error: ' + err.message, 'error');
-    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText; }
+    btns.forEach(b => { b.disabled = false; b.textContent = b.dataset.origText; });
   }
 }
 
