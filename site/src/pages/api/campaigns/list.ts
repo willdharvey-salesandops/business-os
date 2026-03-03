@@ -76,3 +76,47 @@ export const GET: APIRoute = async ({ url }) => {
     headers: { 'Content-Type': 'application/json' },
   });
 };
+
+export const DELETE: APIRoute = async ({ url }) => {
+  const batchId = url.searchParams.get('batch_id');
+
+  if (!batchId) {
+    return new Response(JSON.stringify({ error: 'batch_id is required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = getSupabase();
+
+  // Delete prospects first (foreign key constraint)
+  const { error: prospectError } = await supabase
+    .from('campaign_prospects')
+    .delete()
+    .eq('batch_id', batchId);
+
+  if (prospectError) {
+    return new Response(JSON.stringify({ error: 'Failed to delete prospects', detail: prospectError.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Delete the batch
+  const { error: batchError } = await supabase
+    .from('campaign_batches')
+    .delete()
+    .eq('id', batchId);
+
+  if (batchError) {
+    return new Response(JSON.stringify({ error: 'Failed to delete batch', detail: batchError.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ deleted: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
