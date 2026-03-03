@@ -752,18 +752,23 @@ document.addEventListener('click', (e) => {
 
 // ===== INIT MULTI-SELECTS =====
 const SENIORITY_OPTIONS = ['Founder/Owner', 'C-Suite', 'Partner', 'Director', 'Vice President', 'Head', 'Manager', 'Senior'];
-const HEADCOUNT_OPTIONS = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000'];
+const HEADCOUNT_OPTIONS = ['1-10', '11-20', '21-50', '51-100', '101-200', '201-500', '501-1000', '1001-2000', '2001-5000', '5001-10000', '10000+'];
 const TITLE_OPTIONS = ['Managing Director', 'CEO', 'Founder', 'Owner', 'Director', 'General Manager', 'Operations Director', 'Finance Director', 'Commercial Director', 'Sales Director'];
 const INDUSTRY_OPTIONS = [
-  'Accounting', 'Architecture & Planning', 'Automotive', 'Business Consulting', 'Civil Engineering',
-  'Construction', 'Education', 'Electrical & Electronic Manufacturing', 'Environmental Services',
-  'Events Services', 'Facilities Services', 'Financial Services', 'Food & Beverages',
-  'Health, Wellness & Fitness', 'Hospitality', 'Human Resources', 'IT Services',
-  'Insurance', 'Legal Services', 'Logistics & Supply Chain', 'Management Consulting',
-  'Marketing & Advertising', 'Mechanical & Industrial Engineering', 'Medical Practice',
-  'Pharmaceuticals', 'Professional Services', 'Real Estate', 'Renewable Energy',
-  'Retail', 'Software Development', 'Staffing & Recruiting', 'Technology',
-  'Telecommunications', 'Transportation', 'Veterinary', 'Wholesale'
+  'Accounting', 'Advertising Services', 'Architecture and Planning', 'Automotive',
+  'Business Consulting and Services', 'Civil Engineering', 'Construction',
+  'Consumer Services', 'Design Services', 'Education Administration Programs',
+  'Engineering Services', 'Environmental Services', 'Events Services',
+  'Facilities Services', 'Financial Services', 'Food and Beverage Services',
+  'Hospitality', 'Human Resources Services', 'IT Services and IT Consulting',
+  'Insurance', 'Law Practice', 'Legal Services', 'Marketing Services',
+  'Mechanical or Industrial Engineering', 'Medical Practices',
+  'Professional Services', 'Professional Training and Coaching',
+  'Real Estate', 'Renewable Energy', 'General Retail', 'Software Development',
+  'Staffing and Recruiting', 'Strategic Management Services',
+  'Technology Information and Internet', 'Telecommunications',
+  'Transportation Logistics Supply Chain and Storage', 'Veterinary Services',
+  'Wellness and Fitness Services', 'General Wholesale'
 ];
 const LOCATION_OPTIONS = [
   'United Kingdom', 'England', 'Scotland', 'Wales', 'Northern Ireland',
@@ -775,7 +780,7 @@ const LOCATION_OPTIONS = [
 ];
 
 createMultiSelect('ms-seniority', SENIORITY_OPTIONS, ['Founder/Owner', 'Director'], 'Select seniority levels...', false);
-createMultiSelect('ms-headcount', HEADCOUNT_OPTIONS, ['11-50', '51-200'], 'Select company sizes...', false);
+createMultiSelect('ms-headcount', HEADCOUNT_OPTIONS, ['11-20', '21-50', '51-100', '101-200'], 'Select company sizes...', false);
 createMultiSelect('ms-titles', TITLE_OPTIONS, [], 'Select or add job titles...', true);
 createMultiSelect('ms-industries', INDUSTRY_OPTIONS, [], 'Select or add industries...', true);
 createMultiSelect('ms-locations', LOCATION_OPTIONS, ['United Kingdom'], 'Select or add locations...', true);
