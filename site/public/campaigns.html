@@ -551,8 +551,9 @@
         <div class="ms-wrap" id="ms-industries"></div>
       </div>
       <div class="form-group">
-        <label>Locations</label>
-        <div class="ms-wrap" id="ms-locations"></div>
+        <label>Geography</label>
+        <input type="text" value="UK (filtered at Companies House step)" disabled style="background:var(--grey-100);color:var(--grey-400)">
+        <p class="hint">Prospeo search is global. CH qualification filters to UK.</p>
       </div>
     </div>
 
@@ -770,20 +771,10 @@ const INDUSTRY_OPTIONS = [
   'Transportation Logistics Supply Chain and Storage', 'Veterinary Services',
   'Wellness and Fitness Services', 'General Wholesale'
 ];
-const LOCATION_OPTIONS = [
-  'United Kingdom', 'England', 'Scotland', 'Wales', 'Northern Ireland',
-  'London', 'Manchester', 'Birmingham', 'Leeds', 'Bristol',
-  'Edinburgh', 'Glasgow', 'Liverpool', 'Sheffield', 'Newcastle upon Tyne',
-  'Nottingham', 'Southampton', 'Brighton', 'Oxford', 'Cambridge',
-  'Surrey', 'Kent', 'Essex', 'Hampshire', 'West Midlands',
-  'Greater Manchester', 'West Yorkshire', 'South East England', 'South West England', 'East of England'
-];
-
 createMultiSelect('ms-seniority', SENIORITY_OPTIONS, ['Founder/Owner', 'Director'], 'Select seniority levels...', false);
 createMultiSelect('ms-headcount', HEADCOUNT_OPTIONS, ['11-20', '21-50', '51-100', '101-200'], 'Select company sizes...', false);
 createMultiSelect('ms-titles', TITLE_OPTIONS, [], 'Select or add job titles...', true);
 createMultiSelect('ms-industries', INDUSTRY_OPTIONS, [], 'Select or add industries...', true);
-createMultiSelect('ms-locations', LOCATION_OPTIONS, ['United Kingdom'], 'Select or add locations...', true);
 
 // ===== LOAD BATCHES =====
 async function loadBatches() {
@@ -978,7 +969,6 @@ async function runSearch() {
   const headcount_ranges = document.getElementById('ms-headcount')._getSelected();
   const job_titles = document.getElementById('ms-titles')._getSelected();
   const industries = document.getElementById('ms-industries')._getSelected();
-  const locations = document.getElementById('ms-locations')._getSelected();
   const limit = parseInt(document.getElementById('search-limit').value) || 500;
   const name = document.getElementById('search-name').value;
 
@@ -986,7 +976,7 @@ async function runSearch() {
     const res = await fetch(`${API_BASE}/search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, seniority, job_titles, industries, headcount_ranges, locations, limit }),
+      body: JSON.stringify({ name, seniority, job_titles, industries, headcount_ranges, limit }),
     });
 
     const data = await res.json();

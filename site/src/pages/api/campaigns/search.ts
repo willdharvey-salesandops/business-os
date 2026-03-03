@@ -48,6 +48,11 @@ export const POST: APIRoute = async ({ request }) => {
   const supabase = getSupabase();
 
   // Build Prospeo filters
+  // Format varies by filter type (confirmed via API testing):
+  //   person_seniority, person_job_title, company_industry: {include: [...]}
+  //   company_headcount_range: plain array [...]
+  //   person_location / company_location: requires internal Prospeo IDs, skipped
+  //     (Companies House qualification naturally filters to UK companies)
   const filters: Record<string, any> = {};
 
   if (seniority?.length) {
@@ -60,11 +65,10 @@ export const POST: APIRoute = async ({ request }) => {
     filters.company_industry = { include: industries };
   }
   if (headcount_ranges?.length) {
-    filters.company_headcount_range = { include: headcount_ranges };
+    filters.company_headcount_range = headcount_ranges;
   }
-  if (locations?.length) {
-    filters.person_location = { include: locations };
-  }
+  // Location filter skipped: Prospeo requires internal IDs from their dashboard autocomplete.
+  // UK filtering happens at Companies House qualification step instead.
 
   if (Object.keys(filters).length === 0) {
     return new Response(JSON.stringify({ error: 'At least one filter is required' }), {
