@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campaigns | Leadership Growth Consulting</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --white: #ffffff;
+      --ink: #111111;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --grey-600: #555555;
+      --grey-400: #888888;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--ink);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--white);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-nav { display: flex; gap: 1rem; align-items: center; }
+    .header-nav a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .header-nav a:hover { color: var(--white); }
+    .header-nav a.active { color: var(--teal-bright); }
+
+    .main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .card > p.subtitle {
+      font-size: 0.85rem;
+      color: var(--grey-400);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.4rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--teal); }
+    .form-group .hint {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      margin-top: 0.3rem;
+    }
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .btn-primary { background: var(--teal); color: var(--white); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-primary:disabled { background: var(--grey-200); color: var(--grey-400); cursor: not-allowed; }
+    .btn-secondary { background: var(--grey-100); color: var(--grey-600); }
+    .btn-secondary:hover { background: var(--grey-200); }
+    .btn-success { background: var(--green); color: var(--white); }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger { background: var(--red); color: var(--white); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+
+    /* Stats */
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.4rem;
+      flex: 1;
+      min-width: 120px;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.2rem;
+    }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .badge-found { background: var(--grey-100); color: var(--grey-400); }
+    .badge-qualified { background: #dbeafe; color: var(--blue); }
+    .badge-disqualified { background: #fee2e2; color: var(--red); }
+    .badge-analyzed { background: var(--teal-glow); color: var(--teal); }
+    .badge-approved { background: #dcfce7; color: var(--green); }
+    .badge-pushed { background: var(--ink); color: var(--white); }
+    .badge-replied { background: #dbeafe; color: var(--blue); }
+
+    /* Progress bar */
+    .progress-wrap {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      height: 32px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      display: none;
+      position: relative;
+    }
+    .progress-wrap.active { display: block; }
+    .progress-bar {
+      height: 100%;
+      background: var(--teal);
+      transition: width 0.3s ease;
+      border-radius: var(--radius-md);
+    }
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Table */
+    .prospect-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .prospect-table th {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      background: var(--grey-100);
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .prospect-table td {
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--grey-200);
+      vertical-align: top;
+    }
+    .prospect-table tr:last-child td { border-bottom: none; }
+    .prospect-table tr:hover { background: rgba(17, 94, 89, 0.02); }
+    .prospect-table tr.expanded { background: var(--teal-glow); }
+    .company-name { font-weight: 600; color: var(--ink); cursor: pointer; }
+    .company-name:hover { color: var(--teal); }
+    .website-link { color: var(--teal); text-decoration: none; font-size: 0.8rem; }
+    .website-link:hover { text-decoration: underline; }
+
+    /* Detail panel */
+    .detail-row td { padding: 0; }
+    .detail-panel {
+      padding: 1.5rem;
+      background: var(--grey-100);
+      border-top: 2px solid var(--teal-bright);
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .detail-section h4 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      color: var(--ink);
+      margin-bottom: 0.6rem;
+    }
+    .detail-section p, .detail-section li {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      margin-bottom: 0.3rem;
+    }
+    .detail-section ul { list-style: none; padding: 0; }
+    .email-preview {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .email-preview .subject {
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .email-preview .body {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+    .detail-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    /* Batch list */
+    .batch-list {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .batch-item {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--grey-600);
+      background: var(--white);
+      transition: all 0.2s;
+    }
+    .batch-item:hover { border-color: var(--teal); color: var(--teal); }
+    .batch-item.active {
+      background: var(--teal);
+      color: var(--white);
+      border-color: var(--teal);
+    }
+    .batch-item .count {
+      font-size: 0.72rem;
+      opacity: 0.7;
+      margin-left: 0.3rem;
+    }
+
+    /* Action bar */
+    .action-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .action-bar .spacer { flex: 1; }
+
+    /* Checkbox */
+    .check-all { margin-right: 0.5rem; }
+
+    /* Log */
+    .log {
+      background: var(--ink);
+      color: #ccc;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      font-size: 0.75rem;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      display: none;
+    }
+    .log.active { display: block; }
+    .log .success { color: #4ade80; }
+    .log .error { color: #f87171; }
+    .log .info { color: #60a5fa; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--grey-400);
+    }
+    .empty-state h3 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--grey-600);
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Campaigns</h1>
+  <div class="header-nav">
+    <a href="/outreach">Outreach</a>
+    <a href="/campaigns" class="active">Campaigns</a>
+    <a href="/admin">Blog</a>
+    <a href="/">Website</a>
+  </div>
+</div>
+
+<div class="main">
+  <!-- SEARCH -->
+  <div class="card" id="search-card">
+    <h2>New Search</h2>
+    <p class="subtitle">Find prospects matching your ICP via Prospeo People Search</p>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Batch Name</label>
+        <input type="text" id="search-name" placeholder="e.g. UK SME Owners - March">
+      </div>
+      <div class="form-group">
+        <label>Seniority</label>
+        <select id="search-seniority" multiple size="4">
+          <option value="Founder/Owner" selected>Founder / Owner</option>
+          <option value="C-Suite">C-Suite</option>
+          <option value="Partner">Partner</option>
+          <option value="Director" selected>Director</option>
+          <option value="Vice President">Vice President</option>
+          <option value="Head">Head</option>
+          <option value="Manager">Manager</option>
+        </select>
+        <p class="hint">Ctrl/Cmd+click to select multiple</p>
+      </div>
+      <div class="form-group">
+        <label>Company Size</label>
+        <select id="search-headcount" multiple size="4">
+          <option value="11-50" selected>11-50</option>
+          <option value="51-200" selected>51-200</option>
+          <option value="201-500">201-500</option>
+          <option value="1-10">1-10</option>
+        </select>
+        <p class="hint">Ctrl/Cmd+click to select multiple</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Job Titles</label>
+        <input type="text" id="search-titles" placeholder="e.g. Managing Director, CEO, Owner">
+        <p class="hint">Comma-separated</p>
+      </div>
+      <div class="form-group">
+        <label>Industries</label>
+        <input type="text" id="search-industries" placeholder="e.g. Accounting, Financial Services">
+        <p class="hint">Comma-separated</p>
+      </div>
+      <div class="form-group">
+        <label>Locations</label>
+        <input type="text" id="search-locations" placeholder="e.g. London, United Kingdom">
+        <p class="hint">Comma-separated (use Prospeo format)</p>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="width:140px">
+        <label>Limit</label>
+        <input type="number" id="search-limit" value="500" min="25" max="1000" step="25">
+      </div>
+      <button class="btn btn-primary" id="search-btn" onclick="runSearch()">Search Prospeo</button>
+    </div>
+  </div>
+
+  <!-- BATCHES -->
+  <div id="batches-section">
+    <div class="batch-list" id="batch-list"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar" id="stats-bar" style="display:none">
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+    <div class="stat-card"><div class="stat-label">Found</div><div class="stat-value" id="stat-found">0</div></div>
+    <div class="stat-card"><div class="stat-label">Qualified</div><div class="stat-value" id="stat-qualified">0</div></div>
+    <div class="stat-card"><div class="stat-label">Analyzed</div><div class="stat-value" id="stat-analyzed">0</div></div>
+    <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value" id="stat-approved">0</div></div>
+    <div class="stat-card"><div class="stat-label">Pushed</div><div class="stat-value" id="stat-pushed">0</div></div>
+    <div class="stat-card"><div class="stat-label">Disqualified</div><div class="stat-value" id="stat-disqualified">0</div></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    <div class="progress-text" id="progress-text">0%</div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar" id="action-bar" style="display:none">
+    <button class="btn btn-primary" onclick="qualifyAll()">Qualify All</button>
+    <button class="btn btn-primary" onclick="analyzeAll()">Analyze All</button>
+    <button class="btn btn-success" onclick="approveAll()">Approve All</button>
+    <button class="btn btn-success" onclick="pushToInstantly()">Push to Instantly</button>
+    <div class="spacer"></div>
+    <button class="btn btn-secondary" onclick="checkReplies()">Check Replies</button>
+    <button class="btn btn-secondary btn-sm" onclick="toggleLog()">Log</button>
+  </div>
+
+  <!-- LOG -->
+  <div class="log" id="log"></div>
+
+  <!-- PROSPECTS TABLE -->
+  <div id="prospects-section" style="display:none">
+    <table class="prospect-table" id="prospect-table">
+      <thead>
+        <tr>
+          <th style="width:30px"><input type="checkbox" class="check-all" onchange="toggleSelectAll(this)"></th>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Title</th>
+          <th>Size</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="prospect-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-state" class="empty-state">
+    <h3>No batches yet</h3>
+    <p>Run a Prospeo search above to find prospects matching your ICP.</p>
+  </div>
+</div>
+
+<script>
+const API_BASE = '/api/campaigns';
+let currentBatchId = null;
+let prospects = [];
+let batches = [];
+let expandedId = null;
+
+// ===== LOAD BATCHES =====
+async function loadBatches() {
+  try {
+    const res = await fetch(`${API_BASE}/list`);
+    const data = await res.json();
+    batches = data.batches || [];
+    renderBatchList();
+
+    if (batches.length > 0 && !currentBatchId) {
+      selectBatch(batches[0].id);
+    } else if (batches.length === 0) {
+      document.getElementById('empty-state').style.display = 'block';
+    }
+  } catch (err) {
+    log('Failed to load batches: ' + err.message, 'error');
+  }
+}
+
+function renderBatchList() {
+  const el = document.getElementById('batch-list');
+  if (batches.length === 0) {
+    el.innerHTML = '';
+    return;
+  }
+
+  el.innerHTML = batches.map(b => `
+    <div class="batch-item ${b.id === currentBatchId ? 'active' : ''}" onclick="selectBatch('${b.id}')">
+      ${b.name || 'Untitled'} <span class="count">(${b.prospect_count || 0})</span>
+      ${b.instantly_campaign_id ? ' ✓' : ''}
+    </div>
+  `).join('');
+}
+
+async function selectBatch(batchId) {
+  currentBatchId = batchId;
+  expandedId = null;
+  renderBatchList();
+  await loadProspects();
+}
+
+// ===== LOAD PROSPECTS =====
+async function loadProspects() {
+  if (!currentBatchId) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/list?batch_id=${currentBatchId}`);
+    const data = await res.json();
+    prospects = data.prospects || [];
+    const counts = data.counts || {};
+
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('stats-bar').style.display = 'flex';
+    document.getElementById('action-bar').style.display = 'flex';
+    document.getElementById('prospects-section').style.display = 'block';
+
+    // Update stats
+    const total = prospects.length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-found').textContent = counts.found || 0;
+    document.getElementById('stat-qualified').textContent = counts.qualified || 0;
+    document.getElementById('stat-analyzed').textContent = counts.analyzed || 0;
+    document.getElementById('stat-approved').textContent = counts.approved || 0;
+    document.getElementById('stat-pushed').textContent = counts.pushed || 0;
+    document.getElementById('stat-disqualified').textContent = counts.disqualified || 0;
+
+    renderProspects();
+  } catch (err) {
+    log('Failed to load prospects: ' + err.message, 'error');
+  }
+}
+
+function renderProspects() {
+  const tbody = document.getElementById('prospect-tbody');
+  tbody.innerHTML = '';
+
+  for (const p of prospects) {
+    const row = document.createElement('tr');
+    row.id = `row-${p.id}`;
+    if (p.id === expandedId) row.classList.add('expanded');
+
+    const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+    const website = p.website ? `<a href="${p.website}" target="_blank" class="website-link">${p.website.replace('https://', '')}</a>` : '';
+
+    row.innerHTML = `
+      <td><input type="checkbox" class="prospect-check" data-id="${p.id}"></td>
+      <td>
+        <span class="company-name" onclick="toggleDetail('${p.id}')">${p.company_name || 'Unknown'}</span><br>
+        ${website}
+      </td>
+      <td>${name || '-'}<br><span style="font-size:0.75rem;color:var(--grey-400)">${p.email || 'No email'}</span></td>
+      <td style="font-size:0.8rem">${p.title || '-'}</td>
+      <td style="font-size:0.8rem">${p.company_size || '-'}</td>
+      <td><span class="badge badge-${p.pipeline_status}">${p.pipeline_status}</span></td>
+      <td>
+        ${p.pipeline_status === 'found' ? `<button class="btn btn-sm btn-primary" onclick="qualifySingle('${p.id}')">Qualify</button>` : ''}
+        ${p.pipeline_status === 'qualified' ? `<button class="btn btn-sm btn-primary" onclick="analyzeSingle('${p.id}')">Analyze</button>` : ''}
+        ${p.pipeline_status === 'analyzed' ? `<button class="btn btn-sm btn-success" onclick="approveSingle('${p.id}')">Approve</button>` : ''}
+        ${p.pipeline_status === 'analyzed' || p.pipeline_status === 'approved' ? `<button class="btn btn-sm btn-danger" onclick="skipSingle('${p.id}')">Skip</button>` : ''}
+      </td>
+    `;
+    tbody.appendChild(row);
+
+    // Detail row
+    if (p.id === expandedId) {
+      const detailRow = document.createElement('tr');
+      detailRow.classList.add('detail-row');
+      detailRow.innerHTML = `<td colspan="7">${buildDetailPanel(p)}</td>`;
+      tbody.appendChild(detailRow);
+    }
+  }
+}
+
+function buildDetailPanel(p) {
+  const analysis = p.website_analysis || {};
+  const ideas = p.improvement_ideas || [];
+
+  let html = '<div class="detail-panel">';
+
+  if (p.draft_body) {
+    html += `
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Initial Email</h4>
+          <div class="email-preview">
+            <div class="subject">Subject: ${p.draft_subject || ''}</div>
+            <div class="body">${(p.draft_body || '').replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Follow-up 1 (Day 3)</h4>
+          <div class="email-preview">
+            <div class="subject">Subject: ${p.follow_up_1_subject || ''}</div>
+            <div class="body">${(p.follow_up_1_body || '').replace(/\n/g, '<br>')}</div>
+          </div>
+          <h4 style="margin-top:1rem">Follow-up 2 (Day 6)</h4>
+          <div class="email-preview">
+            <div class="subject">Subject: ${p.follow_up_2_subject || ''}</div>
+            <div class="body">${(p.follow_up_2_body || '').replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (analysis.recommended_angle) {
+    html += `
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Analysis</h4>
+          <p><strong>Angle:</strong> ${analysis.recommended_angle} - ${analysis.angle_rationale || ''}</p>
+          <p><strong>Score:</strong> ${analysis.overall_score || 'N/A'}/10</p>
+          <p><strong>Key observation:</strong> ${analysis.key_observation || '-'}</p>
+          <p><strong>Service promises:</strong> ${analysis.service_promises || '-'}</p>
+          <p><strong>Growth signals:</strong> ${analysis.growth_signals || '-'}</p>
+          ${analysis.franchise_flag ? `<p><strong>Franchise:</strong> ${analysis.franchise_flag}</p>` : ''}
+          ${analysis.prospeo_note ? `<p><strong>Prospeo:</strong> ${analysis.prospeo_note}</p>` : ''}
+        </div>
+        <div class="detail-section">
+          <h4>Improvement Ideas</h4>
+          <ul>
+            ${ideas.map(idea => `<li style="margin-bottom:0.8rem"><strong>${idea.title}</strong><br>${idea.description}<br><em>${idea.impact}</em></li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
+  // Company info
+  html += `
+    <div class="detail-section" style="font-size:0.8rem;color:var(--grey-400)">
+      CH: ${p.company_number || '-'} | Accounts: ${p.accounts_type || '-'} | Status: ${p.company_status || '-'} | SIC: ${(p.sic_codes || []).join(', ') || '-'}
+    </div>
+  `;
+
+  html += '</div>';
+  return html;
+}
+
+function toggleDetail(id) {
+  expandedId = expandedId === id ? null : id;
+  renderProspects();
+}
+
+// ===== SEARCH =====
+async function runSearch() {
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+
+  const seniorityEl = document.getElementById('search-seniority');
+  const headcountEl = document.getElementById('search-headcount');
+  const seniority = Array.from(seniorityEl.selectedOptions).map(o => o.value);
+  const headcount_ranges = Array.from(headcountEl.selectedOptions).map(o => o.value);
+
+  const titlesRaw = document.getElementById('search-titles').value;
+  const industriesRaw = document.getElementById('search-industries').value;
+  const locationsRaw = document.getElementById('search-locations').value;
+
+  const job_titles = titlesRaw ? titlesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const industries = industriesRaw ? industriesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const locations = locationsRaw ? locationsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const limit = parseInt(document.getElementById('search-limit').value) || 500;
+  const name = document.getElementById('search-name').value;
+
+  try {
+    const res = await fetch(`${API_BASE}/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, seniority, job_titles, industries, headcount_ranges, locations, limit }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      log('Search failed: ' + (data.detail || data.error), 'error');
+      alert('Search failed: ' + (data.detail || data.error));
+    } else {
+      log(`Search complete: ${data.inserted} prospects added (${data.duplicates_skipped} duplicates skipped, ${data.total_available} available)`, 'success');
+
+      // Reload batches and select the new one
+      await loadBatches();
+      if (data.batch_id) {
+        await selectBatch(data.batch_id);
+      }
+    }
+  } catch (err) {
+    log('Search error: ' + err.message, 'error');
+    alert('Search error: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Search Prospeo';
+}
+
+// ===== BULK ACTIONS =====
+function showProgress(current, total, label) {
+  const wrap = document.getElementById('progress-wrap');
+  const bar = document.getElementById('progress-bar');
+  const text = document.getElementById('progress-text');
+  wrap.classList.add('active');
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  bar.style.width = pct + '%';
+  text.textContent = `${label}: ${current}/${total} (${pct}%)`;
+}
+
+function hideProgress() {
+  document.getElementById('progress-wrap').classList.remove('active');
+}
+
+async function qualifyAll() {
+  const toQualify = prospects.filter(p => p.pipeline_status === 'found');
+  if (toQualify.length === 0) { alert('No prospects to qualify'); return; }
+  if (!confirm(`Qualify ${toQualify.length} prospects through Companies House?`)) return;
+
+  let qualified = 0, disqualified = 0, errors = 0;
+
+  for (let i = 0; i < toQualify.length; i++) {
+    showProgress(i + 1, toQualify.length, 'Qualifying');
+
+    try {
+      const res = await fetch(`${API_BASE}/qualify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospect_id: toQualify[i].id }),
+      });
+      const data = await res.json();
+
+      if (data.status === 'qualified') qualified++;
+      else if (data.status === 'disqualified') disqualified++;
+      else errors++;
+
+      log(`${toQualify[i].company_name}: ${data.status}${data.reason ? ' - ' + data.reason : ''}`, data.status === 'qualified' ? 'success' : 'info');
+    } catch (err) {
+      errors++;
+      log(`${toQualify[i].company_name}: error - ${err.message}`, 'error');
+    }
+  }
+
+  hideProgress();
+  log(`Qualification done: ${qualified} qualified, ${disqualified} disqualified, ${errors} errors`, 'success');
+  await loadProspects();
+}
+
+async function analyzeAll() {
+  const toAnalyze = prospects.filter(p => p.pipeline_status === 'qualified');
+  if (toAnalyze.length === 0) { alert('No qualified prospects to analyze'); return; }
+  if (!confirm(`Analyze ${toAnalyze.length} prospects? This will:\n- Enrich emails via Prospeo\n- Fetch websites\n- Generate emails via Claude\n\nThis may take a while.`)) return;
+
+  let analyzed = 0, disqualified = 0, errors = 0;
+
+  for (let i = 0; i < toAnalyze.length; i++) {
+    showProgress(i + 1, toAnalyze.length, 'Analyzing');
+
+    try {
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospect_id: toAnalyze[i].id }),
+      });
+      const data = await res.json();
+
+      if (data.status === 'analyzed') analyzed++;
+      else if (data.status === 'disqualified') disqualified++;
+      else errors++;
+
+      log(`${toAnalyze[i].company_name}: ${data.status}${data.reason ? ' - ' + data.reason : ''}`, data.status === 'analyzed' ? 'success' : 'info');
+    } catch (err) {
+      errors++;
+      log(`${toAnalyze[i].company_name}: error - ${err.message}`, 'error');
+    }
+  }
+
+  hideProgress();
+  log(`Analysis done: ${analyzed} analyzed, ${disqualified} disqualified, ${errors} errors`, 'success');
+  await loadProspects();
+}
+
+async function approveAll() {
+  if (!currentBatchId) return;
+
+  const toApprove = prospects.filter(p => p.pipeline_status === 'analyzed');
+  if (toApprove.length === 0) { alert('No analyzed prospects to approve'); return; }
+  if (!confirm(`Approve all ${toApprove.length} analyzed prospects?`)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ batch_id: currentBatchId }),
+    });
+    const data = await res.json();
+    log(`Approved ${data.approved} prospects`, 'success');
+    await loadProspects();
+  } catch (err) {
+    log('Approve failed: ' + err.message, 'error');
+  }
+}
+
+async function pushToInstantly() {
+  if (!currentBatchId) return;
+
+  const approved = prospects.filter(p => p.pipeline_status === 'approved');
+  if (approved.length === 0) { alert('No approved prospects to push'); return; }
+
+  const campaignName = prompt('Campaign name:', `LGC ${new Date().toISOString().slice(0, 10)}`);
+  if (!campaignName) return;
+
+  if (!confirm(`Push ${approved.length} prospects to Instantly as "${campaignName}" (PAUSED)?`)) return;
+
+  showProgress(0, 1, 'Pushing to Instantly');
+
+  try {
+    const res = await fetch(`${API_BASE}/push-to-instantly`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ batch_id: currentBatchId, campaign_name: campaignName }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      log('Push failed: ' + (data.detail || data.error), 'error');
+      alert('Push failed: ' + (data.detail || data.error));
+    } else {
+      log(`Pushed to Instantly: ${data.uploaded} leads uploaded, ${data.failed} failed. Campaign: ${data.campaign_id}`, 'success');
+      alert(`Campaign created (PAUSED): ${data.campaign_name}\n${data.uploaded} leads uploaded.\n\nActivate in Instantly when ready.`);
+      await loadBatches();
+      await loadProspects();
+    }
+  } catch (err) {
+    log('Push error: ' + err.message, 'error');
+  }
+
+  hideProgress();
+}
+
+async function checkReplies() {
+  if (!currentBatchId) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/replies?batch_id=${currentBatchId}`);
+    const data = await res.json();
+
+    if (data.error) {
+      log('Reply check failed: ' + data.error, 'error');
+      alert(data.error);
+    } else {
+      log(`Replies: ${data.total_replies} total, ${data.matched_to_prospects} matched to prospects`, 'success');
+      if (data.matched_to_prospects > 0) {
+        await loadProspects();
+      }
+    }
+  } catch (err) {
+    log('Reply check error: ' + err.message, 'error');
+  }
+}
+
+// ===== SINGLE ACTIONS =====
+async function qualifySingle(id) {
+  try {
+    const res = await fetch(`${API_BASE}/qualify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prospect_id: id }),
+    });
+    const data = await res.json();
+    log(`Qualified: ${data.status}${data.reason ? ' - ' + data.reason : ''}`, data.status === 'qualified' ? 'success' : 'info');
+    await loadProspects();
+  } catch (err) {
+    log('Qualify error: ' + err.message, 'error');
+  }
+}
+
+async function analyzeSingle(id) {
+  try {
+    const res = await fetch(`${API_BASE}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prospect_id: id }),
+    });
+    const data = await res.json();
+    log(`Analyzed: ${data.status}`, data.status === 'analyzed' ? 'success' : 'info');
+    expandedId = id;
+    await loadProspects();
+  } catch (err) {
+    log('Analyze error: ' + err.message, 'error');
+  }
+}
+
+async function approveSingle(id) {
+  try {
+    await fetch(`${API_BASE}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prospect_id: id }),
+    });
+    await loadProspects();
+  } catch (err) {
+    log('Approve error: ' + err.message, 'error');
+  }
+}
+
+async function skipSingle(id) {
+  try {
+    await fetch(`${API_BASE}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prospect_id: id, action: 'skip' }),
+    });
+    await loadProspects();
+  } catch (err) {
+    log('Skip error: ' + err.message, 'error');
+  }
+}
+
+// ===== SELECT ALL =====
+function toggleSelectAll(el) {
+  document.querySelectorAll('.prospect-check').forEach(cb => {
+    cb.checked = el.checked;
+  });
+}
+
+// ===== LOG =====
+function log(msg, type = 'info') {
+  const el = document.getElementById('log');
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function toggleLog() {
+  document.getElementById('log').classList.toggle('active');
+}
+
+// ===== INIT =====
+loadBatches();
+</script>
+
+</body>
+</html>
