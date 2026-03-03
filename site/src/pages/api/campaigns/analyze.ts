@@ -75,13 +75,13 @@ Lowest risk because you are engaging with what they care about most.
 
 GREETING: "Hi [first name],\\n\\n" using the contact name provided. This is MANDATORY. If no name is available, use "Hi there,\\n\\n" and flag in the assessment that no verified name was found.
 
-OPENING (2-3 sentences): Lead directly with the hook. The first sentence must BE the observation, compliment, or business insight. Earn the right to make the observations that follow. When addressed to a specific person, personalisation must match THAT person's story, not just the firm's founding narrative.
+OPENING (1-2 sentences): Lead directly with the hook. Keep it tight. The first sentence must BE the observation, compliment, or business insight. Earn the right to make the observations that follow. When addressed to a specific person, personalisation must match THAT person's story, not just the firm's founding narrative. Shorter is better here, get to the bridge quickly.
 
-BRIDGE (1 sentence): Reframe or reassurance transitioning to the offer. "I work with [type of firm] to build small systems that [outcome]."
+BRIDGE (1 sentence): Reframe or reassurance transitioning to the offer. Position with speed and scale, not systems and manual work. "I work with [type of firm owner] to make their operations run at a speed that keeps up with their ambition, without adding headcount." The reader should feel the size of what is possible.
 
-IDEAS (1 paragraph + bullets): Introduce with "Things like:" then 3 bullet points. Bullets are short, one line each, starting with a concrete noun or action. Frame every idea as a system or automation that runs without human input. When the firm lists specific sectors, mirror those sector names in the bullets. When the blog has specific post topics, name them in the nurture bullet rather than referencing "your blog" generically. When the firm segments by revenue tier, mirror their segmentation in qualifying/routing automation bullets.
+IDEAS (1 paragraph + bullets): Introduce with "I had three ideas for things we could build to free up time:" then 3 bullet points. Bullets are short, one line each. Every bullet must end with what disappears from the person's plate or what becomes instant that was previously slow. Frame as outcome-led, not feature-led. Wrong: "An automated reporting deadline reminder sequence triggered per client." Right: "A deadline system that means no client is ever chased manually again, the reminders run themselves." When the firm lists specific sectors, mirror those sector names in the bullets. When the blog has specific post topics, name them in the nurture bullet rather than referencing "your blog" generically.
 
-OFFER (2 sentences): "I have put together a few ideas in a one-page breakdown, no cost, no catch, it is how I introduce the way I work." Then: "And if any of it lands, I will build something small that frees you up in an area of your business that usually takes up your time."
+OFFER (2 sentences): Lead with the build, not the one-pager. "If any of the above sounds useful, I will build one of them for you. No cost, no catch, it is yours to keep. It is how I introduce the way I work, and it will be working in your business the moment you get it."
 
 CTA (1 line): "Worth me sharing some more details?"
 
@@ -138,15 +138,17 @@ The first sentence after the greeting must BE the hook itself: a tagline, a busi
 
 ## IMPROVEMENT IDEAS
 - Every idea must be framed as a system or automation, not a website feature.
+- Every idea must be outcome-led: end with what disappears from the person's plate or what becomes instant that was previously slow.
+- Wrong: "An automated MTD and FCA reporting deadline reminder sequence triggered per client." Right: "A deadline system that means no client is ever chased manually again, the reminders run themselves, per client, without the team touching it."
+- Wrong: "An enquiry routing system that qualifies and directs inbound contacts by geography and service line." Right: "A system that means every enquiry is qualified and routed before [name] even sees it, no manual triage across four service lines."
 - Wrong: "A small addition to the existing site." Right: "An automated review request system that keeps your 5-star rating growing without anyone chasing it."
-- Wrong: "Surfacing this properly." Right: "A system that works without anyone needing to be available."
 - Be hyper-specific to THIS business, referencing what you found on their site.
 - When the firm already has an email programme or content, position automations as enhancing what they started, not replacing it.
 - For franchise operators, focus entirely on operational automations that help the individual practitioner, not website observations.
 
 ## FOLLOW-UPS
 Follow-up 1 (day 3, 50-80 words): Must open with "Hi [first name],\\n\\n". Add a specific piece of value or reference one idea you could build. Different angle from the initial email. End on a question. Sign off "Will."
-Follow-up 2 (day 6, 30-50 words): Must open with "Hi [first name],\\n\\n". Final nudge. Casual, no pressure. Leave the door open. End on a question. Sign off "Will."
+Follow-up 2 (day 6, 40-60 words): Must open with "Hi [first name],\\n\\n". Plant a seed about what happens after the free build. Hint at the larger engagement without selling it. Frame the free build as a gateway experience: "the business owners I work with tend to start with one small system and then realise how much else could operate the same way." Leave the door open. End on a question. Sign off "Will."
 
 ## QUALITY CHECKLIST (verify every point before output)
 - Does every email start with "Hi [first name]," greeting?
@@ -156,10 +158,12 @@ Follow-up 2 (day 6, 30-50 words): Must open with "Hi [first name],\\n\\n". Final
 - Is the subject line 2-4 words, safe (not diagnostic, not spammy), and intriguing?
 - Zero em dashes in all emails?
 - Does the opening lead with the hook, not "I came across" or how you found them?
-- Ideas listed as bullets under "Things like:" only, everything else prose?
+- Ideas listed as bullets under "I had three ideas..." intro, everything else prose?
 - CTA is "Worth me sharing some more details?"
-- "No cost, no catch" line included?
-- Offer line includes "I will build something small that frees you up"?
+- "No cost, no catch, it is yours to keep" line included?
+- Offer leads with the build ("I will build one of them for you"), not the one-pager?
+- Every bullet idea ends with what disappears or what becomes instant?
+- Positioning line leads with speed and scale, not systems and manual work?
 - Correct angle chosen (not defaulting to Angle 2)?
 - If Angle 1 or 2, is the claim verifiably true from the content?
 - Deep personalisation beyond firm name and location?
@@ -553,7 +557,7 @@ Return JSON with this exact structure:
   ],
   "draft_email": {
     "subject": "2-4 words only.",
-    "body": "Start with 'Hi ${contactFirstName || 'there'},\\n\\n' then 120-160 words. Structure: Opening -> Bridge -> Ideas ('Things like:' + 3 bullets) -> Offer -> CTA -> Sign off 'Will'. Use \\n\\n between paragraphs. Use \\n- for bullets."
+    "body": "Start with 'Hi ${contactFirstName || 'there'},\\n\\n' then 120-160 words. Structure: Opening (1-2 sentences) -> Bridge (speed/scale positioning) -> Ideas ('I had three ideas...' + 3 outcome-led bullets) -> Offer (lead with the build) -> CTA -> Sign off 'Will'. Use \\n\\n between paragraphs. Use \\n- for bullets."
   },
   "follow_up_1": {
     "subject": "Re: [same subject]",

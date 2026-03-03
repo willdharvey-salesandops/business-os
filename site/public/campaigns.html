@@ -152,6 +152,20 @@
     .btn-success:hover { background: #15803d; }
     .btn-danger { background: var(--red); color: var(--white); }
     .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+    .btn-sm:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .spinner-sm {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin-sm 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    @keyframes spin-sm { to { transform: rotate(360deg); } }
 
     /* Stats */
     .stats-bar {
@@ -1216,6 +1230,12 @@ async function checkReplies() {
 
 // ===== SINGLE ACTIONS =====
 async function qualifySingle(id) {
+  const btn = document.querySelector(`button[onclick="qualifySingle('${id}')"]`);
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.origText = btn.textContent;
+    btn.innerHTML = '<span class="spinner-sm"></span> Qualifying...';
+  }
   try {
     const res = await fetch(`${API_BASE}/qualify`, {
       method: 'POST',
@@ -1227,10 +1247,18 @@ async function qualifySingle(id) {
     await loadProspects();
   } catch (err) {
     log('Qualify error: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText; }
   }
 }
 
 async function analyzeSingle(id) {
+  // Show spinner on the button
+  const btn = document.querySelector(`button[onclick="analyzeSingle('${id}')"]`);
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.origText = btn.textContent;
+    btn.innerHTML = '<span class="spinner-sm"></span> Analyzing...';
+  }
   try {
     const res = await fetch(`${API_BASE}/analyze`, {
       method: 'POST',
@@ -1238,11 +1266,17 @@ async function analyzeSingle(id) {
       body: JSON.stringify({ prospect_id: id }),
     });
     const data = await res.json();
-    log(`Analyzed: ${data.status}`, data.status === 'analyzed' ? 'success' : 'info');
+    if (data.error) {
+      log(`Analyze failed: ${data.error}${data.detail ? ' - ' + data.detail : ''}`, 'error');
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText; }
+      return;
+    }
+    log(`Analyzed: ${data.status}${data.reason ? ' - ' + data.reason : ''}`, data.status === 'analyzed' ? 'success' : 'info');
     expandedId = id;
     await loadProspects();
   } catch (err) {
     log('Analyze error: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText; }
   }
 }
 
