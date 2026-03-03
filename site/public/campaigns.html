@@ -935,6 +935,7 @@ function renderProspects() {
       <td>
         ${p.pipeline_status === 'found' ? `<button class="btn btn-sm btn-primary" onclick="qualifySingle('${p.id}')">Qualify</button>` : ''}
         ${p.pipeline_status === 'qualified' ? `<button class="btn btn-sm btn-primary" onclick="analyzeSingle('${p.id}')">Analyze</button>` : ''}
+        ${p.pipeline_status === 'analyzed' || p.pipeline_status === 'approved' ? `<button class="btn btn-sm btn-primary" onclick="analyzeSingle('${p.id}')">Re-analyze</button>` : ''}
         ${p.pipeline_status === 'analyzed' ? `<button class="btn btn-sm btn-success" onclick="approveSingle('${p.id}')">Approve</button>` : ''}
         ${p.pipeline_status === 'analyzed' || p.pipeline_status === 'approved' ? `<button class="btn btn-sm btn-danger" onclick="skipSingle('${p.id}')">Skip</button>` : ''}
       </td>
