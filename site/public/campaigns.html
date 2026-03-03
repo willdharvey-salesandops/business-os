@@ -778,18 +778,19 @@ const INDUSTRY_OPTIONS = [
   'Transportation Logistics Supply Chain and Storage', 'Veterinary Services',
   'Wellness and Fitness Services', 'General Wholesale'
 ];
-// Prospeo location format: "Country #CC" or "City, State, Country #CC"
+// Prospeo location format: "Country #CC", "Region, Country #CC", or "City, Country #CC"
+// Note: 3-part format like "City, England, Country #CC" is INVALID - use "City, Country #CC"
 const LOCATION_OPTIONS = [
   'United Kingdom #GB', 'England, United Kingdom #GB', 'Scotland, United Kingdom #GB',
   'Wales, United Kingdom #GB', 'Northern Ireland, United Kingdom #GB',
-  'London, England, United Kingdom #GB', 'Manchester, England, United Kingdom #GB',
-  'Birmingham, England, United Kingdom #GB', 'Leeds, England, United Kingdom #GB',
-  'Bristol, England, United Kingdom #GB', 'Edinburgh, Scotland, United Kingdom #GB',
-  'Glasgow, Scotland, United Kingdom #GB', 'Liverpool, England, United Kingdom #GB',
-  'Sheffield, England, United Kingdom #GB', 'Newcastle upon Tyne, England, United Kingdom #GB',
-  'Nottingham, England, United Kingdom #GB', 'Southampton, England, United Kingdom #GB',
-  'Brighton, England, United Kingdom #GB', 'Oxford, England, United Kingdom #GB',
-  'Cambridge, England, United Kingdom #GB'
+  'London, United Kingdom #GB', 'Manchester, United Kingdom #GB',
+  'Birmingham, United Kingdom #GB', 'Leeds, United Kingdom #GB',
+  'Bristol, United Kingdom #GB', 'Edinburgh, United Kingdom #GB',
+  'Glasgow, United Kingdom #GB', 'Liverpool, United Kingdom #GB',
+  'Sheffield, United Kingdom #GB', 'Newcastle upon Tyne, United Kingdom #GB',
+  'Nottingham, United Kingdom #GB', 'Southampton, United Kingdom #GB',
+  'Brighton, United Kingdom #GB', 'Oxford, United Kingdom #GB',
+  'Cambridge, United Kingdom #GB'
 ];
 
 createMultiSelect('ms-seniority', SENIORITY_OPTIONS, ['Founder/Owner', 'Director'], 'Select seniority levels...', false);
