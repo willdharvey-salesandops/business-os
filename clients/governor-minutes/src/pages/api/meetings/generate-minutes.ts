@@ -4,7 +4,8 @@ import Anthropic from '@anthropic-ai/sdk';
 export const prerender = false;
 
 function getAnthropicApiKey(): string {
-  return import.meta.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || '';
+  const key = 'ANTHROPIC_API_KEY';
+  return process.env[key] || import.meta.env[key] || '';
 }
 
 const SYSTEM_PROMPT = `You are a professional clerk who writes formal minutes for school governing body meetings in England. You convert raw meeting transcripts into clean, structured minutes that match the standard format used by school governors.
