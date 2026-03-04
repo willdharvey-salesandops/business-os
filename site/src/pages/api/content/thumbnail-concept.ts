@@ -3,8 +3,8 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const prerender = false;
 
-function getEnv(key: string): string {
-  return (import.meta.env[key] || process.env[key] || '') as string;
+function getAnthropicApiKey(): string {
+  return import.meta.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || '';
 }
 
 async function fetchThumbnailBase64(videoId: string): Promise<{ data: string; media_type: string } | null> {
@@ -25,7 +25,7 @@ async function fetchThumbnailBase64(videoId: string): Promise<{ data: string; me
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  const anthropicKey = getEnv('ANTHROPIC_API_KEY');
+  const anthropicKey = getAnthropicApiKey();
   if (!anthropicKey) {
     return new Response(JSON.stringify({ error: 'Anthropic API key not configured' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },

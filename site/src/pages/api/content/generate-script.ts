@@ -4,8 +4,8 @@ import { VOICE_CONTEXT, CLIENT_CONTEXT, COMPANY_CONTEXT, SCRIPT_TEMPLATE } from 
 
 export const prerender = false;
 
-function getEnv(key: string): string {
-  return (import.meta.env[key] || process.env[key] || '') as string;
+function getAnthropicApiKey(): string {
+  return import.meta.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || '';
 }
 
 async function fetchTranscript(videoId: string): Promise<string | null> {
@@ -53,7 +53,7 @@ You will receive data about a YouTube video that significantly over-performed it
 Return valid JSON only. No markdown fences.`;
 
 export const POST: APIRoute = async ({ request }) => {
-  const anthropicKey = getEnv('ANTHROPIC_API_KEY');
+  const anthropicKey = getAnthropicApiKey();
   if (!anthropicKey) {
     return new Response(JSON.stringify({ error: 'Anthropic API key not configured' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },

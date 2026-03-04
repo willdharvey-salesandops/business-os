@@ -4,8 +4,8 @@ import { WATCHLIST_CHANNELS } from '../../../lib/business-context';
 
 export const prerender = false;
 
-function getEnv(key: string): string {
-  return (import.meta.env[key] || process.env[key] || '') as string;
+function getYouTubeApiKey(): string {
+  return import.meta.env.YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY || '';
 }
 
 interface VideoData {
@@ -33,7 +33,7 @@ function median(values: number[]): number {
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  const apiKey = getEnv('YOUTUBE_API_KEY');
+  const apiKey = getYouTubeApiKey();
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'YouTube API key not configured' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
