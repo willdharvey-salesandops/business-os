@@ -14,12 +14,16 @@ Read these files (if they exist):
 ## Process
 
 1. **Gather Context**: Understand current priorities and recent progress
-2. **Select TOP 2 Tasks**: Choose the two most important tasks based on:
+2. **Check Outreach Pipeline**: Query Supabase via the campaigns API to check:
+   - Any follow-ups due (prospects sent 2+ days ago without reply)
+   - Campaigns with approved emails ready to send
+   - Overall pipeline stats (sent, replied, pending)
+3. **Select TOP 2 Tasks**: Choose the two most important tasks based on:
    - Revenue impact
    - Strategic importance
    - What will move the needle most
-3. **Break Down Tasks**: For each TOP 2, create 2-4 concrete subtasks
-4. **Choose Quick Win**: Select one 10-15 minute task for momentum
+4. **Break Down Tasks**: For each TOP 2, create 2-4 concrete subtasks
+5. **Choose Quick Win**: Select one 10-15 minute task for momentum
 
 ## Output
 
@@ -27,6 +31,14 @@ Write to `workspace/foundations/daily-brief.md`:
 
 ```markdown
 ## Daily Brief - {Day, Month Date, Year}
+
+### Outreach Check
+- **Follow-ups due**: [count] prospects need follow-up emails
+- **Ready to send**: [count] approved emails in the queue
+- **Pipeline**: [sent] sent, [replied] replied, [pending] pending review
+- **Action**: [e.g. "Run follow-ups, then create a new campaign for [type] in [region]" or "Review 8 drafted emails and approve"]
+
+---
 
 ### Quick Win (10-15 min)
 - [ ] [Chosen activity]
