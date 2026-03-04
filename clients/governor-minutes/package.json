@@ -2,6 +2,9 @@
   "name": "governor-minutes",
   "type": "module",
   "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -9,7 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@astrojs/vercel": "^7.8.2",
-    "astro": "^4.16.0"
+    "@astrojs/vercel": "^9.0.4",
+    "astro": "^5.0.0"
   }
 }
