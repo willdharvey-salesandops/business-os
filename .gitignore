@@ -34,7 +34,8 @@ context/business/*.md
 !context/business/README.md
 
 # Client data (sensitive prospect info, campaigns, ICP profiles)
-clients/
+clients/*
+!clients/governor-minutes/
 
 # Workspace content (drafts, personal notes)
 workspace/
