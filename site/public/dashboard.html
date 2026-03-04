@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Leadership Growth Consulting</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --white: #ffffff;
+      --ink: #111111;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --grey-600: #555555;
+      --grey-400: #888888;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--ink);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--white);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-nav { display: flex; gap: 1rem; align-items: center; }
+    .header-nav a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .header-nav a:hover { color: var(--white); }
+    .header-nav a.active { color: var(--teal-bright); }
+
+    /* Main */
+    .main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Views */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .btn-primary { background: var(--teal); color: var(--white); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-primary:disabled { background: var(--grey-200); color: var(--grey-400); cursor: not-allowed; }
+    .btn-secondary { background: var(--grey-100); color: var(--grey-600); }
+    .btn-secondary:hover { background: var(--grey-200); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--grey-600);
+      border: 1px solid var(--grey-200);
+    }
+    .btn-ghost:hover { background: var(--grey-100); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.4rem;
+      flex: 1;
+      min-width: 140px;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.2rem;
+    }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Section cards */
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .section-card h2 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      color: var(--ink);
+    }
+    .section-card > p {
+      font-size: 0.85rem;
+      color: var(--grey-400);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Outlier card grid */
+    .outlier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.5rem;
+    }
+    .outlier-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .outlier-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border-color: var(--teal-bright);
+    }
+    .outlier-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+      background: var(--grey-100);
+    }
+    .outlier-body { padding: 1rem 1.2rem; }
+    .outlier-title {
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .outlier-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .outlier-channel {
+      font-size: 0.78rem;
+      color: var(--grey-400);
+    }
+    .outlier-views {
+      font-size: 0.75rem;
+      color: var(--grey-400);
+    }
+
+    /* Score badge */
+    .score-badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .score-low { background: var(--teal-glow); color: var(--teal); }
+    .score-mid { background: #dcfce7; color: var(--green); }
+    .score-high { background: #fef3c7; color: #b45309; }
+
+    .outlier-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+    .outlier-actions .btn { flex: 1; justify-content: center; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--grey-400);
+    }
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      stroke: var(--grey-200);
+      margin-bottom: 1rem;
+    }
+    .empty-state p {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+    .empty-state .sub {
+      font-size: 0.8rem;
+    }
+
+    /* Bottom panels */
+    .panels-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 768px) {
+      .panels-row { grid-template-columns: 1fr; }
+      .outlier-grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .panel h3 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      color: var(--ink);
+      margin-bottom: 1rem;
+    }
+    .blog-list { list-style: none; }
+    .blog-list li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--grey-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .blog-list li:last-child { border-bottom: none; }
+    .blog-title {
+      font-size: 0.85rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .blog-date {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      white-space: nowrap;
+    }
+    .panel-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 0.8rem;
+    }
+    .panel-link:hover { text-decoration: underline; }
+
+    /* ========================================= */
+    /* SCRIPT VIEW                               */
+    /* ========================================= */
+    .script-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .script-layout { grid-template-columns: 1fr; }
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--ink); }
+
+    .original-bar {
+      background: var(--grey-100);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .original-bar img {
+      width: 80px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+    }
+    .original-info {
+      flex: 1;
+    }
+    .original-info .title {
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 0.85rem;
+    }
+    .original-info .meta {
+      font-size: 0.75rem;
+      color: var(--grey-400);
+    }
+
+    /* Script sections */
+    .script-section {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .script-section h3 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      color: var(--ink);
+      margin-bottom: 0.8rem;
+    }
+    .script-section h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+      margin-top: 1rem;
+    }
+    .script-section h4:first-child { margin-top: 0; }
+    .script-section p {
+      font-size: 0.85rem;
+      color: var(--grey-600);
+      margin-bottom: 0.4rem;
+    }
+    .script-section ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 0.6rem;
+    }
+    .script-section ul li {
+      font-size: 0.85rem;
+      color: var(--grey-600);
+      padding: 0.2rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .script-section ul li::before {
+      content: '\2022';
+      color: var(--teal-bright);
+      font-weight: 700;
+      position: absolute;
+      left: 0;
+    }
+    .takeaway {
+      background: var(--teal-glow);
+      border-left: 3px solid var(--teal-bright);
+      padding: 0.6rem 1rem;
+      font-size: 0.82rem;
+      color: var(--teal);
+      font-weight: 500;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 0.4rem;
+    }
+
+    /* Title options */
+    .title-option {
+      background: var(--grey-100);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .title-option .option-title {
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+    }
+    .title-option .option-rationale {
+      font-size: 0.78rem;
+      color: var(--grey-400);
+    }
+
+    /* Sidebar (thumbnail) */
+    .sidebar-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      margin-bottom: 1.2rem;
+    }
+    .sidebar-card h3 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      color: var(--ink);
+      margin-bottom: 0.8rem;
+    }
+    .sidebar-card img {
+      width: 100%;
+      border-radius: var(--radius-md);
+      margin-bottom: 0.8rem;
+    }
+    .thumb-concept {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+    }
+    .thumb-concept h4 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
+      margin-top: 0.8rem;
+    }
+    .thumb-concept h4:first-child { margin-top: 0; }
+    .thumb-concept p {
+      font-size: 0.82rem;
+      margin-bottom: 0.3rem;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toast {
+      padding: 0.8rem 1.2rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--white);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      max-width: 360px;
+    }
+    .toast-success { background: var(--green); }
+    .toast-error { background: var(--red); }
+    .toast-info { background: var(--teal); }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(250, 250, 249, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--grey-200);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-text {
+      font-size: 0.9rem;
+      color: var(--grey-600);
+      font-weight: 500;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Button spinner */
+    .btn-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    .btn-secondary .btn-spinner {
+      border-color: rgba(85,85,85,0.2);
+      border-top-color: var(--grey-600);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <h1>Business OS</h1>
+    <nav class="header-nav">
+      <a href="/dashboard.html" class="active">Dashboard</a>
+      <a href="/outreach.html">Outreach</a>
+      <a href="/admin.html">Blog CMS</a>
+      <a href="/">Website</a>
+    </nav>
+  </header>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Scanning channels...</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ============================== -->
+    <!-- VIEW: OVERVIEW                 -->
+    <!-- ============================== -->
+    <div class="view active" id="viewOverview">
+
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-label">Last Scan</div>
+          <div class="stat-value" id="statLastScan">Never</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Outliers Found</div>
+          <div class="stat-value" id="statOutliers">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blog Articles</div>
+          <div class="stat-value" id="statBlog">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Campaigns</div>
+          <div class="stat-value" id="statCampaigns">--</div>
+        </div>
+      </div>
+
+      <!-- Video Content Pipeline -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Video Content Pipeline</h2>
+          <button class="btn btn-primary" id="btnScan" onclick="scanOutliers()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Scan for Outliers
+          </button>
+        </div>
+        <p>Scans 10 creators in your niche for videos that over-performed their channel average. Pick an idea to generate a full script and thumbnail concept.</p>
+
+        <div id="outlierResults">
+          <div class="empty-state" id="emptyState">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 15.5 5 5"/><circle cx="11" cy="11" r="8"/></svg>
+            <p>No outlier data yet</p>
+            <p class="sub">Hit "Scan for Outliers" to find high-performing content in your niche</p>
+          </div>
+          <div class="outlier-grid" id="outlierGrid" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Blog + Outreach panels -->
+      <div class="panels-row">
+        <div class="panel">
+          <h3>Recent Articles</h3>
+          <ul class="blog-list" id="blogList">
+            <li style="color:var(--grey-400);font-size:0.82rem;justify-content:center;border:none;">Loading...</li>
+          </ul>
+          <a href="/admin.html" class="panel-link">Open Blog CMS &rarr;</a>
+        </div>
+        <div class="panel">
+          <h3>Outreach</h3>
+          <p style="font-size:0.85rem;color:var(--grey-400);margin-bottom:1rem;">Manage local outreach campaigns, discover prospects, and send emails.</p>
+          <a href="/outreach.html" class="panel-link">Open Outreach Dashboard &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- VIEW: SCRIPT VIEWER            -->
+    <!-- ============================== -->
+    <div class="view" id="viewScript">
+      <a class="back-link" onclick="showView('viewOverview')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back to overview
+      </a>
+
+      <div class="script-layout">
+        <!-- Left: Script -->
+        <div class="script-main" id="scriptMain">
+          <div class="original-bar" id="originalBar"></div>
+          <div id="scriptContent"></div>
+          <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+            <button class="btn btn-secondary" onclick="copyScriptAsMarkdown()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy as Markdown
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div class="script-sidebar">
+          <div class="sidebar-card">
+            <h3>Original Thumbnail</h3>
+            <img id="sidebarThumb" src="" alt="Original thumbnail">
+            <button class="btn btn-primary btn-sm" id="btnThumbnail" onclick="generateThumbnail()" style="width:100%;justify-content:center;">
+              Generate Thumbnail Concept
+            </button>
+            <div id="thumbnailConcept" style="margin-top:1rem;display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+// ==========================================
+// STATE
+// ==========================================
+let currentOutliers = [];
+let currentScriptData = null;
+let currentVideoData = null;
+
+const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNDE0OTIsImV4cCI6MjA1NTkxNzQ5Mn0.VpML9tlcfmyDhUEGPfBiNrKkOcMxZ2y8J_wBBbm8Vxk';
+
+// ==========================================
+// HELPERS
+// ==========================================
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
+  return data;
+}
+
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 4000);
+}
+
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+function setBtnLoading(btn, label) {
+  btn._originalHTML = btn.innerHTML;
+  btn.innerHTML = `<span class="btn-spinner"></span> ${label}`;
+  btn.disabled = true;
+}
+
+function clearBtnLoading(btn) {
+  if (btn._originalHTML) btn.innerHTML = btn._originalHTML;
+  btn.disabled = false;
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function formatNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function scoreBadgeClass(score) {
+  if (score >= 10) return 'score-high';
+  if (score >= 5) return 'score-mid';
+  return 'score-low';
+}
+
+// ==========================================
+// SCAN OUTLIERS
+// ==========================================
+async function scanOutliers() {
+  const btn = document.getElementById('btnScan');
+  showLoading('Scanning 10 channels for outlier content...');
+  setBtnLoading(btn, 'Scanning...');
+
+  try {
+    const data = await api('POST', '/api/content/scan-outliers', { months: 6, top_per_channel: 5 });
+    currentOutliers = data.outliers || [];
+
+    document.getElementById('statOutliers').textContent = currentOutliers.length;
+    document.getElementById('statLastScan').textContent = formatDate(data.scan_date);
+
+    if (data.warnings && data.warnings.length > 0) {
+      toast(`Scan complete with ${data.warnings.length} warning(s)`, 'info');
+    }
+
+    renderOutlierCards(currentOutliers);
+    toast(`Found ${currentOutliers.length} outlier videos across ${data.channels_scanned} channels`, 'success');
+  } catch (err) {
+    toast('Scan failed: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+    clearBtnLoading(btn);
+  }
+}
+
+// ==========================================
+// RENDER OUTLIER CARDS
+// ==========================================
+function renderOutlierCards(outliers) {
+  const grid = document.getElementById('outlierGrid');
+  const empty = document.getElementById('emptyState');
+
+  if (!outliers.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  outliers.forEach((o, i) => {
+    const card = document.createElement('div');
+    card.className = 'outlier-card';
+    card.innerHTML = `
+      <img class="outlier-thumb" src="${o.thumbnail_url}" alt="${o.title}" loading="lazy">
+      <div class="outlier-body">
+        <div class="outlier-title">${escapeHtml(o.title)}</div>
+        <div class="outlier-meta">
+          <span class="outlier-channel">${escapeHtml(o.channel_name)}</span>
+          <span class="score-badge ${scoreBadgeClass(o.outlier_score)}">${o.outlier_score}x</span>
+          <span class="outlier-views">${formatNumber(o.view_count)} views (median: ${formatNumber(o.median_views)})</span>
+        </div>
+        <div class="outlier-actions">
+          <button class="btn btn-primary btn-sm" onclick="useThisIdea(${i})">Use This Idea</button>
+          <a href="${o.url}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none;">View on YouTube</a>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ==========================================
+// GENERATE SCRIPT
+// ==========================================
+async function useThisIdea(index) {
+  const video = currentOutliers[index];
+  if (!video) return;
+
+  currentVideoData = video;
+  showLoading('Generating adapted script... this may take 15-25 seconds');
+
+  try {
+    const data = await api('POST', '/api/content/generate-script', {
+      video_id: video.video_id,
+      title: video.title,
+      channel_name: video.channel_name,
+      description: video.description,
+      outlier_score: video.outlier_score,
+      view_count: video.view_count,
+      median_views: video.median_views,
+    });
+
+    currentScriptData = data;
+    renderScript(data, video);
+    showView('viewScript');
+    toast('Script generated successfully', 'success');
+  } catch (err) {
+    toast('Script generation failed: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ==========================================
+// RENDER SCRIPT
+// ==========================================
+function renderScript(data, video) {
+  // Original bar
+  const bar = document.getElementById('originalBar');
+  bar.innerHTML = `
+    <img src="${video.thumbnail_url}" alt="">
+    <div class="original-info">
+      <div class="title">${escapeHtml(video.title)}</div>
+      <div class="meta">${escapeHtml(video.channel_name)} &middot; ${formatNumber(video.view_count)} views &middot; ${video.outlier_score}x outlier</div>
+    </div>
+    <span class="score-badge ${scoreBadgeClass(video.outlier_score)}">${video.outlier_score}x</span>
+  `;
+
+  // Sidebar thumbnail
+  document.getElementById('sidebarThumb').src = video.thumbnail_url;
+  document.getElementById('thumbnailConcept').style.display = 'none';
+
+  // Script content
+  const s = data.adapted_script || {};
+  const a = data.analysis || {};
+  const content = document.getElementById('scriptContent');
+
+  let html = '';
+
+  // Analysis
+  html += `<div class="script-section">
+    <h3>Why This Worked</h3>
+    <p>${escapeHtml(a.why_it_worked || '')}</p>
+    <h4>Hook Breakdown</h4>
+    <p>${escapeHtml(a.hook_breakdown || '')}</p>
+    <h4>Title Pattern</h4>
+    <p>${escapeHtml(a.title_pattern || '')}</p>
+  </div>`;
+
+  // Working title + topic
+  html += `<div class="script-section">
+    <h3>${escapeHtml(s.working_title || 'Adapted Script')}</h3>
+    <p style="color:var(--teal);font-weight:500;">${escapeHtml(s.topic || '')}</p>
+  </div>`;
+
+  // Hook
+  html += `<div class="script-section">
+    <h4>Hook (0:00 - 0:10)</h4>
+    <ul>${(s.hook || []).map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+  </div>`;
+
+  // Intro
+  html += `<div class="script-section">
+    <h4>Intro / Credibility (0:10 - 1:00)</h4>
+    <ul>${(s.intro || []).map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+  </div>`;
+
+  // Points 1-3
+  ['point_1', 'point_2', 'point_3'].forEach((key, i) => {
+    const pt = s[key];
+    if (!pt) return;
+    html += `<div class="script-section">
+      <h3>Point ${i + 1}: ${escapeHtml(pt.name || '')}</h3>
+      <p style="font-weight:500;">${escapeHtml(pt.core_idea || '')}</p>
+      <ul>${(pt.bullets || []).map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+      ${pt.takeaway ? `<div class="takeaway">Takeaway: ${escapeHtml(pt.takeaway)}</div>` : ''}
+    </div>`;
+  });
+
+  // CTA
+  html += `<div class="script-section">
+    <h4>End Screen CTA</h4>
+    <ul>${(s.cta || []).map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
+  </div>`;
+
+  // Title options
+  if (s.title_options && s.title_options.length) {
+    html += `<div class="script-section">
+      <h3>Title Options</h3>
+      ${s.title_options.map((t, i) => `
+        <div class="title-option">
+          <div class="option-title">${i + 1}. ${escapeHtml(t.title)}</div>
+          <div class="option-rationale">${escapeHtml(t.rationale)}</div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+// ==========================================
+// THUMBNAIL CONCEPT
+// ==========================================
+async function generateThumbnail() {
+  if (!currentVideoData || !currentScriptData) return;
+
+  const btn = document.getElementById('btnThumbnail');
+  setBtnLoading(btn, 'Analyzing...');
+
+  try {
+    const s = currentScriptData.adapted_script || {};
+    const data = await api('POST', '/api/content/thumbnail-concept', {
+      video_id: currentVideoData.video_id,
+      adapted_title: s.working_title || '',
+      adapted_topic: s.topic || '',
+      original_title: currentVideoData.title,
+      outlier_score: currentVideoData.outlier_score,
+    });
+
+    renderThumbnailConcept(data);
+    toast('Thumbnail concept generated', 'success');
+  } catch (err) {
+    toast('Thumbnail concept failed: ' + err.message, 'error');
+  } finally {
+    clearBtnLoading(btn);
+  }
+}
+
+function renderThumbnailConcept(data) {
+  const container = document.getElementById('thumbnailConcept');
+  const oa = data.original_analysis || {};
+  const c = data.concept || {};
+
+  let html = '<div class="thumb-concept">';
+
+  html += '<h4>Original Analysis</h4>';
+  html += `<p><strong>Visual elements:</strong> ${escapeHtml(oa.visual_elements || '')}</p>`;
+  html += `<p><strong>Text overlay:</strong> ${escapeHtml(oa.text_overlay || '')}</p>`;
+  html += `<p><strong>Composition:</strong> ${escapeHtml(oa.composition || '')}</p>`;
+  html += `<p><strong>Emotion:</strong> ${escapeHtml(oa.emotion || '')}</p>`;
+
+  html += '<h4>Your Concept</h4>';
+  html += `<p><strong>Text overlay:</strong> ${escapeHtml(c.text_overlay || '')}</p>`;
+  html += `<p><strong>Colors:</strong> ${escapeHtml(c.color_scheme || '')}</p>`;
+  html += `<p><strong>Composition:</strong> ${escapeHtml(c.composition || '')}</p>`;
+  html += `<p><strong>Key elements:</strong> ${escapeHtml(c.key_elements || '')}</p>`;
+  html += `<p><strong>Expression:</strong> ${escapeHtml(c.expression_direction || '')}</p>`;
+
+  html += '</div>';
+
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+// ==========================================
+// COPY SCRIPT AS MARKDOWN
+// ==========================================
+function copyScriptAsMarkdown() {
+  if (!currentScriptData) return;
+
+  const s = currentScriptData.adapted_script || {};
+  const a = currentScriptData.analysis || {};
+  let md = '';
+
+  md += `# ${s.working_title || 'Script'}\n\n`;
+  md += `**Topic:** ${s.topic || ''}\n\n`;
+
+  md += `## Why the Original Worked\n\n`;
+  md += `${a.why_it_worked || ''}\n\n`;
+  md += `**Hook breakdown:** ${a.hook_breakdown || ''}\n`;
+  md += `**Title pattern:** ${a.title_pattern || ''}\n\n`;
+
+  md += `## Hook (0:00 - 0:10)\n\n`;
+  (s.hook || []).forEach(b => md += `- ${b}\n`);
+  md += '\n';
+
+  md += `## Intro / Credibility (0:10 - 1:00)\n\n`;
+  (s.intro || []).forEach(b => md += `- ${b}\n`);
+  md += '\n';
+
+  ['point_1', 'point_2', 'point_3'].forEach((key, i) => {
+    const pt = s[key];
+    if (!pt) return;
+    md += `## Point ${i + 1}: ${pt.name || ''}\n\n`;
+    md += `**Core idea:** ${pt.core_idea || ''}\n\n`;
+    (pt.bullets || []).forEach(b => md += `- ${b}\n`);
+    if (pt.takeaway) md += `\n> **Takeaway:** ${pt.takeaway}\n`;
+    md += '\n';
+  });
+
+  md += `## End Screen CTA\n\n`;
+  (s.cta || []).forEach(b => md += `- ${b}\n`);
+  md += '\n';
+
+  if (s.title_options && s.title_options.length) {
+    md += `## Title Options\n\n`;
+    s.title_options.forEach((t, i) => {
+      md += `${i + 1}. **${t.title}** - ${t.rationale}\n`;
+    });
+  }
+
+  navigator.clipboard.writeText(md).then(() => {
+    toast('Script copied to clipboard', 'success');
+  }).catch(() => {
+    toast('Failed to copy to clipboard', 'error');
+  });
+}
+
+// ==========================================
+// LOAD BLOG STATS
+// ==========================================
+async function loadBlogStats() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&select=title,slug,category,published_at&order=published_at.desc&limit=5`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    const posts = await res.json();
+
+    // Update stat count
+    const countRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&select=id`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Prefer': 'count=exact',
+          'Range': '0-0',
+        }
+      }
+    );
+    const countRange = countRes.headers.get('content-range');
+    if (countRange) {
+      const total = countRange.split('/')[1];
+      document.getElementById('statBlog').textContent = total || '0';
+    }
+
+    // Render list
+    const list = document.getElementById('blogList');
+    if (!posts.length) {
+      list.innerHTML = '<li style="color:var(--grey-400);font-size:0.82rem;justify-content:center;border:none;">No published articles</li>';
+      return;
+    }
+
+    list.innerHTML = posts.map(p => `
+      <li>
+        <span class="blog-title">${escapeHtml(p.title)}</span>
+        <span class="blog-date">${formatDate(p.published_at)}</span>
+      </li>
+    `).join('');
+  } catch (err) {
+    console.error('Blog stats error:', err);
+    document.getElementById('blogList').innerHTML = '<li style="color:var(--grey-400);font-size:0.82rem;justify-content:center;border:none;">Could not load articles</li>';
+  }
+}
+
+// ==========================================
+// INIT
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadBlogStats();
+});
+</script>
+
+</body>
+</html>
