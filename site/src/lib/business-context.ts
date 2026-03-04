@@ -58,11 +58,8 @@ export const WATCHLIST_CHANNELS = [
   { name: "Matterhorn Business Development", channel_id: "UCNG0ogISHQa6p1INNmY2GFw" },
   { name: "StoryBrand With Donald Miller", channel_id: "UC_RirP9QR49zw2HOZ95dKrA" },
   { name: "Ed Hill | AI Automation", channel_id: "UC5_2We-HeVdEeHcIyfmMHOg" },
-  { name: "Molt Media", channel_id: "UCNxmehN8BqmjdjVVY-CIDng" },
   { name: "Ross Harkness", channel_id: "UCCKLNC83b571kYbaizPOs_w" },
   { name: "Ryan Deiss", channel_id: "UCt575Zd9Tbj4G5zWYS3bd2Q" },
   { name: "Profit Rich Results // Ford Saeks", channel_id: "UCnGb3z3jnx72t-L2t3LNnkA" },
-  { name: "FIRST 10", channel_id: "UCdK0uKsrRIjmJuEj8Kz3bvQ" },
   { name: "EOS Worldwide", channel_id: "UCzV6bD_MPmZLJo7QmP9yqDw" },
-  { name: "The Global WillPower Project", channel_id: "UCd9MwDrfXzXbDjnEqRCW8wA" },
 ];
