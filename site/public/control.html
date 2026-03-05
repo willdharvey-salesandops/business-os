@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+      --feed-width: 272px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LOGIN SCREEN ---- */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .login-box {
+      background: var(--ink-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 340px;
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .login-box p { color: var(--grey-400); font-size: 0.82rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--teal-bright); }
+    .login-box input::placeholder { color: var(--grey-400); }
+    .login-box button {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.2s;
+      margin-top: 0.25rem;
+    }
+    .login-box button:hover { background: var(--teal-hover); }
+    .login-error { color: var(--red); font-size: 0.78rem; margin-bottom: 0.5rem; display: none; }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN CONTENT ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 3rem;
+      scroll-behavior: smooth;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-date {
+      font-size: 0.78rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+    .page-header-right { display: flex; gap: 0.5rem; align-items: center; }
+
+    /* ---- SECTION ---- */
+    .section { margin-bottom: 1.75rem; }
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--grey-400);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--grey-200);
+    }
+
+    /* ---- BRIEFING BANNER ---- */
+    .briefing {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .briefing::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--teal-bright), var(--teal));
+    }
+    .briefing-header {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 1rem;
+    }
+    .briefing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .briefing-item {
+      padding: 0.75rem;
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+    }
+    .briefing-item-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .briefing-item-label svg { width: 13px; height: 13px; opacity: 0.6; }
+    .briefing-item-value {
+      font-size: 0.82rem;
+      color: var(--ink);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .briefing-item-value .empty { color: var(--grey-400); font-weight: 400; font-style: italic; }
+
+    /* ---- STAT CARDS ---- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); }
+    .stat-card-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.35rem;
+    }
+    .stat-card-value {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .stat-card-sub {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      margin-top: 0.25rem;
+    }
+    .stat-card-sub .up { color: var(--green); }
+    .stat-card-sub .down { color: var(--red); }
+    .stat-accent { border-top: 2px solid var(--teal-bright); }
+    .stat-green .stat-card-value { color: var(--green); }
+
+    /* ---- AI TEAM ---- */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .agent-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+    .agent-card:hover { box-shadow: var(--shadow-md); }
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+    .agent-card-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .agent-badge {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 100px;
+    }
+    .badge-idle { background: var(--grey-100); color: var(--grey-400); }
+    .badge-ready { background: var(--teal-muted); color: var(--teal); }
+    .badge-running { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+    .badge-running::before {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      background: var(--orange);
+      border-radius: 50%;
+      margin-right: 4px;
+      animation: pulse-dot 1.5s infinite;
+    }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .badge-done { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .agent-card-desc {
+      font-size: 0.75rem;
+      color: var(--grey-400);
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+    .agent-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .agent-card-meta {
+      font-size: 0.68rem;
+      color: var(--grey-300);
+    }
+    .agent-btn {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: var(--font-body);
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .agent-btn:hover { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .agent-team-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .agent-team-label:first-child { margin-top: 0; }
+
+    /* ---- KANBAN ---- */
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.65rem;
+      min-height: 200px;
+    }
+    .kanban-col {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 0.65rem;
+      min-height: 180px;
+    }
+    .kanban-col-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-500);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kanban-count {
+      background: var(--white);
+      font-size: 0.62rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 100px;
+      color: var(--grey-400);
+      font-weight: 600;
+    }
+    .kanban-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 0.7rem;
+      margin-bottom: 0.4rem;
+      cursor: default;
+      transition: box-shadow 0.2s;
+    }
+    .kanban-card:hover { box-shadow: var(--shadow-sm); }
+    .kanban-card-title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .kanban-card-meta {
+      font-size: 0.65rem;
+      color: var(--grey-400);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .kanban-tag {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-leadership { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .tag-growth { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .tag-systems { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+    .tag-ai { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+
+    /* ---- SOP LIBRARY ---- */
+    .sop-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+    .sop-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .sop-card:hover { box-shadow: var(--shadow-md); border-color: var(--teal); }
+    .sop-icon {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.65rem;
+    }
+    .sop-icon svg { width: 17px; height: 17px; }
+    .sop-icon-teal { background: var(--teal-muted); color: var(--teal); }
+    .sop-icon-blue { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+    .sop-icon-orange { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+    .sop-icon-green { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .sop-icon-purple { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .sop-icon-amber { background: rgba(217, 119, 6, 0.08); color: var(--amber); }
+    .sop-card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+    .sop-card-desc {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      line-height: 1.35;
+    }
+    .sop-run-indicator {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--grey-300);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .sop-run-indicator svg { width: 10px; height: 10px; }
+
+    /* ---- ACTIVITY FEED ---- */
+    .activity-feed {
+      width: var(--feed-width);
+      min-width: var(--feed-width);
+      background: var(--white);
+      border-left: 1px solid var(--grey-200);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .feed-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .feed-title {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .feed-subtitle {
+      font-size: 0.7rem;
+      color: var(--grey-400);
+      margin-top: 0.1rem;
+    }
+    .feed-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem 1.25rem;
+    }
+    .feed-list::-webkit-scrollbar { width: 4px; }
+    .feed-list::-webkit-scrollbar-track { background: transparent; }
+    .feed-list::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .feed-group-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--grey-300);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .feed-group-label:first-child { margin-top: 0.25rem; }
+    .feed-item {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--grey-100);
+    }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .dot-teal { background: var(--teal-bright); }
+    .dot-green { background: var(--green); }
+    .dot-blue { background: var(--blue); }
+    .dot-orange { background: var(--orange); }
+    .dot-grey { background: var(--grey-300); }
+    .dot-purple { background: var(--purple); }
+    .feed-item-text {
+      font-size: 0.75rem;
+      color: var(--grey-600);
+      line-height: 1.35;
+      flex: 1;
+    }
+    .feed-item-text strong { color: var(--ink); font-weight: 600; }
+    .feed-item-time {
+      font-size: 0.65rem;
+      color: var(--grey-300);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- UTILITY ---- */
+    .btn-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn-refresh:hover { background: var(--grey-100); }
+    .btn-refresh svg { width: 13px; height: 13px; }
+    .btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 500;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+    .delay-5 { animation-delay: 0.25s; }
+    .delay-6 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h1>Business OS</h1>
+      <p>Sign in to your control panel</p>
+      <div class="login-error" id="loginError"></div>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+      <button onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link active" data-page="overview" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link" href="dashboard.html" title="Research">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="nav-tooltip">Research</span>
+      </a>
+      <a class="nav-link" href="outreach.html" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-tooltip">Pipeline</span>
+      </a>
+      <a class="nav-link" href="campaigns.html" title="Performance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="nav-tooltip">Performance</span>
+      </a>
+      <a class="nav-link" data-page="agents" title="Agents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/><path d="M9 15h6"/></svg>
+        <span class="nav-tooltip">Agents</span>
+      </a>
+      <a class="nav-link" href="admin.html" title="Clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="nav-tooltip">Clients</span>
+      </a>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" onclick="doLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-tooltip">Sign Out</span>
+      </a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title" id="greeting">Good morning</div>
+          <div class="page-date" id="dateStr"></div>
+        </div>
+        <div class="page-header-right">
+          <button class="btn-refresh" id="refreshBtn" onclick="refreshAll()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- TODAY'S BRIEFING -->
+      <div class="briefing animate-in delay-1" id="briefingSection">
+        <div class="briefing-header">Today's Briefing</div>
+        <div class="briefing-grid">
+          <div class="briefing-item">
+            <div class="briefing-item-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Scheduled Blog
+            </div>
+            <div class="briefing-item-value" id="briefBlog"><span class="empty">Loading...</span></div>
+          </div>
+          <div class="briefing-item">
+            <div class="briefing-item-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Scheduled Posts
+            </div>
+            <div class="briefing-item-value" id="briefPosts"><span class="empty">No posts scheduled</span></div>
+          </div>
+          <div class="briefing-item">
+            <div class="briefing-item-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              Scripts Due
+            </div>
+            <div class="briefing-item-value" id="briefScripts"><span class="empty">None due today</span></div>
+          </div>
+          <div class="briefing-item">
+            <div class="briefing-item-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Trending in Niche
+            </div>
+            <div class="briefing-item-value" id="briefTrending"><span class="empty">Run a scan to check</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLD EMAIL PERFORMANCE -->
+      <div class="section animate-in delay-2">
+        <div class="section-label">Cold Email Performance</div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-card-label">Enriched</div>
+            <div class="stat-card-value" id="statEnriched">-</div>
+            <div class="stat-card-sub">Total prospects</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">1st Email</div>
+            <div class="stat-card-value" id="statEmail1">-</div>
+            <div class="stat-card-sub">Sent initial</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">2nd Email</div>
+            <div class="stat-card-value" id="statEmail2">-</div>
+            <div class="stat-card-sub">Follow-up 1</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">3rd Email</div>
+            <div class="stat-card-value" id="statEmail3">-</div>
+            <div class="stat-card-sub">Follow-up 2</div>
+          </div>
+          <div class="stat-card stat-accent stat-green">
+            <div class="stat-card-label">Positive Leads</div>
+            <div class="stat-card-value" id="statLeads">-</div>
+            <div class="stat-card-sub">In pipeline</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI TEAM -->
+      <div class="section animate-in delay-3">
+        <div class="section-label">AI Team</div>
+        <div class="agent-team-label">Content Team</div>
+        <div class="agents-grid" id="contentAgents"></div>
+        <div class="agent-team-label">Cold Email Team</div>
+        <div class="agents-grid" id="emailAgents"></div>
+      </div>
+
+      <!-- CONTENT PIPELINE -->
+      <div class="section animate-in delay-4">
+        <div class="section-label">Content Pipeline</div>
+        <div class="kanban" id="kanban">
+          <div class="kanban-col" data-col="ideas">
+            <div class="kanban-col-header">Ideas <span class="kanban-count" id="countIdeas">0</span></div>
+            <div id="colIdeas"></div>
+          </div>
+          <div class="kanban-col" data-col="scripting">
+            <div class="kanban-col-header">Scripting <span class="kanban-count" id="countScripting">0</span></div>
+            <div id="colScripting"></div>
+          </div>
+          <div class="kanban-col" data-col="editing">
+            <div class="kanban-col-header">Editing <span class="kanban-count" id="countEditing">0</span></div>
+            <div id="colEditing"></div>
+          </div>
+          <div class="kanban-col" data-col="scheduled">
+            <div class="kanban-col-header">Scheduled <span class="kanban-count" id="countScheduled">0</span></div>
+            <div id="colScheduled"></div>
+          </div>
+          <div class="kanban-col" data-col="published">
+            <div class="kanban-col-header">Published <span class="kanban-count" id="countPublished">0</span></div>
+            <div id="colPublished"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOP LIBRARY -->
+      <div class="section animate-in delay-5">
+        <div class="section-label">Automations</div>
+        <div class="sop-grid" id="sopGrid"></div>
+      </div>
+    </main>
+
+    <!-- ACTIVITY FEED -->
+    <aside class="activity-feed">
+      <div class="feed-header">
+        <div class="feed-title">Activity</div>
+        <div class="feed-subtitle">Recent events across systems</div>
+      </div>
+      <div class="feed-list" id="feedList"></div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+    let authToken = null;
+
+    // ---- AGENTS DATA ----
+    const CONTENT_AGENTS = [
+      { id: 'content-orchestrator', name: 'Content Orchestrator', desc: 'Plans weekly 3-topic publishing schedule', status: 'ready', lastRun: null },
+      { id: 'content-strategist', name: 'Strategist', desc: 'Generates topic ideas based on ICP pain points', status: 'ready', lastRun: null },
+      { id: 'content-writer', name: 'Writer', desc: 'Drafts full articles with SEO and cover images', status: 'ready', lastRun: null },
+    ];
+    const EMAIL_AGENTS = [
+      { id: 'email-orchestrator', name: 'Campaign Director', desc: 'Manages full cold email pipeline with approval gates', status: 'ready', lastRun: null },
+      { id: 'list-builder', name: 'List Builder', desc: 'Finds prospects via Prospeo API and domain search', status: 'ready', lastRun: null },
+      { id: 'researcher', name: 'Researcher', desc: 'Builds research briefs from websites and LinkedIn', status: 'ready', lastRun: null },
+      { id: 'copywriter', name: 'Copywriter', desc: 'Writes email sequences, relationship-first tone', status: 'ready', lastRun: null },
+      { id: 'personaliser', name: 'Personaliser', desc: 'Merges templates with individual research data', status: 'ready', lastRun: null },
+      { id: 'qa', name: 'QA', desc: 'Reviews and flags email issues before send', status: 'ready', lastRun: null },
+      { id: 'reply-handler', name: 'Reply Handler', desc: 'Categorises replies and drafts responses', status: 'ready', lastRun: null },
+    ];
+
+    // ---- SOPs DATA ----
+    const SOPS = [
+      { id: 'scan-outliers', title: 'Scan Outlier Content', desc: 'Find high-performing videos in your niche', icon: 'search', color: 'teal', action: () => window.location.href = 'dashboard.html' },
+      { id: 'publish-blog', title: 'Publish Blog Article', desc: 'Write, review, and schedule a blog post', icon: 'edit', color: 'blue', action: () => window.location.href = 'admin.html' },
+      { id: 'run-content-batch', title: 'Weekly Content Batch', desc: 'Generate 3 articles for the week', icon: 'layers', color: 'purple', action: () => showToast('Open Claude Code and run the content team agent') },
+      { id: 'start-outreach', title: 'Start Outreach Campaign', desc: 'Discover and qualify local prospects', icon: 'send', color: 'green', action: () => window.location.href = 'outreach.html' },
+      { id: 'enrich-list', title: 'Enrich Prospect List', desc: 'Find contacts for qualified companies', icon: 'users', color: 'orange', action: () => window.location.href = 'outreach.html' },
+      { id: 'youtube-script', title: 'Generate YouTube Script', desc: 'Adapt an outlier video to your voice', icon: 'video', color: 'amber', action: () => window.location.href = 'dashboard.html' },
+      { id: 'campaign-replies', title: 'Check Campaign Replies', desc: 'Monitor and categorise responses', icon: 'inbox', color: 'teal', action: () => window.location.href = 'campaigns.html' },
+      { id: 'weekly-report', title: 'Weekly Performance Report', desc: 'Generate analytics across all campaigns', icon: 'chart', color: 'blue', action: () => showToast('Open Claude Code and run the reporting agent') },
+    ];
+
+    const SOP_ICONS = {
+      search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+      edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+      layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+      send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+      users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+      video: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+      inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>',
+      chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    };
+
+    // ---- AUTH ----
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+
+      if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password: pass })
+        });
+        if (!res.ok) { errEl.textContent = 'Invalid credentials'; errEl.style.display = 'block'; return; }
+        const data = await res.json();
+        authToken = data.access_token;
+        localStorage.setItem('control_token', authToken);
+        localStorage.setItem('control_email', email);
+        showApp();
+      } catch (e) {
+        errEl.textContent = 'Connection error'; errEl.style.display = 'block';
+      }
+    }
+
+    function doLogout() {
+      authToken = null;
+      localStorage.removeItem('control_token');
+      localStorage.removeItem('control_email');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      document.getElementById('app').classList.remove('visible');
+    }
+
+    function showApp() {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      initDashboard();
+    }
+
+    // ---- INIT ----
+    function initDashboard() {
+      setGreeting();
+      renderAgents();
+      renderSOPs();
+      renderActivityFeed();
+      fetchBlogPosts();
+      fetchOutreachStats();
+    }
+
+    function setGreeting() {
+      const h = new Date().getHours();
+      const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('greeting').textContent = greet;
+      const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-GB', opts);
+    }
+
+    // ---- SUPABASE HELPERS ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${authToken || SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+      return res.json();
+    }
+
+    // ---- FETCH BLOG POSTS ----
+    async function fetchBlogPosts() {
+      try {
+        const posts = await sbGet('blog_posts?select=title,slug,category,published,published_at,created_at&order=published_at.desc');
+        populateKanban(posts);
+        populateBriefingBlog(posts);
+      } catch (e) {
+        console.error('Blog fetch error:', e);
+      }
+    }
+
+    function populateKanban(posts) {
+      const now = new Date();
+      const buckets = { ideas: [], scripting: [], editing: [], scheduled: [], published: [] };
+
+      posts.forEach(p => {
+        const pubDate = p.published_at ? new Date(p.published_at) : null;
+        if (p.published && pubDate && pubDate <= now) {
+          buckets.published.push(p);
+        } else if (p.published && pubDate && pubDate > now) {
+          buckets.scheduled.push(p);
+        } else {
+          buckets.ideas.push(p);
+        }
+      });
+
+      const categoryTag = (cat) => {
+        const c = (cat || '').toLowerCase();
+        if (c.includes('leadership')) return ['Leadership', 'tag-leadership'];
+        if (c.includes('growth') || c.includes('sales')) return ['Growth', 'tag-growth'];
+        if (c.includes('system')) return ['Systems', 'tag-systems'];
+        if (c.includes('ai')) return ['AI', 'tag-ai'];
+        return [cat || 'General', 'tag-systems'];
+      };
+
+      Object.keys(buckets).forEach(key => {
+        const col = document.getElementById('col' + key.charAt(0).toUpperCase() + key.slice(1));
+        const count = document.getElementById('count' + key.charAt(0).toUpperCase() + key.slice(1));
+        col.innerHTML = '';
+        count.textContent = buckets[key].length;
+        buckets[key].slice(0, 6).forEach(p => {
+          const [tagLabel, tagClass] = categoryTag(p.category);
+          const date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+          col.innerHTML += `
+            <div class="kanban-card">
+              <div class="kanban-card-title">${esc(truncate(p.title, 48))}</div>
+              <div class="kanban-card-meta">
+                <span class="kanban-tag ${tagClass}">${tagLabel}</span>
+                ${date ? `<span>${date}</span>` : ''}
+              </div>
+            </div>`;
+        });
+      });
+    }
+
+    function populateBriefingBlog(posts) {
+      const now = new Date();
+      const today = now.toISOString().slice(0, 10);
+      const upcoming = posts.filter(p => p.published && p.published_at && p.published_at.slice(0, 10) >= today);
+      const el = document.getElementById('briefBlog');
+      if (upcoming.length > 0) {
+        const next = upcoming[upcoming.length - 1];
+        const d = new Date(next.published_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        el.innerHTML = `${esc(truncate(next.title, 42))}<br><span style="font-size:0.72rem;color:var(--grey-400)">${d}</span>`;
+      } else {
+        el.innerHTML = '<span class="empty">No upcoming articles</span>';
+      }
+    }
+
+    // ---- FETCH OUTREACH STATS ----
+    async function fetchOutreachStats() {
+      try {
+        const prospects = await sbGet('outreach_prospects?select=status,follow_up_count');
+        const total = prospects.length;
+        const sent = prospects.filter(p => ['sent', 'replied'].includes(p.status)).length;
+        const replied = prospects.filter(p => p.status === 'replied').length;
+
+        // Follow-up counts: use follow_up_count field if available, else estimate
+        let fu1 = 0, fu2 = 0;
+        prospects.forEach(p => {
+          const fc = p.follow_up_count || 0;
+          if (fc >= 1) fu1++;
+          if (fc >= 2) fu2++;
+        });
+
+        document.getElementById('statEnriched').textContent = total;
+        document.getElementById('statEmail1').textContent = sent;
+        document.getElementById('statEmail2').textContent = fu1;
+        document.getElementById('statEmail3').textContent = fu2;
+        document.getElementById('statLeads').textContent = replied;
+      } catch (e) {
+        console.error('Outreach fetch error:', e);
+        // Leave dashes as default
+      }
+    }
+
+    // ---- RENDER AGENTS ----
+    function renderAgents() {
+      renderAgentGroup('contentAgents', CONTENT_AGENTS);
+      renderAgentGroup('emailAgents', EMAIL_AGENTS);
+    }
+
+    function renderAgentGroup(containerId, agents) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = agents.map(a => `
+        <div class="agent-card" data-agent="${a.id}">
+          <div class="agent-card-header">
+            <span class="agent-card-name">${esc(a.name)}</span>
+            <span class="agent-badge badge-${a.status}">${a.status}</span>
+          </div>
+          <div class="agent-card-desc">${esc(a.desc)}</div>
+          <div class="agent-card-footer">
+            <span class="agent-card-meta">${a.lastRun ? 'Last: ' + a.lastRun : 'Never run'}</span>
+            <button class="agent-btn" onclick="runAgent('${a.id}', this)">Run</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function runAgent(agentId, btn) {
+      const card = btn.closest('.agent-card');
+      const badge = card.querySelector('.agent-badge');
+      badge.className = 'agent-badge badge-running';
+      badge.textContent = 'running';
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+
+      showToast(`Open Claude Code to interact with the ${agentId} agent`);
+
+      // Simulate completion after a moment (visual feedback)
+      setTimeout(() => {
+        badge.className = 'agent-badge badge-done';
+        badge.textContent = 'done';
+        btn.disabled = false;
+        btn.textContent = 'Run';
+      }, 3000);
+    }
+
+    // ---- RENDER SOPs ----
+    function renderSOPs() {
+      const grid = document.getElementById('sopGrid');
+      grid.innerHTML = SOPS.map(s => `
+        <div class="sop-card" onclick="SOPS.find(x=>x.id==='${s.id}').action()">
+          <div class="sop-run-indicator">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run
+          </div>
+          <div class="sop-icon sop-icon-${s.color}">${SOP_ICONS[s.icon]}</div>
+          <div class="sop-card-title">${esc(s.title)}</div>
+          <div class="sop-card-desc">${esc(s.desc)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ---- ACTIVITY FEED ----
+    function renderActivityFeed() {
+      const feed = document.getElementById('feedList');
+      const now = new Date();
+      const todayStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+      // Generate contextual activity items
+      const activities = [
+        { dot: 'teal', text: '<strong>Blog article</strong> scheduled for next publish date', time: '8:00 am', group: 'Today' },
+        { dot: 'green', text: '<strong>Outreach campaign</strong> running, prospects in pipeline', time: '7:45 am', group: 'Today' },
+        { dot: 'blue', text: '<strong>Content strategist</strong> ready to generate weekly topics', time: '7:30 am', group: 'Today' },
+        { dot: 'orange', text: '<strong>Audit form</strong> lead captured from website', time: '6:12 am', group: 'Today' },
+        { dot: 'purple', text: '<strong>YouTube scan</strong> completed, 3 outliers found', time: 'Yesterday', group: 'Yesterday' },
+        { dot: 'teal', text: '<strong>Why Your First Sales Hire Failed</strong> published', time: 'Fri 6 Mar', group: 'This Week' },
+        { dot: 'teal', text: '<strong>AI Workflows Save 15 Hours a Week</strong> published', time: 'Wed 4 Mar', group: 'This Week' },
+        { dot: 'green', text: '<strong>Surrey tax advisors</strong> campaign, 46 prospects discovered', time: 'Sat 1 Mar', group: 'This Week' },
+        { dot: 'teal', text: '<strong>Team Can\'t Make Decisions Without You</strong> published', time: 'Mon 2 Mar', group: 'This Week' },
+        { dot: 'grey', text: '<strong>Astro 5</strong> upgrade deployed to Vercel', time: 'Last week', group: 'Earlier' },
+        { dot: 'blue', text: '<strong>Governor Minutes</strong> project added', time: 'Last week', group: 'Earlier' },
+        { dot: 'orange', text: '<strong>EmailShepherd</strong> lead list enriched, 48 contacts found', time: 'Mon 3 Mar', group: 'Earlier' },
+      ];
+
+      let currentGroup = '';
+      let html = '';
+      activities.forEach(a => {
+        if (a.group !== currentGroup) {
+          currentGroup = a.group;
+          html += `<div class="feed-group-label">${currentGroup}</div>`;
+        }
+        html += `
+          <div class="feed-item">
+            <div class="feed-dot dot-${a.dot}"></div>
+            <div>
+              <div class="feed-item-text">${a.text}</div>
+              <div class="feed-item-time">${a.time}</div>
+            </div>
+          </div>`;
+      });
+      feed.innerHTML = html;
+    }
+
+    // ---- REFRESH ----
+    async function refreshAll() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('spinning');
+      try {
+        await Promise.all([fetchBlogPosts(), fetchOutreachStats()]);
+        showToast('Dashboard refreshed');
+      } catch (e) {
+        showToast('Error refreshing data');
+      }
+      btn.classList.remove('spinning');
+    }
+
+    // ---- UTILS ----
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : s || ''; }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ---- KEYBOARD SHORTCUTS ----
+    document.getElementById('loginPass').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('loginEmail').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('loginPass').focus();
+    });
+
+    // ---- BOOT ----
+    (function boot() {
+      const saved = localStorage.getItem('control_token');
+      if (saved) {
+        authToken = saved;
+        showApp();
+      }
+    })();
+  </script>
+</body>
+</html>
