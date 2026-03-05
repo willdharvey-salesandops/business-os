@@ -170,10 +170,10 @@ Generate both a blog article and video script based on this idea. Make them comp
       console.error('Video script insert error:', scriptErr);
     }
 
-    // Update idea status to scripting
+    // Update idea status to scripted (removes from idea bank)
     await supabase
       .from('content_ideas')
-      .update({ status: 'scripting' })
+      .update({ status: 'scripted' })
       .eq('id', idea_id);
 
     return new Response(JSON.stringify({

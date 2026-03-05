@@ -255,19 +255,68 @@
     .btn-primary:hover { background: var(--teal-hover); }
     .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
     .btn.spinning svg { animation: spin 0.8s linear infinite; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---- KANBAN ---- */
-    .kanban-wrap {
-      flex: 1;
-      min-height: 0;
+    /* ---- IDEA BANK ---- */
+    .idea-bank {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
     }
+    .idea-bank::-webkit-scrollbar { height: 4px; }
+    .idea-bank::-webkit-scrollbar-track { background: transparent; }
+    .idea-bank::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .idea-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem;
+      min-width: 240px;
+      max-width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .idea-card-title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .idea-card-meta {
+      font-size: 0.65rem;
+      color: var(--grey-400);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .idea-card .btn-sm {
+      align-self: flex-start;
+      margin-top: 0.15rem;
+    }
+    .idea-card.generating {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .idea-card.generating .btn-sm {
+      color: var(--teal);
+      border-color: var(--teal);
+    }
+    .idea-empty {
+      font-size: 0.78rem;
+      color: var(--grey-300);
+      padding: 0.75rem 0;
+    }
+
+    /* ---- KANBAN ---- */
     .kanban {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.65rem;
-      min-height: 400px;
-      height: 100%;
+      min-height: 200px;
     }
     .kanban-col {
       background: var(--grey-100);
@@ -306,7 +355,7 @@
     .kanban-cards {
       flex: 1;
       overflow-y: auto;
-      min-height: 60px;
+      min-height: 40px;
     }
     .kanban-cards::-webkit-scrollbar { width: 3px; }
     .kanban-cards::-webkit-scrollbar-track { background: transparent; }
@@ -350,12 +399,8 @@
     .tag-growth { background: rgba(22, 163, 74, 0.08); color: var(--green); }
     .tag-systems { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
     .tag-ai { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
-    .tag-idea { background: var(--teal-muted); color: var(--teal); }
-    .kanban-card-source {
-      font-size: 0.6rem;
-      color: var(--grey-300);
-      font-style: italic;
-    }
+    .tag-draft { background: var(--teal-muted); color: var(--teal); }
+    .tag-filming { background: rgba(217, 119, 6, 0.08); color: var(--amber); }
 
     /* ---- SCHEDULE MODAL ---- */
     .modal-overlay {
@@ -415,45 +460,6 @@
       margin-top: 0.5rem;
     }
 
-    /* ---- REPURPOSE SUGGESTIONS ---- */
-    .repurpose-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 0.75rem;
-    }
-    .repurpose-card {
-      background: var(--white);
-      border: 1px solid var(--grey-200);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.15rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .repurpose-card-title {
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--ink);
-      margin-bottom: 0.5rem;
-      line-height: 1.35;
-    }
-    .repurpose-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-    .repurpose-chip {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 0.2rem 0.5rem;
-      border-radius: 100px;
-      border: 1px solid var(--grey-200);
-      color: var(--grey-500);
-      cursor: pointer;
-      transition: all 0.15s;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .repurpose-chip:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-muted); }
-
     /* ---- SIDEBAR ---- */
     .sidebar {
       width: var(--feed-width);
@@ -487,8 +493,6 @@
     .sidebar-content::-webkit-scrollbar { width: 4px; }
     .sidebar-content::-webkit-scrollbar-track { background: transparent; }
     .sidebar-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
-
-    /* Sidebar stats */
     .sidebar-stat {
       padding: 0.75rem 0;
       border-bottom: 1px solid var(--grey-100);
@@ -507,10 +511,6 @@
       font-size: 1.3rem;
       font-weight: 600;
       color: var(--ink);
-    }
-    .sidebar-stat-sub {
-      font-size: 0.68rem;
-      color: var(--grey-300);
     }
     .sidebar-divider {
       font-size: 0.62rem;
@@ -553,6 +553,8 @@
       transition: all 0.3s;
       z-index: 500;
       pointer-events: none;
+      max-width: 500px;
+      text-align: center;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -641,7 +643,7 @@
       <div class="page-header animate-in">
         <div>
           <div class="page-title">Content Pipeline</div>
-          <div class="page-subtitle">Drag content between stages. Drop into Scheduled to set a publish date.</div>
+          <div class="page-subtitle">Generate content from ideas, then manage blog and video pipelines separately.</div>
         </div>
         <div style="display:flex;gap:0.5rem">
           <button class="btn" id="refreshBtn" onclick="loadAll()">
@@ -651,38 +653,49 @@
         </div>
       </div>
 
-      <!-- KANBAN -->
-      <div class="kanban-wrap section animate-in delay-1">
-        <div class="section-label">Pipeline Board</div>
-        <div class="kanban" id="kanban">
-          <div class="kanban-col" data-col="ideas" ondragover="onDragOver(event)" ondrop="onDrop(event, 'ideas')" ondragleave="onDragLeave(event)">
-            <div class="kanban-col-header">Ideas <span class="kanban-count" id="countIdeas">0</span></div>
-            <div class="kanban-cards" id="colIdeas"></div>
+      <!-- IDEA BANK -->
+      <div class="section animate-in delay-1">
+        <div class="section-label">Idea Bank</div>
+        <div class="idea-bank" id="ideaBank">
+          <div class="idea-empty">No ideas yet. Save ideas from the Dashboard outlier scanner.</div>
+        </div>
+      </div>
+
+      <!-- BLOG PIPELINE -->
+      <div class="section animate-in delay-2">
+        <div class="section-label">Blog Pipeline</div>
+        <div class="kanban" id="blogKanban">
+          <div class="kanban-col" data-board="blog" data-col="editing" ondragover="onDragOver(event)" ondrop="onDrop(event,'blog','editing')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Editing <span class="kanban-count" id="countBlogEditing">0</span></div>
+            <div class="kanban-cards" id="colBlogEditing"></div>
           </div>
-          <div class="kanban-col" data-col="scripting" ondragover="onDragOver(event)" ondrop="onDrop(event, 'scripting')" ondragleave="onDragLeave(event)">
-            <div class="kanban-col-header">Scripting <span class="kanban-count" id="countScripting">0</span></div>
-            <div class="kanban-cards" id="colScripting"></div>
+          <div class="kanban-col" data-board="blog" data-col="scheduled" ondragover="onDragOver(event)" ondrop="onDrop(event,'blog','scheduled')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Scheduled <span class="kanban-count" id="countBlogScheduled">0</span></div>
+            <div class="kanban-cards" id="colBlogScheduled"></div>
           </div>
-          <div class="kanban-col" data-col="editing" ondragover="onDragOver(event)" ondrop="onDrop(event, 'editing')" ondragleave="onDragLeave(event)">
-            <div class="kanban-col-header">Editing <span class="kanban-count" id="countEditing">0</span></div>
-            <div class="kanban-cards" id="colEditing"></div>
-          </div>
-          <div class="kanban-col" data-col="scheduled" ondragover="onDragOver(event)" ondrop="onDrop(event, 'scheduled')" ondragleave="onDragLeave(event)">
-            <div class="kanban-col-header">Scheduled <span class="kanban-count" id="countScheduled">0</span></div>
-            <div class="kanban-cards" id="colScheduled"></div>
-          </div>
-          <div class="kanban-col" data-col="published" ondragover="onDragOver(event)" ondrop="onDrop(event, 'published')" ondragleave="onDragLeave(event)">
-            <div class="kanban-col-header">Published <span class="kanban-count" id="countPublished">0</span></div>
-            <div class="kanban-cards" id="colPublished"></div>
+          <div class="kanban-col" data-board="blog" data-col="published" ondragover="onDragOver(event)" ondrop="onDrop(event,'blog','published')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Published <span class="kanban-count" id="countBlogPublished">0</span></div>
+            <div class="kanban-cards" id="colBlogPublished"></div>
           </div>
         </div>
       </div>
 
-      <!-- REPURPOSE SUGGESTIONS -->
-      <div class="section animate-in delay-2">
-        <div class="section-label">Repurpose Opportunities</div>
-        <div class="repurpose-grid" id="repurposeGrid">
-          <div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">Published articles will appear here with repurpose suggestions</div>
+      <!-- VIDEO PIPELINE -->
+      <div class="section animate-in delay-3">
+        <div class="section-label">Video Pipeline</div>
+        <div class="kanban" id="videoKanban">
+          <div class="kanban-col" data-board="video" data-col="draft" ondragover="onDragOver(event)" ondrop="onDrop(event,'video','draft')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Scripted <span class="kanban-count" id="countVideoDraft">0</span></div>
+            <div class="kanban-cards" id="colVideoDraft"></div>
+          </div>
+          <div class="kanban-col" data-board="video" data-col="filming" ondragover="onDragOver(event)" ondrop="onDrop(event,'video','filming')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Filming <span class="kanban-count" id="countVideoFilming">0</span></div>
+            <div class="kanban-cards" id="colVideoFilming"></div>
+          </div>
+          <div class="kanban-col" data-board="video" data-col="published" ondragover="onDragOver(event)" ondrop="onDrop(event,'video','published')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Published <span class="kanban-count" id="countVideoPublished">0</span></div>
+            <div class="kanban-cards" id="colVideoPublished"></div>
+          </div>
         </div>
       </div>
     </main>
@@ -695,16 +708,20 @@
       </div>
       <div class="sidebar-content" id="sidebarContent">
         <div class="sidebar-stat">
-          <div class="sidebar-stat-label">Total in Pipeline</div>
-          <div class="sidebar-stat-value" id="sideTotal">-</div>
+          <div class="sidebar-stat-label">Ideas</div>
+          <div class="sidebar-stat-value" id="sideIdeas">-</div>
         </div>
         <div class="sidebar-stat">
-          <div class="sidebar-stat-label">Published This Month</div>
-          <div class="sidebar-stat-value" id="sidePublished">-</div>
+          <div class="sidebar-stat-label">Blog Drafts</div>
+          <div class="sidebar-stat-value" id="sideBlogDrafts">-</div>
         </div>
         <div class="sidebar-stat">
-          <div class="sidebar-stat-label">Scheduled</div>
-          <div class="sidebar-stat-value" id="sideScheduled">-</div>
+          <div class="sidebar-stat-label">Video Scripts</div>
+          <div class="sidebar-stat-value" id="sideVideoScripts">-</div>
+        </div>
+        <div class="sidebar-stat">
+          <div class="sidebar-stat-label">Blogs Published</div>
+          <div class="sidebar-stat-value" id="sideBlogPublished">-</div>
         </div>
         <div class="sidebar-divider">Upcoming Schedule</div>
         <div id="sideScheduleList"></div>
@@ -720,8 +737,9 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
     let authToken = null;
 
-    // All content items: { id, title, category, source, type ('blog'|'idea'), status, published_at, created_at }
-    let allItems = [];
+    let ideas = [];
+    let blogItems = [];
+    let videoItems = [];
     let dragItem = null;
     let pendingScheduleItem = null;
 
@@ -789,22 +807,15 @@
       return res.json();
     }
 
-    async function sbPatchIdea(id, data) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/content_ideas?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error(`Supabase patch idea ${res.status}`);
-      return res.json();
-    }
-
     // ---- LOAD DATA ----
     async function loadAll() {
       const btn = document.getElementById('refreshBtn');
       btn.classList.add('spinning');
 
-      allItems = [];
+      ideas = [];
+      blogItems = [];
+      videoItems = [];
+
       try {
         // Fetch blog posts
         const posts = await sbGet('blog_posts?select=id,title,category,published,published_at,created_at&order=created_at.desc');
@@ -817,30 +828,34 @@
           else if (p.published && pubDate && pubDate > now) status = 'scheduled';
           else status = 'editing';
 
-          allItems.push({
+          blogItems.push({
             id: p.id, title: p.title, category: p.category,
-            type: 'blog', status, published_at: p.published_at,
-            created_at: p.created_at
+            status, published_at: p.published_at, created_at: p.created_at
           });
         });
 
-        // Fetch ideas (may not exist)
+        // Fetch ideas
         try {
-          const ideas = await sbGet('content_ideas?select=id,title,notes,source,status,created_at&order=created_at.desc');
-          ideas.forEach(idea => {
-            allItems.push({
-              id: idea.id, title: idea.title, notes: idea.notes || '',
-              source: idea.source, type: 'idea', status: idea.status || 'idea',
-              created_at: idea.created_at
+          const rows = await sbGet('content_ideas?select=id,title,notes,source,status,created_at&status=eq.idea&order=created_at.desc');
+          ideas = rows;
+        } catch (e) {
+          console.log('content_ideas table not found, skipping');
+        }
+
+        // Fetch video scripts
+        try {
+          const scripts = await sbGet('video_scripts?select=id,title,status,created_at&order=created_at.desc');
+          scripts.forEach(s => {
+            videoItems.push({
+              id: s.id, title: s.title,
+              status: s.status || 'draft', created_at: s.created_at
             });
           });
         } catch (e) {
-          console.log('content_ideas table not found, skipping ideas');
+          console.log('video_scripts table not found, skipping');
         }
 
-        renderKanban();
-        renderSidebar();
-        renderRepurpose();
+        renderAll();
       } catch (e) {
         console.error('Load error:', e);
         showToast('Failed to load pipeline data');
@@ -849,48 +864,94 @@
       btn.classList.remove('spinning');
     }
 
-    // ---- RENDER KANBAN ----
-    function renderKanban() {
-      const buckets = { ideas: [], scripting: [], editing: [], scheduled: [], published: [] };
+    // ---- RENDER ----
+    function renderAll() {
+      renderIdeaBank();
+      renderBlogBoard();
+      renderVideoBoard();
+      renderSidebar();
+    }
 
-      allItems.forEach(item => {
-        if (item.type === 'idea') {
-          if (item.status === 'scripting') buckets.scripting.push(item);
-          else buckets.ideas.push(item);
-        } else {
-          if (buckets[item.status]) buckets[item.status].push(item);
-        }
+    function renderIdeaBank() {
+      const container = document.getElementById('ideaBank');
+      if (!ideas.length) {
+        container.innerHTML = '<div class="idea-empty">No ideas yet. Save ideas from the Dashboard outlier scanner.</div>';
+        return;
+      }
+      container.innerHTML = ideas.map(idea => `
+        <div class="idea-card" id="idea-${idea.id}">
+          <div class="idea-card-title">${esc(truncate(idea.title, 55))}</div>
+          <div class="idea-card-meta">
+            <span>${idea.source || 'idea'}</span>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="generateFromIdea('${idea.id}', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Script It
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderBlogBoard() {
+      const buckets = { editing: [], scheduled: [], published: [] };
+      blogItems.forEach(item => {
+        if (buckets[item.status]) buckets[item.status].push(item);
       });
 
       Object.keys(buckets).forEach(key => {
-        const col = document.getElementById('col' + cap(key));
-        const count = document.getElementById('count' + cap(key));
+        const col = document.getElementById('colBlog' + cap(key));
+        const count = document.getElementById('countBlog' + cap(key));
         count.textContent = buckets[key].length;
-        col.innerHTML = buckets[key].map(item => cardHTML(item)).join('');
+        col.innerHTML = buckets[key].map(item => blogCardHTML(item)).join('');
       });
     }
 
-    function cardHTML(item) {
-      const tag = getTag(item);
+    function renderVideoBoard() {
+      const buckets = { draft: [], filming: [], published: [] };
+      videoItems.forEach(item => {
+        if (buckets[item.status]) buckets[item.status].push(item);
+      });
+
+      Object.keys(buckets).forEach(key => {
+        const col = document.getElementById('colVideo' + cap(key));
+        const count = document.getElementById('countVideo' + cap(key));
+        count.textContent = buckets[key].length;
+        col.innerHTML = buckets[key].map(item => videoCardHTML(item)).join('');
+      });
+    }
+
+    function blogCardHTML(item) {
+      const tag = getBlogTag(item);
       const date = item.published_at
         ? new Date(item.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
         : '';
-
       return `
         <div class="kanban-card" draggable="true"
-             data-id="${item.id}" data-type="${item.type}"
+             data-id="${item.id}" data-board="blog"
              ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
           <div class="kanban-card-title">${esc(truncate(item.title, 60))}</div>
           <div class="kanban-card-meta">
             <span class="kanban-tag ${tag[1]}">${tag[0]}</span>
             ${date ? `<span>${date}</span>` : ''}
-            ${item.type === 'idea' ? '<span class="kanban-card-source">idea</span>' : ''}
           </div>
         </div>`;
     }
 
-    function getTag(item) {
-      if (item.type === 'idea') return ['Idea', 'tag-idea'];
+    function videoCardHTML(item) {
+      const tagClass = item.status === 'filming' ? 'tag-filming' : 'tag-draft';
+      const tagLabel = item.status === 'filming' ? 'Filming' : item.status === 'published' ? 'Done' : 'Script';
+      return `
+        <div class="kanban-card" draggable="true"
+             data-id="${item.id}" data-board="video"
+             ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+          <div class="kanban-card-title">${esc(truncate(item.title, 60))}</div>
+          <div class="kanban-card-meta">
+            <span class="kanban-tag ${tagClass}">${tagLabel}</span>
+          </div>
+        </div>`;
+    }
+
+    function getBlogTag(item) {
       const c = (item.category || '').toLowerCase();
       if (c.includes('leadership')) return ['Leadership', 'tag-leadership'];
       if (c.includes('growth') || c.includes('sales')) return ['Growth', 'tag-growth'];
@@ -899,12 +960,79 @@
       return [item.category || 'General', 'tag-systems'];
     }
 
+    // ---- GENERATE FROM IDEA ----
+    async function generateFromIdea(ideaId, btn) {
+      const idea = ideas.find(i => i.id === ideaId);
+      if (!idea) return;
+
+      const card = document.getElementById('idea-' + ideaId);
+      if (card) card.classList.add('generating');
+      btn.disabled = true;
+      btn.innerHTML = 'Generating...';
+
+      showToast('Generating blog draft + video script...');
+
+      try {
+        const res = await fetch('/api/content/script-idea', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idea_id: idea.id,
+            title: idea.title,
+            notes: idea.notes || '',
+            source: idea.source || 'idea',
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || data.detail || 'Generation failed');
+        }
+
+        // Add blog draft to board
+        if (data.blog) {
+          blogItems.push({
+            id: data.blog.id, title: data.blog.title,
+            category: 'General', status: 'editing',
+            created_at: new Date().toISOString(),
+          });
+        }
+
+        // Add video script to board
+        if (data.video_script) {
+          videoItems.push({
+            id: data.video_script.id, title: data.video_script.title,
+            status: 'draft', created_at: new Date().toISOString(),
+          });
+        }
+
+        // Remove idea from bank
+        ideas = ideas.filter(i => i.id !== ideaId);
+
+        renderAll();
+
+        const parts = [];
+        if (data.blog) parts.push('Blog draft created');
+        if (data.video_script) parts.push('Video script saved');
+        if (data.blog_error) parts.push('Blog: ' + data.blog_error);
+        if (data.script_error) parts.push('Script: ' + data.script_error);
+        showToast(parts.join('. ') || 'Content generated');
+
+      } catch (err) {
+        if (card) card.classList.remove('generating');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><polygon points="5 3 19 12 5 21 5 3"/></svg> Script It';
+        showToast('Generation failed: ' + err.message);
+        console.error('Content generation error:', err);
+      }
+    }
+
     // ---- DRAG AND DROP ----
     function onDragStart(e) {
       const card = e.target.closest('.kanban-card');
       dragItem = {
         id: card.dataset.id,
-        type: card.dataset.type,
+        board: card.dataset.board,
         el: card
       };
       card.classList.add('dragging');
@@ -933,62 +1061,62 @@
       }
     }
 
-    async function onDrop(e, targetCol) {
+    async function onDrop(e, board, targetCol) {
       e.preventDefault();
       document.querySelectorAll('.kanban-col').forEach(col => col.classList.remove('drag-over'));
 
-      if (!dragItem) return;
-      const item = allItems.find(i => String(i.id) === String(dragItem.id) && i.type === dragItem.type);
-      if (!item) return;
+      if (!dragItem || dragItem.board !== board) return;
 
-      // If dropping into "scheduled", show the schedule modal
-      if (targetCol === 'scheduled' && item.type === 'blog') {
-        pendingScheduleItem = item;
-        openScheduleModal(item);
-        return;
+      if (board === 'blog') {
+        const item = blogItems.find(i => String(i.id) === String(dragItem.id));
+        if (!item) return;
+
+        if (targetCol === 'scheduled') {
+          pendingScheduleItem = item;
+          openScheduleModal(item);
+          return;
+        }
+
+        await moveBlogItem(item, targetCol);
+      } else if (board === 'video') {
+        const item = videoItems.find(i => String(i.id) === String(dragItem.id));
+        if (!item) return;
+        await moveVideoItem(item, targetCol);
       }
-
-      await moveItem(item, targetCol);
     }
 
-    async function moveItem(item, targetCol) {
+    async function moveBlogItem(item, targetCol) {
       try {
-        if (item.type === 'idea') {
-          // When moving to scripting, trigger content generation
-          if (targetCol === 'scripting') {
-            await generateContent(item);
-            return;
-          }
-          const newStatus = targetCol === 'ideas' ? 'idea' : targetCol;
-          await sbPatchIdea(item.id, { status: newStatus });
-          item.status = newStatus;
-        } else {
-          // Update blog post
-          if (targetCol === 'published') {
-            await sbPatch('blog_posts', item.id, { published: true, published_at: new Date().toISOString() });
-            item.status = 'published';
-            item.published_at = new Date().toISOString();
-          } else if (targetCol === 'editing') {
-            await sbPatch('blog_posts', item.id, { published: false });
-            item.status = 'editing';
-          } else if (targetCol === 'ideas') {
-            await sbPatch('blog_posts', item.id, { published: false });
-            item.status = 'editing'; // blog posts go to editing, not ideas
-          }
+        if (targetCol === 'published') {
+          await sbPatch('blog_posts', item.id, { published: true, published_at: new Date().toISOString() });
+          item.status = 'published';
+          item.published_at = new Date().toISOString();
+        } else if (targetCol === 'editing') {
+          await sbPatch('blog_posts', item.id, { published: false, published_at: null });
+          item.status = 'editing';
+          item.published_at = null;
         }
-        renderKanban();
-        renderSidebar();
+        renderAll();
         showToast('Moved to ' + targetCol);
       } catch (err) {
         showToast('Move failed: ' + err.message);
-        console.error(err);
+      }
+    }
+
+    async function moveVideoItem(item, targetCol) {
+      try {
+        await sbPatch('video_scripts', item.id, { status: targetCol });
+        item.status = targetCol;
+        renderAll();
+        showToast('Moved to ' + targetCol);
+      } catch (err) {
+        showToast('Move failed: ' + err.message);
       }
     }
 
     // ---- SCHEDULE MODAL ----
     function openScheduleModal(item) {
       document.getElementById('scheduleItemName').textContent = truncate(item.title, 50);
-      // Default to next Mon/Wed/Fri at 07:00
       const next = getNextPublishDate();
       document.getElementById('schedDate').value = next;
       document.getElementById('schedTime').value = '07:00';
@@ -1015,8 +1143,7 @@
         });
         pendingScheduleItem.status = 'scheduled';
         pendingScheduleItem.published_at = publishAt;
-        renderKanban();
-        renderSidebar();
+        renderAll();
         showToast('Scheduled for ' + new Date(publishAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
       } catch (err) {
         showToast('Schedule failed: ' + err.message);
@@ -1026,9 +1153,7 @@
     }
 
     function getNextPublishDate() {
-      // Next Mon, Wed, or Fri
       const d = new Date();
-      const day = d.getDay(); // 0=Sun
       const targets = [1, 3, 5]; // Mon, Wed, Fri
       for (let add = 1; add <= 7; add++) {
         const future = new Date(d);
@@ -1042,19 +1167,13 @@
 
     // ---- SIDEBAR ----
     function renderSidebar() {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      const total = allItems.length;
-      const published = allItems.filter(i => i.status === 'published' && i.published_at && new Date(i.published_at) >= monthStart).length;
-      const scheduled = allItems.filter(i => i.status === 'scheduled').length;
-
-      document.getElementById('sideTotal').textContent = total;
-      document.getElementById('sidePublished').textContent = published;
-      document.getElementById('sideScheduled').textContent = scheduled;
+      document.getElementById('sideIdeas').textContent = ideas.length;
+      document.getElementById('sideBlogDrafts').textContent = blogItems.filter(i => i.status === 'editing').length;
+      document.getElementById('sideVideoScripts').textContent = videoItems.filter(i => i.status === 'draft').length;
+      document.getElementById('sideBlogPublished').textContent = blogItems.filter(i => i.status === 'published').length;
 
       // Upcoming schedule
-      const upcoming = allItems
+      const upcoming = blogItems
         .filter(i => i.status === 'scheduled' && i.published_at)
         .sort((a, b) => new Date(a.published_at) - new Date(b.published_at))
         .slice(0, 6);
@@ -1076,97 +1195,6 @@
       }).join('');
     }
 
-    // ---- REPURPOSE ----
-    function renderRepurpose() {
-      const published = allItems.filter(i => i.status === 'published' && i.type === 'blog').slice(0, 6);
-      const grid = document.getElementById('repurposeGrid');
-
-      if (!published.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">Published articles will appear here with repurpose suggestions</div>';
-        return;
-      }
-
-      const formats = ['LinkedIn Post', 'YouTube Script', 'Email Newsletter', 'Twitter Thread', 'Short-Form Video'];
-
-      grid.innerHTML = published.map(item => `
-        <div class="repurpose-card">
-          <div class="repurpose-card-title">${esc(truncate(item.title, 55))}</div>
-          <div class="repurpose-chips">
-            ${formats.map(f => `<span class="repurpose-chip" onclick="repurpose('${esc(item.title)}', '${f}')">${f}</span>`).join('')}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function repurpose(title, format) {
-      showToast(`Open Claude Code: "Repurpose '${truncate(title, 30)}' as a ${format}"`);
-    }
-
-    // ---- CONTENT GENERATION ----
-    async function generateContent(item) {
-      // Show generating state on the card
-      item.status = 'scripting';
-      renderKanban();
-
-      // Find the card and add a loading indicator
-      const card = document.querySelector(`.kanban-card[data-id="${item.id}"]`);
-      if (card) {
-        card.style.opacity = '0.6';
-        card.style.pointerEvents = 'none';
-        const meta = card.querySelector('.kanban-card-meta');
-        if (meta) meta.innerHTML += '<span style="color:var(--teal);font-weight:600">Generating...</span>';
-      }
-
-      showToast('Generating blog draft + video script...');
-
-      try {
-        const res = await fetch('/api/content/script-idea', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            idea_id: item.id,
-            title: item.title,
-            notes: item.notes || '',
-            source: item.source || 'idea',
-          }),
-        });
-
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          throw new Error(data.error || data.detail || 'Generation failed');
-        }
-
-        // Add the new blog draft to allItems so it appears in editing
-        if (data.blog) {
-          allItems.push({
-            id: data.blog.id,
-            title: data.blog.title,
-            category: 'General',
-            type: 'blog',
-            status: 'editing',
-            created_at: new Date().toISOString(),
-          });
-        }
-
-        renderKanban();
-        renderSidebar();
-
-        const parts = [];
-        if (data.blog) parts.push('Blog draft created');
-        if (data.video_script) parts.push('Video script saved');
-        if (data.blog_error) parts.push('Blog error: ' + data.blog_error);
-        if (data.script_error) parts.push('Script error: ' + data.script_error);
-        showToast(parts.join('. ') || 'Content generated');
-
-      } catch (err) {
-        // Revert status on failure
-        item.status = 'idea';
-        renderKanban();
-        showToast('Generation failed: ' + err.message);
-        console.error('Content generation error:', err);
-      }
-    }
-
     // ---- UTILS ----
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : s || ''; }
@@ -1176,7 +1204,7 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2500);
+      setTimeout(() => t.classList.remove('show'), 3500);
     }
 
     // ---- KEYBOARD ----
