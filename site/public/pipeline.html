@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+      --feed-width: 272px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LOGIN SCREEN ---- */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .login-box {
+      background: var(--ink-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 340px;
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .login-box p { color: var(--grey-400); font-size: 0.82rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--teal-bright); }
+    .login-box input::placeholder { color: var(--grey-400); }
+    .login-box button {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.2s;
+      margin-top: 0.25rem;
+    }
+    .login-box button:hover { background: var(--teal-hover); }
+    .login-error { color: var(--red); font-size: 0.78rem; margin-bottom: 0.5rem; display: none; }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN CONTENT ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 3rem;
+      scroll-behavior: smooth;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SECTION ---- */
+    .section { margin-bottom: 1.75rem; }
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--grey-400);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--grey-200);
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { background: var(--grey-100); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+    .btn.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- KANBAN ---- */
+    .kanban-wrap {
+      flex: 1;
+      min-height: 0;
+    }
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.65rem;
+      min-height: 400px;
+      height: 100%;
+    }
+    .kanban-col {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 0.65rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      transition: background 0.15s;
+    }
+    .kanban-col.drag-over {
+      background: var(--teal-glow);
+      outline: 2px dashed var(--teal-bright);
+      outline-offset: -2px;
+    }
+    .kanban-col-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-500);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .kanban-count {
+      background: var(--white);
+      font-size: 0.62rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 100px;
+      color: var(--grey-400);
+      font-weight: 600;
+    }
+    .kanban-cards {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 60px;
+    }
+    .kanban-cards::-webkit-scrollbar { width: 3px; }
+    .kanban-cards::-webkit-scrollbar-track { background: transparent; }
+    .kanban-cards::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .kanban-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.75rem;
+      margin-bottom: 0.4rem;
+      cursor: grab;
+      transition: box-shadow 0.2s, opacity 0.2s;
+      user-select: none;
+    }
+    .kanban-card:hover { box-shadow: var(--shadow-md); }
+    .kanban-card.dragging { opacity: 0.4; cursor: grabbing; }
+    .kanban-card-title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-bottom: 0.3rem;
+    }
+    .kanban-card-meta {
+      font-size: 0.65rem;
+      color: var(--grey-400);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .kanban-tag {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-leadership { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .tag-growth { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .tag-systems { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+    .tag-ai { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+    .tag-idea { background: var(--teal-muted); color: var(--teal); }
+    .kanban-card-source {
+      font-size: 0.6rem;
+      color: var(--grey-300);
+      font-style: italic;
+    }
+
+    /* ---- SCHEDULE MODAL ---- */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.visible { opacity: 1; visibility: visible; }
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      width: 380px;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal h2 {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .modal p {
+      font-size: 0.78rem;
+      color: var(--grey-400);
+      margin-bottom: 1.25rem;
+    }
+    .modal label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.3rem;
+    }
+    .modal input[type="date"],
+    .modal input[type="time"] {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: var(--ink);
+      outline: none;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus { border-color: var(--teal); }
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+
+    /* ---- REPURPOSE SUGGESTIONS ---- */
+    .repurpose-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.75rem;
+    }
+    .repurpose-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.15rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .repurpose-card-title {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+      line-height: 1.35;
+    }
+    .repurpose-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .repurpose-chip {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 100px;
+      border: 1px solid var(--grey-200);
+      color: var(--grey-500);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .repurpose-chip:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-muted); }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      width: var(--feed-width);
+      min-width: var(--feed-width);
+      background: var(--white);
+      border-left: 1px solid var(--grey-200);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .sidebar-title {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .sidebar-subtitle {
+      font-size: 0.7rem;
+      color: var(--grey-400);
+      margin-top: 0.1rem;
+    }
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.25rem;
+    }
+    .sidebar-content::-webkit-scrollbar { width: 4px; }
+    .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+
+    /* Sidebar stats */
+    .sidebar-stat {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--grey-100);
+    }
+    .sidebar-stat:last-child { border-bottom: none; }
+    .sidebar-stat-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.15rem;
+    }
+    .sidebar-stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .sidebar-stat-sub {
+      font-size: 0.68rem;
+      color: var(--grey-300);
+    }
+    .sidebar-divider {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--grey-300);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-schedule-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--grey-100);
+      font-size: 0.75rem;
+    }
+    .sidebar-schedule-item:last-child { border-bottom: none; }
+    .sidebar-schedule-title {
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.1rem;
+    }
+    .sidebar-schedule-date {
+      font-size: 0.65rem;
+      color: var(--grey-300);
+    }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 500;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h1>Business OS</h1>
+      <p>Sign in to your control panel</p>
+      <div class="login-error" id="loginError"></div>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+      <button onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- SCHEDULE MODAL -->
+  <div class="modal-overlay" id="scheduleModal">
+    <div class="modal">
+      <h2>Schedule Content</h2>
+      <p id="scheduleItemName">Set the publish date and time</p>
+      <label>Date</label>
+      <input type="date" id="schedDate">
+      <label>Time (UTC)</label>
+      <input type="time" id="schedTime" value="07:00">
+      <div class="modal-actions">
+        <button class="btn" onclick="closeScheduleModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmSchedule()">Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link" href="control.html" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link" href="research.html" title="Research">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="nav-tooltip">Research</span>
+      </a>
+      <a class="nav-link active" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-tooltip">Pipeline</span>
+      </a>
+      <a class="nav-link" href="campaigns.html" title="Performance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="nav-tooltip">Performance</span>
+      </a>
+      <a class="nav-link" href="control.html#agents" title="Agents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/><path d="M9 15h6"/></svg>
+        <span class="nav-tooltip">Agents</span>
+      </a>
+      <a class="nav-link" href="admin.html" title="Clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="nav-tooltip">Clients</span>
+      </a>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" onclick="doLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-tooltip">Sign Out</span>
+      </a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title">Content Pipeline</div>
+          <div class="page-subtitle">Drag content between stages. Drop into Scheduled to set a publish date.</div>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn" id="refreshBtn" onclick="loadAll()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- KANBAN -->
+      <div class="kanban-wrap section animate-in delay-1">
+        <div class="section-label">Pipeline Board</div>
+        <div class="kanban" id="kanban">
+          <div class="kanban-col" data-col="ideas" ondragover="onDragOver(event)" ondrop="onDrop(event, 'ideas')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Ideas <span class="kanban-count" id="countIdeas">0</span></div>
+            <div class="kanban-cards" id="colIdeas"></div>
+          </div>
+          <div class="kanban-col" data-col="scripting" ondragover="onDragOver(event)" ondrop="onDrop(event, 'scripting')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Scripting <span class="kanban-count" id="countScripting">0</span></div>
+            <div class="kanban-cards" id="colScripting"></div>
+          </div>
+          <div class="kanban-col" data-col="editing" ondragover="onDragOver(event)" ondrop="onDrop(event, 'editing')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Editing <span class="kanban-count" id="countEditing">0</span></div>
+            <div class="kanban-cards" id="colEditing"></div>
+          </div>
+          <div class="kanban-col" data-col="scheduled" ondragover="onDragOver(event)" ondrop="onDrop(event, 'scheduled')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Scheduled <span class="kanban-count" id="countScheduled">0</span></div>
+            <div class="kanban-cards" id="colScheduled"></div>
+          </div>
+          <div class="kanban-col" data-col="published" ondragover="onDragOver(event)" ondrop="onDrop(event, 'published')" ondragleave="onDragLeave(event)">
+            <div class="kanban-col-header">Published <span class="kanban-count" id="countPublished">0</span></div>
+            <div class="kanban-cards" id="colPublished"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPURPOSE SUGGESTIONS -->
+      <div class="section animate-in delay-2">
+        <div class="section-label">Repurpose Opportunities</div>
+        <div class="repurpose-grid" id="repurposeGrid">
+          <div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">Published articles will appear here with repurpose suggestions</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Pipeline Stats</div>
+        <div class="sidebar-subtitle">Content production overview</div>
+      </div>
+      <div class="sidebar-content" id="sidebarContent">
+        <div class="sidebar-stat">
+          <div class="sidebar-stat-label">Total in Pipeline</div>
+          <div class="sidebar-stat-value" id="sideTotal">-</div>
+        </div>
+        <div class="sidebar-stat">
+          <div class="sidebar-stat-label">Published This Month</div>
+          <div class="sidebar-stat-value" id="sidePublished">-</div>
+        </div>
+        <div class="sidebar-stat">
+          <div class="sidebar-stat-label">Scheduled</div>
+          <div class="sidebar-stat-value" id="sideScheduled">-</div>
+        </div>
+        <div class="sidebar-divider">Upcoming Schedule</div>
+        <div id="sideScheduleList"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+    let authToken = null;
+
+    // All content items: { id, title, category, source, type ('blog'|'idea'), status, published_at, created_at }
+    let allItems = [];
+    let dragItem = null;
+    let pendingScheduleItem = null;
+
+    // ---- AUTH ----
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password: pass })
+        });
+        if (!res.ok) { errEl.textContent = 'Invalid credentials'; errEl.style.display = 'block'; return; }
+        const data = await res.json();
+        authToken = data.access_token;
+        localStorage.setItem('control_token', authToken);
+        showApp();
+      } catch (e) { errEl.textContent = 'Connection error'; errEl.style.display = 'block'; }
+    }
+
+    function doLogout() {
+      authToken = null;
+      localStorage.removeItem('control_token');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      document.getElementById('app').classList.remove('visible');
+    }
+
+    function showApp() {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      loadAll();
+    }
+
+    // ---- SUPABASE ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${authToken || SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPatch(table, id, data) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error(`Supabase patch ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPatchIdea(id, data) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/content_ideas?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error(`Supabase patch idea ${res.status}`);
+      return res.json();
+    }
+
+    // ---- LOAD DATA ----
+    async function loadAll() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('spinning');
+
+      allItems = [];
+      try {
+        // Fetch blog posts
+        const posts = await sbGet('blog_posts?select=id,title,category,published,published_at,created_at&order=created_at.desc');
+        const now = new Date();
+
+        posts.forEach(p => {
+          const pubDate = p.published_at ? new Date(p.published_at) : null;
+          let status;
+          if (p.published && pubDate && pubDate <= now) status = 'published';
+          else if (p.published && pubDate && pubDate > now) status = 'scheduled';
+          else status = 'editing';
+
+          allItems.push({
+            id: p.id, title: p.title, category: p.category,
+            type: 'blog', status, published_at: p.published_at,
+            created_at: p.created_at
+          });
+        });
+
+        // Fetch ideas (may not exist)
+        try {
+          const ideas = await sbGet('content_ideas?select=id,title,source,status,created_at&order=created_at.desc');
+          ideas.forEach(idea => {
+            allItems.push({
+              id: idea.id, title: idea.title, source: idea.source,
+              type: 'idea', status: idea.status || 'idea',
+              created_at: idea.created_at
+            });
+          });
+        } catch (e) {
+          console.log('content_ideas table not found, skipping ideas');
+        }
+
+        renderKanban();
+        renderSidebar();
+        renderRepurpose();
+      } catch (e) {
+        console.error('Load error:', e);
+        showToast('Failed to load pipeline data');
+      }
+
+      btn.classList.remove('spinning');
+    }
+
+    // ---- RENDER KANBAN ----
+    function renderKanban() {
+      const buckets = { ideas: [], scripting: [], editing: [], scheduled: [], published: [] };
+
+      allItems.forEach(item => {
+        if (item.type === 'idea') {
+          if (item.status === 'scripting') buckets.scripting.push(item);
+          else buckets.ideas.push(item);
+        } else {
+          if (buckets[item.status]) buckets[item.status].push(item);
+        }
+      });
+
+      Object.keys(buckets).forEach(key => {
+        const col = document.getElementById('col' + cap(key));
+        const count = document.getElementById('count' + cap(key));
+        count.textContent = buckets[key].length;
+        col.innerHTML = buckets[key].map(item => cardHTML(item)).join('');
+      });
+    }
+
+    function cardHTML(item) {
+      const tag = getTag(item);
+      const date = item.published_at
+        ? new Date(item.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        : '';
+
+      return `
+        <div class="kanban-card" draggable="true"
+             data-id="${item.id}" data-type="${item.type}"
+             ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+          <div class="kanban-card-title">${esc(truncate(item.title, 60))}</div>
+          <div class="kanban-card-meta">
+            <span class="kanban-tag ${tag[1]}">${tag[0]}</span>
+            ${date ? `<span>${date}</span>` : ''}
+            ${item.type === 'idea' ? '<span class="kanban-card-source">idea</span>' : ''}
+          </div>
+        </div>`;
+    }
+
+    function getTag(item) {
+      if (item.type === 'idea') return ['Idea', 'tag-idea'];
+      const c = (item.category || '').toLowerCase();
+      if (c.includes('leadership')) return ['Leadership', 'tag-leadership'];
+      if (c.includes('growth') || c.includes('sales')) return ['Growth', 'tag-growth'];
+      if (c.includes('system')) return ['Systems', 'tag-systems'];
+      if (c.includes('ai')) return ['AI', 'tag-ai'];
+      return [item.category || 'General', 'tag-systems'];
+    }
+
+    // ---- DRAG AND DROP ----
+    function onDragStart(e) {
+      const card = e.target.closest('.kanban-card');
+      dragItem = {
+        id: card.dataset.id,
+        type: card.dataset.type,
+        el: card
+      };
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+    }
+
+    function onDragEnd(e) {
+      const card = e.target.closest('.kanban-card');
+      if (card) card.classList.remove('dragging');
+      document.querySelectorAll('.kanban-col').forEach(col => col.classList.remove('drag-over'));
+      dragItem = null;
+    }
+
+    function onDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const col = e.target.closest('.kanban-col');
+      if (col) col.classList.add('drag-over');
+    }
+
+    function onDragLeave(e) {
+      const col = e.target.closest('.kanban-col');
+      if (col && !col.contains(e.relatedTarget)) {
+        col.classList.remove('drag-over');
+      }
+    }
+
+    async function onDrop(e, targetCol) {
+      e.preventDefault();
+      document.querySelectorAll('.kanban-col').forEach(col => col.classList.remove('drag-over'));
+
+      if (!dragItem) return;
+      const item = allItems.find(i => String(i.id) === String(dragItem.id) && i.type === dragItem.type);
+      if (!item) return;
+
+      // If dropping into "scheduled", show the schedule modal
+      if (targetCol === 'scheduled' && item.type === 'blog') {
+        pendingScheduleItem = item;
+        openScheduleModal(item);
+        return;
+      }
+
+      await moveItem(item, targetCol);
+    }
+
+    async function moveItem(item, targetCol) {
+      try {
+        if (item.type === 'idea') {
+          // Update idea status
+          const newStatus = targetCol === 'ideas' ? 'idea' : targetCol;
+          await sbPatchIdea(item.id, { status: newStatus });
+          item.status = newStatus;
+        } else {
+          // Update blog post
+          if (targetCol === 'published') {
+            await sbPatch('blog_posts', item.id, { published: true, published_at: new Date().toISOString() });
+            item.status = 'published';
+            item.published_at = new Date().toISOString();
+          } else if (targetCol === 'editing') {
+            await sbPatch('blog_posts', item.id, { published: false });
+            item.status = 'editing';
+          } else if (targetCol === 'ideas') {
+            await sbPatch('blog_posts', item.id, { published: false });
+            item.status = 'editing'; // blog posts go to editing, not ideas
+          }
+        }
+        renderKanban();
+        renderSidebar();
+        showToast('Moved to ' + targetCol);
+      } catch (err) {
+        showToast('Move failed: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    // ---- SCHEDULE MODAL ----
+    function openScheduleModal(item) {
+      document.getElementById('scheduleItemName').textContent = truncate(item.title, 50);
+      // Default to next Mon/Wed/Fri at 07:00
+      const next = getNextPublishDate();
+      document.getElementById('schedDate').value = next;
+      document.getElementById('schedTime').value = '07:00';
+      document.getElementById('scheduleModal').classList.add('visible');
+    }
+
+    function closeScheduleModal() {
+      document.getElementById('scheduleModal').classList.remove('visible');
+      pendingScheduleItem = null;
+    }
+
+    async function confirmSchedule() {
+      if (!pendingScheduleItem) return;
+      const date = document.getElementById('schedDate').value;
+      const time = document.getElementById('schedTime').value;
+      if (!date) { showToast('Pick a date'); return; }
+
+      const publishAt = `${date}T${time || '07:00'}:00Z`;
+
+      try {
+        await sbPatch('blog_posts', pendingScheduleItem.id, {
+          published: true,
+          published_at: publishAt
+        });
+        pendingScheduleItem.status = 'scheduled';
+        pendingScheduleItem.published_at = publishAt;
+        renderKanban();
+        renderSidebar();
+        showToast('Scheduled for ' + new Date(publishAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+      } catch (err) {
+        showToast('Schedule failed: ' + err.message);
+      }
+
+      closeScheduleModal();
+    }
+
+    function getNextPublishDate() {
+      // Next Mon, Wed, or Fri
+      const d = new Date();
+      const day = d.getDay(); // 0=Sun
+      const targets = [1, 3, 5]; // Mon, Wed, Fri
+      for (let add = 1; add <= 7; add++) {
+        const future = new Date(d);
+        future.setDate(d.getDate() + add);
+        if (targets.includes(future.getDay())) {
+          return future.toISOString().slice(0, 10);
+        }
+      }
+      return new Date(d.getTime() + 86400000).toISOString().slice(0, 10);
+    }
+
+    // ---- SIDEBAR ----
+    function renderSidebar() {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const total = allItems.length;
+      const published = allItems.filter(i => i.status === 'published' && i.published_at && new Date(i.published_at) >= monthStart).length;
+      const scheduled = allItems.filter(i => i.status === 'scheduled').length;
+
+      document.getElementById('sideTotal').textContent = total;
+      document.getElementById('sidePublished').textContent = published;
+      document.getElementById('sideScheduled').textContent = scheduled;
+
+      // Upcoming schedule
+      const upcoming = allItems
+        .filter(i => i.status === 'scheduled' && i.published_at)
+        .sort((a, b) => new Date(a.published_at) - new Date(b.published_at))
+        .slice(0, 6);
+
+      const list = document.getElementById('sideScheduleList');
+      if (!upcoming.length) {
+        list.innerHTML = '<div style="font-size:0.75rem;color:var(--grey-300);padding:0.5rem 0">Nothing scheduled</div>';
+        return;
+      }
+      list.innerHTML = upcoming.map(item => {
+        const d = new Date(item.published_at);
+        const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        return `
+          <div class="sidebar-schedule-item">
+            <div class="sidebar-schedule-title">${esc(truncate(item.title, 40))}</div>
+            <div class="sidebar-schedule-date">${dateStr} at ${timeStr}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // ---- REPURPOSE ----
+    function renderRepurpose() {
+      const published = allItems.filter(i => i.status === 'published' && i.type === 'blog').slice(0, 6);
+      const grid = document.getElementById('repurposeGrid');
+
+      if (!published.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">Published articles will appear here with repurpose suggestions</div>';
+        return;
+      }
+
+      const formats = ['LinkedIn Post', 'YouTube Script', 'Email Newsletter', 'Twitter Thread', 'Short-Form Video'];
+
+      grid.innerHTML = published.map(item => `
+        <div class="repurpose-card">
+          <div class="repurpose-card-title">${esc(truncate(item.title, 55))}</div>
+          <div class="repurpose-chips">
+            ${formats.map(f => `<span class="repurpose-chip" onclick="repurpose('${esc(item.title)}', '${f}')">${f}</span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function repurpose(title, format) {
+      showToast(`Open Claude Code: "Repurpose '${truncate(title, 30)}' as a ${format}"`);
+    }
+
+    // ---- UTILS ----
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : s || ''; }
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ---- KEYBOARD ----
+    document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('loginEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeScheduleModal(); });
+
+    // ---- BOOT ----
+    (function boot() {
+      const saved = localStorage.getItem('control_token');
+      if (saved) { authToken = saved; showApp(); }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+      --feed-width: 272px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LOGIN SCREEN ---- */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .login-box {
+      background: var(--ink-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 340px;
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .login-box p { color: var(--grey-400); font-size: 0.82rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--teal-bright); }
+    .login-box input::placeholder { color: var(--grey-400); }
+    .login-box button {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.2s;
+      margin-top: 0.25rem;
+    }
+    .login-box button:hover { background: var(--teal-hover); }
+    .login-error { color: var(--red); font-size: 0.78rem; margin-bottom: 0.5rem; display: none; }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN CONTENT ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 3rem;
+      scroll-behavior: smooth;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SECTION ---- */
+    .section { margin-bottom: 1.75rem; }
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--grey-400);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--grey-200);
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { background: var(--grey-100); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-primary:disabled { background: var(--grey-200); color: var(--grey-400); border-color: var(--grey-200); cursor: not-allowed; }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+    .btn.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- TRENDING TABLE ---- */
+    .data-table-wrap {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      background: var(--grey-100);
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .data-table td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--grey-100);
+      color: var(--grey-600);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(0,0,0,0.015); }
+    .data-table .topic-cell {
+      color: var(--ink);
+      font-weight: 500;
+      max-width: 320px;
+    }
+    .data-table .topic-cell a {
+      color: var(--ink);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .data-table .topic-cell a:hover { color: var(--teal); }
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 100px;
+    }
+    .score-high { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .score-mid { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+    .table-empty {
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--grey-400);
+      font-size: 0.82rem;
+    }
+
+    /* ---- COMPETITOR PULSE CARDS ---- */
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .pulse-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.15rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+    .pulse-card:hover { box-shadow: var(--shadow-md); }
+    .pulse-card-channel {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--grey-400);
+      margin-bottom: 0.4rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pulse-card-title {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+      margin-bottom: 0.4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pulse-card-stats {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.7rem;
+      color: var(--grey-400);
+    }
+    .pulse-card-stats span { display: flex; align-items: center; gap: 0.2rem; }
+    .pulse-card-stats svg { width: 12px; height: 12px; }
+    .pulse-card-empty {
+      color: var(--grey-300);
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+
+    /* ---- HOOK LIBRARY ---- */
+    .hooks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    .hook-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.15rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .hook-category {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+    .cat-question { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+    .cat-stat { background: rgba(22, 163, 74, 0.08); color: var(--green); }
+    .cat-contrarian { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .cat-story { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+    .cat-pain { background: rgba(220, 38, 38, 0.08); color: var(--red); }
+    .hook-formula {
+      font-size: 0.85rem;
+      color: var(--ink);
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: 0.35rem;
+    }
+    .hook-example {
+      font-size: 0.75rem;
+      color: var(--grey-400);
+      font-style: italic;
+      line-height: 1.35;
+    }
+    .hook-copy {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      width: 28px; height: 28px;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--grey-400);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .hook-copy:hover { background: var(--grey-100); color: var(--ink); }
+    .hook-copy svg { width: 13px; height: 13px; }
+    .hook-copy.copied { background: var(--teal-muted); color: var(--teal); border-color: var(--teal); }
+
+    /* ---- IDEA CAPTURE ---- */
+    .idea-capture {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .idea-capture textarea {
+      width: 100%;
+      min-height: 72px;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: var(--ink);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 0.65rem;
+    }
+    .idea-capture textarea:focus { border-color: var(--teal); }
+    .idea-capture textarea::placeholder { color: var(--grey-300); }
+    .idea-capture-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .idea-capture-footer select {
+      padding: 0.35rem 0.6rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      color: var(--grey-600);
+      background: var(--white);
+      outline: none;
+    }
+
+    /* ---- IDEA BANK SIDEBAR ---- */
+    .idea-bank {
+      width: var(--feed-width);
+      min-width: var(--feed-width);
+      background: var(--white);
+      border-left: 1px solid var(--grey-200);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .bank-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .bank-title {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .bank-count {
+      font-size: 0.7rem;
+      color: var(--grey-400);
+      margin-top: 0.1rem;
+    }
+    .bank-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem 1.25rem;
+    }
+    .bank-list::-webkit-scrollbar { width: 4px; }
+    .bank-list::-webkit-scrollbar-track { background: transparent; }
+    .bank-list::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .bank-item {
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--grey-100);
+    }
+    .bank-item:last-child { border-bottom: none; }
+    .bank-item-title {
+      font-size: 0.78rem;
+      color: var(--ink);
+      font-weight: 500;
+      line-height: 1.35;
+      margin-bottom: 0.2rem;
+    }
+    .bank-item-meta {
+      font-size: 0.65rem;
+      color: var(--grey-300);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bank-item-source {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: var(--teal-muted);
+      color: var(--teal);
+    }
+    .bank-empty {
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--grey-300);
+      font-size: 0.78rem;
+    }
+
+    /* ---- LOADING ---- */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      color: var(--grey-400);
+      font-size: 0.82rem;
+      gap: 0.5rem;
+    }
+    .loading-row svg { animation: spin 1s linear infinite; width: 16px; height: 16px; }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 500;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+    .delay-5 { animation-delay: 0.25s; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h1>Business OS</h1>
+      <p>Sign in to your control panel</p>
+      <div class="login-error" id="loginError"></div>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+      <button onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link" href="control.html" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link active" title="Research">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="nav-tooltip">Research</span>
+      </a>
+      <a class="nav-link" href="pipeline.html" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-tooltip">Pipeline</span>
+      </a>
+      <a class="nav-link" href="campaigns.html" title="Performance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="nav-tooltip">Performance</span>
+      </a>
+      <a class="nav-link" href="control.html#agents" title="Agents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/><path d="M9 15h6"/></svg>
+        <span class="nav-tooltip">Agents</span>
+      </a>
+      <a class="nav-link" href="admin.html" title="Clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="nav-tooltip">Clients</span>
+      </a>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" onclick="doLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-tooltip">Sign Out</span>
+      </a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title">Content Research</div>
+          <div class="page-subtitle">Scan competitors, capture hooks, bank ideas</div>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn" id="scanBtn" onclick="runScan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Scan Outliers
+          </button>
+        </div>
+      </div>
+
+      <!-- TRENDING TOPICS TABLE -->
+      <div class="section animate-in delay-1">
+        <div class="section-label">Trending Topics</div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="trendingTable">
+            <thead>
+              <tr>
+                <th style="width:40%">Topic / Title</th>
+                <th>Channel</th>
+                <th>Score</th>
+                <th>Views</th>
+                <th style="width:90px"></th>
+              </tr>
+            </thead>
+            <tbody id="trendingBody">
+              <tr><td colspan="5" class="table-empty">Click "Scan Outliers" to find trending content in your niche</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COMPETITOR PULSE -->
+      <div class="section animate-in delay-2">
+        <div class="section-label">Competitor Pulse</div>
+        <div class="pulse-grid" id="pulseGrid">
+          <div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">Run a scan to see competitor performance</div>
+        </div>
+      </div>
+
+      <!-- HOOK FORMULA LIBRARY -->
+      <div class="section animate-in delay-3">
+        <div class="section-label">Hook Formula Library</div>
+        <div class="hooks-grid" id="hooksGrid"></div>
+      </div>
+
+      <!-- QUICK CAPTURE -->
+      <div class="section animate-in delay-4">
+        <div class="section-label">Quick Capture</div>
+        <div class="idea-capture">
+          <textarea id="ideaText" placeholder="Jot down a content idea, hook, or angle..."></textarea>
+          <div class="idea-capture-footer">
+            <select id="ideaSource">
+              <option value="manual">Manual</option>
+              <option value="outlier">From Outlier</option>
+              <option value="competitor">Competitor Inspiration</option>
+              <option value="client">Client Conversation</option>
+              <option value="trending">Trending Topic</option>
+            </select>
+            <button class="btn btn-primary" onclick="saveIdea()">Save to Bank</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- IDEA BANK SIDEBAR -->
+    <aside class="idea-bank">
+      <div class="bank-header">
+        <div class="bank-title">Idea Bank</div>
+        <div class="bank-count" id="bankCount">0 ideas saved</div>
+      </div>
+      <div class="bank-list" id="bankList">
+        <div class="bank-empty">No ideas captured yet. Use the quick capture form to start building your bank.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+    let authToken = null;
+    let outlierData = [];
+
+    // ---- HOOK FORMULAS ----
+    const HOOK_FORMULAS = [
+      { category: 'question', cat_class: 'cat-question', formula: 'What would happen if you [unexpected action] for [timeframe]?', example: 'What would happen if you stopped answering your team\'s questions for a week?' },
+      { category: 'question', cat_class: 'cat-question', formula: 'Why does every [role] struggle with [problem]?', example: 'Why does every founder struggle with their first sales hire?' },
+      { category: 'stat', cat_class: 'cat-stat', formula: '[Number]% of [audience] are doing [mistake]. Here\'s why.', example: '73% of small business owners are still the bottleneck. Here\'s why.' },
+      { category: 'stat', cat_class: 'cat-stat', formula: 'I saved [number] hours a week by changing one thing.', example: 'I saved 15 hours a week by building three simple AI workflows.' },
+      { category: 'contrarian', cat_class: 'cat-contrarian', formula: 'Stop [common advice]. Do this instead.', example: 'Stop hiring for experience. Hire for this instead.' },
+      { category: 'contrarian', cat_class: 'cat-contrarian', formula: 'The worst advice in [industry]: "[common belief]"', example: 'The worst advice in business: "Just hire someone to do it"' },
+      { category: 'story', cat_class: 'cat-story', formula: 'A [role] came to me with [problem]. Within [timeframe], [result].', example: 'A founder came to me unable to take a day off. Within 8 weeks, he took his first holiday in 3 years.' },
+      { category: 'story', cat_class: 'cat-story', formula: 'I watched a [number]-person team [fail/succeed] because of [one thing].', example: 'I watched a 12-person team nearly collapse because nobody owned the sales process.' },
+      { category: 'pain', cat_class: 'cat-pain', formula: 'If your [team/business] can\'t [action] without you, you don\'t have a business.', example: 'If your team can\'t make a decision without you, you don\'t have a team.' },
+      { category: 'pain', cat_class: 'cat-pain', formula: 'You\'re not too busy. You\'re just doing [wrong activity].', example: 'You\'re not too busy. You\'re just doing work your team should own.' },
+    ];
+
+    // ---- AUTH ----
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password: pass })
+        });
+        if (!res.ok) { errEl.textContent = 'Invalid credentials'; errEl.style.display = 'block'; return; }
+        const data = await res.json();
+        authToken = data.access_token;
+        localStorage.setItem('control_token', authToken);
+        showApp();
+      } catch (e) { errEl.textContent = 'Connection error'; errEl.style.display = 'block'; }
+    }
+
+    function doLogout() {
+      authToken = null;
+      localStorage.removeItem('control_token');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      document.getElementById('app').classList.remove('visible');
+    }
+
+    function showApp() {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      renderHooks();
+      loadIdeas();
+    }
+
+    // ---- SUPABASE ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${authToken || SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPost(table, data) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+      return res.json();
+    }
+
+    // ---- SCAN OUTLIERS ----
+    async function runScan() {
+      const btn = document.getElementById('scanBtn');
+      btn.disabled = true;
+      btn.classList.add('spinning');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Scanning...';
+
+      document.getElementById('trendingBody').innerHTML = '<tr><td colspan="5"><div class="loading-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Scanning 10 channels for outliers...</div></td></tr>';
+
+      try {
+        const res = await fetch('/api/content/scan-outliers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ months: 6, top_per_channel: 5, multiplier: 3.0 })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        outlierData = data.outliers || [];
+        renderTrendingTable(outlierData);
+        renderPulseCards(outlierData);
+        showToast(`Found ${outlierData.length} outliers across ${data.channels_scanned} channels`);
+      } catch (e) {
+        document.getElementById('trendingBody').innerHTML = `<tr><td colspan="5" class="table-empty">Scan failed: ${esc(e.message)}</td></tr>`;
+        showToast('Scan failed. Check console.');
+        console.error(e);
+      }
+
+      btn.disabled = false;
+      btn.classList.remove('spinning');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Scan Outliers';
+    }
+
+    function renderTrendingTable(outliers) {
+      const tbody = document.getElementById('trendingBody');
+      if (!outliers.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty">No outliers found. Try adjusting the multiplier or scan period.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = outliers.map(o => `
+        <tr>
+          <td class="topic-cell"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.title)}</a></td>
+          <td>${esc(o.channel_name)}</td>
+          <td><span class="score-badge ${o.outlier_score >= 5 ? 'score-high' : 'score-mid'}">${o.outlier_score}x</span></td>
+          <td>${formatNumber(o.view_count)}</td>
+          <td><button class="btn btn-sm btn-primary" onclick='generateScript(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Script</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderPulseCards(outliers) {
+      const grid = document.getElementById('pulseGrid');
+      // Group by channel, show top outlier per channel
+      const byChannel = {};
+      outliers.forEach(o => {
+        if (!byChannel[o.channel_name] || o.outlier_score > byChannel[o.channel_name].outlier_score) {
+          byChannel[o.channel_name] = o;
+        }
+      });
+
+      const channels = Object.values(byChannel);
+      if (!channels.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--grey-300);font-size:0.82rem">No competitor data yet</div>';
+        return;
+      }
+
+      grid.innerHTML = channels.map(o => `
+        <div class="pulse-card">
+          <div class="pulse-card-channel">${esc(o.channel_name)}</div>
+          <div class="pulse-card-title">${esc(o.title)}</div>
+          <div class="pulse-card-stats">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> ${formatNumber(o.view_count)}</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> ${o.outlier_score}x</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ---- GENERATE SCRIPT ----
+    async function generateScript(video) {
+      showToast('Generating script... this takes 15-25 seconds');
+      try {
+        const res = await fetch('/api/content/generate-script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(video)
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Open script in dashboard.html (which has the script viewer)
+        localStorage.setItem('generated_script', JSON.stringify(data));
+        window.location.href = 'dashboard.html#script-viewer';
+      } catch (e) {
+        showToast('Script generation failed: ' + e.message);
+        console.error(e);
+      }
+    }
+
+    // ---- HOOK LIBRARY ----
+    function renderHooks() {
+      const grid = document.getElementById('hooksGrid');
+      grid.innerHTML = HOOK_FORMULAS.map((h, i) => `
+        <div class="hook-card">
+          <button class="hook-copy" onclick="copyHook(${i}, this)" title="Copy formula">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+          <span class="hook-category ${h.cat_class}">${h.category}</span>
+          <div class="hook-formula">${esc(h.formula)}</div>
+          <div class="hook-example">${esc(h.example)}</div>
+        </div>
+      `).join('');
+    }
+
+    function copyHook(idx, btn) {
+      const hook = HOOK_FORMULAS[idx];
+      navigator.clipboard.writeText(hook.formula).then(() => {
+        btn.classList.add('copied');
+        showToast('Hook formula copied');
+        setTimeout(() => btn.classList.remove('copied'), 1500);
+      });
+    }
+
+    // ---- IDEA BANK ----
+    async function loadIdeas() {
+      try {
+        const ideas = await sbGet('content_ideas?order=created_at.desc&limit=50');
+        renderIdeas(ideas);
+      } catch (e) {
+        // Table may not exist yet
+        console.log('content_ideas table not found. Create it in Supabase to enable the idea bank.');
+        document.getElementById('bankList').innerHTML = '<div class="bank-empty">Create the content_ideas table in Supabase to start banking ideas.</div>';
+      }
+    }
+
+    function renderIdeas(ideas) {
+      const list = document.getElementById('bankList');
+      const count = document.getElementById('bankCount');
+      count.textContent = `${ideas.length} idea${ideas.length !== 1 ? 's' : ''} saved`;
+
+      if (!ideas.length) {
+        list.innerHTML = '<div class="bank-empty">No ideas captured yet. Use the quick capture form to start building your bank.</div>';
+        return;
+      }
+
+      list.innerHTML = ideas.map(idea => {
+        const date = new Date(idea.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        return `
+          <div class="bank-item">
+            <div class="bank-item-title">${esc(idea.title)}</div>
+            <div class="bank-item-meta">
+              ${idea.source ? `<span class="bank-item-source">${esc(idea.source)}</span>` : ''}
+              <span>${date}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function saveIdea() {
+      const text = document.getElementById('ideaText').value.trim();
+      if (!text) { showToast('Write an idea first'); return; }
+
+      const source = document.getElementById('ideaSource').value;
+      try {
+        await sbPost('content_ideas', { title: text, source: source, status: 'idea' });
+        document.getElementById('ideaText').value = '';
+        showToast('Idea saved to bank');
+        loadIdeas();
+      } catch (e) {
+        showToast('Failed to save. Is the content_ideas table created?');
+        console.error(e);
+      }
+    }
+
+    // ---- UTILS ----
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function formatNumber(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ---- KEYBOARD ----
+    document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('loginEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+    // ---- BOOT ----
+    (function boot() {
+      const saved = localStorage.getItem('control_token');
+      if (saved) { authToken = saved; showApp(); }
+    })();
+  </script>
+</body>
+</html>
