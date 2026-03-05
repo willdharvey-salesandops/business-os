@@ -836,15 +836,20 @@
         tbody.innerHTML = '<tr><td colspan="5" class="table-empty">No outliers found. Try adjusting the multiplier or scan period.</td></tr>';
         return;
       }
-      tbody.innerHTML = outliers.map(o => `
+      tbody.innerHTML = outliers.map(o => {
+        const safeJson = JSON.stringify(o).replace(/'/g, "&#39;");
+        return `
         <tr>
           <td class="topic-cell"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.title)}</a></td>
           <td>${esc(o.channel_name)}</td>
           <td><span class="score-badge ${o.outlier_score >= 5 ? 'score-high' : 'score-mid'}">${o.outlier_score}x</span></td>
           <td>${formatNumber(o.view_count)}</td>
-          <td><button class="btn btn-sm btn-primary" onclick='generateScript(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Script</button></td>
-        </tr>
-      `).join('');
+          <td style="display:flex;gap:0.3rem">
+            <button class="btn btn-sm" onclick='saveOutlierToBank(${safeJson}, this)'>Save</button>
+            <button class="btn btn-sm btn-primary" onclick='generateScript(${safeJson})'>Script</button>
+          </td>
+        </tr>`;
+      }).join('');
     }
 
     function renderPulseCards(outliers) {
@@ -876,6 +881,22 @@
     }
 
     // ---- GENERATE SCRIPT ----
+    async function saveOutlierToBank(video, btn) {
+      const title = `${video.title} (${video.channel_name}, ${video.outlier_score}x)`;
+      const notes = `${video.url}\n${formatNumber(video.view_count)} views, ${video.outlier_score}x outlier score`;
+      try {
+        await sbPost('content_ideas', { title, notes, source: 'outlier', status: 'idea' });
+        btn.textContent = 'Saved';
+        btn.disabled = true;
+        btn.style.color = 'var(--green)';
+        btn.style.borderColor = 'var(--green)';
+        showToast('Saved to idea bank');
+        loadIdeas();
+      } catch (e) {
+        showToast('Failed to save: ' + e.message);
+      }
+    }
+
     async function generateScript(video) {
       showToast('Generating script... this takes 15-25 seconds');
       try {
