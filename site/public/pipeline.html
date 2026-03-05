@@ -821,11 +821,11 @@
 
         // Fetch ideas (may not exist)
         try {
-          const ideas = await sbGet('content_ideas?select=id,title,source,status,created_at&order=created_at.desc');
+          const ideas = await sbGet('content_ideas?select=id,title,notes,source,status,created_at&order=created_at.desc');
           ideas.forEach(idea => {
             allItems.push({
-              id: idea.id, title: idea.title, source: idea.source,
-              type: 'idea', status: idea.status || 'idea',
+              id: idea.id, title: idea.title, notes: idea.notes || '',
+              source: idea.source, type: 'idea', status: idea.status || 'idea',
               created_at: idea.created_at
             });
           });
@@ -949,7 +949,11 @@
     async function moveItem(item, targetCol) {
       try {
         if (item.type === 'idea') {
-          // Update idea status
+          // When moving to scripting, trigger content generation
+          if (targetCol === 'scripting') {
+            await generateContent(item);
+            return;
+          }
           const newStatus = targetCol === 'ideas' ? 'idea' : targetCol;
           await sbPatchIdea(item.id, { status: newStatus });
           item.status = newStatus;
@@ -1091,6 +1095,71 @@
 
     function repurpose(title, format) {
       showToast(`Open Claude Code: "Repurpose '${truncate(title, 30)}' as a ${format}"`);
+    }
+
+    // ---- CONTENT GENERATION ----
+    async function generateContent(item) {
+      // Show generating state on the card
+      item.status = 'scripting';
+      renderKanban();
+
+      // Find the card and add a loading indicator
+      const card = document.querySelector(`.kanban-card[data-id="${item.id}"]`);
+      if (card) {
+        card.style.opacity = '0.6';
+        card.style.pointerEvents = 'none';
+        const meta = card.querySelector('.kanban-card-meta');
+        if (meta) meta.innerHTML += '<span style="color:var(--teal);font-weight:600">Generating...</span>';
+      }
+
+      showToast('Generating blog draft + video script...');
+
+      try {
+        const res = await fetch('/api/content/script-idea', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idea_id: item.id,
+            title: item.title,
+            notes: item.notes || '',
+            source: item.source || 'idea',
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || data.detail || 'Generation failed');
+        }
+
+        // Add the new blog draft to allItems so it appears in editing
+        if (data.blog) {
+          allItems.push({
+            id: data.blog.id,
+            title: data.blog.title,
+            category: 'General',
+            type: 'blog',
+            status: 'editing',
+            created_at: new Date().toISOString(),
+          });
+        }
+
+        renderKanban();
+        renderSidebar();
+
+        const parts = [];
+        if (data.blog) parts.push('Blog draft created');
+        if (data.video_script) parts.push('Video script saved');
+        if (data.blog_error) parts.push('Blog error: ' + data.blog_error);
+        if (data.script_error) parts.push('Script error: ' + data.script_error);
+        showToast(parts.join('. ') || 'Content generated');
+
+      } catch (err) {
+        // Revert status on failure
+        item.status = 'idea';
+        renderKanban();
+        showToast('Generation failed: ' + err.message);
+        console.error('Content generation error:', err);
+      }
     }
 
     // ---- UTILS ----

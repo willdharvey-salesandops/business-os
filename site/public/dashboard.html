@@ -660,6 +660,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy as Markdown
             </button>
+            <button class="btn btn-primary" id="btnSaveIdea" onclick="saveScriptToIdeaBank(this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save to Idea Bank
+            </button>
           </div>
         </div>
 
@@ -1058,6 +1062,53 @@ function copyScriptAsMarkdown() {
   }).catch(() => {
     toast('Failed to copy to clipboard', 'error');
   });
+}
+
+// ==========================================
+// SAVE SCRIPT TO IDEA BANK
+// ==========================================
+async function saveScriptToIdeaBank(btn) {
+  if (!currentScriptData || !currentVideoData) return;
+
+  const s = currentScriptData.adapted_script || {};
+  const a = currentScriptData.analysis || {};
+  const v = currentVideoData;
+
+  const title = s.working_title || s.topic || 'Untitled script';
+  const notes = [
+    `Adapted from: ${v.title}`,
+    `Channel: ${v.channel_name} | ${v.outlier_score}x outlier | ${v.view_count?.toLocaleString()} views`,
+    v.url || '',
+    '',
+    `Topic: ${s.topic || ''}`,
+    `Why it worked: ${a.why_it_worked || ''}`,
+    `Hook: ${s.hook || ''}`,
+  ].filter(Boolean).join('\n');
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/content_ideas`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ title, notes, source: 'outlier', status: 'idea' }),
+    });
+    if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+    btn.textContent = 'Saved';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    toast('Script saved to idea bank', 'success');
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Save to Idea Bank';
+    toast('Failed to save: ' + e.message, 'error');
+  }
 }
 
 // ==========================================
