@@ -108,8 +108,8 @@ ${source ? `Source: ${source}` : ''}
 Generate both a blog article and video script based on this idea. Make them complementary but not identical. The blog should be more detailed and SEO-friendly. The video script should be conversational and structured for filming.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 6000,
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
     });
