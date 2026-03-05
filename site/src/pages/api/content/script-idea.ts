@@ -115,8 +115,13 @@ Generate both a blog article and video script based on this idea. Make them comp
     });
 
     const rawText = (message.content[0] as any).text || '';
-    const cleaned = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    const data = JSON.parse(cleaned);
+    // Extract JSON object: find first { and last }
+    const start = rawText.indexOf('{');
+    const end = rawText.lastIndexOf('}');
+    if (start === -1 || end === -1) {
+      throw new Error('No JSON found in response');
+    }
+    const data = JSON.parse(rawText.slice(start, end + 1));
 
     const blog = data.blog;
     const videoScript = data.video_script;
