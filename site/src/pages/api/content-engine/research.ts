@@ -213,7 +213,7 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
 
         const message = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 10000,
+          max_tokens: 8000,
           system: systemPrompt,
           tools: [{
             type: 'web_search_20250305' as any,
