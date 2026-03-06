@@ -895,7 +895,7 @@
             <div id="researchLoading" style="display:none">
               <div class="generating-indicator">
                 <div class="spinner-dots"><span></span><span></span><span></span></div>
-                Generating morning briefing...
+                <span class="loading-status">Generating morning briefing...</span>
               </div>
             </div>
             <div id="researchOutput" style="display:none"></div>
@@ -1452,11 +1452,42 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ topic: topic || '' })
         });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
 
-        session.research.output = data.briefing;
-        renderBriefing(data.briefing);
+        // Read SSE stream
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let briefingData = null;
+        let streamError = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const events = buffer.split('\n\n');
+          buffer = events.pop() || '';
+
+          for (const event of events) {
+            if (!event.startsWith('data: ')) continue;
+            try {
+              const data = JSON.parse(event.slice(6));
+              if (data.type === 'result' && data.success) {
+                briefingData = data.briefing;
+              } else if (data.type === 'error') {
+                streamError = data.error;
+              } else if (data.type === 'status') {
+                document.getElementById('researchLoading').querySelector('.loading-status').textContent = data.message;
+              }
+            } catch (_) {}
+          }
+        }
+
+        if (streamError) throw new Error(streamError);
+        if (!briefingData) throw new Error('No briefing data received');
+
+        session.research.output = briefingData;
+        renderBriefing(briefingData);
         document.getElementById('stage1Summary').textContent = topic;
         completeStage(1);
         activateStage(2);

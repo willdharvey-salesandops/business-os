@@ -156,22 +156,21 @@ export const POST: APIRoute = async ({ request }) => {
   const { topic } = await request.json();
   const isCustom = topic && topic.trim().length > 0;
 
-  try {
-    const anthropic = new Anthropic({ apiKey: anthropicKey });
+  const anthropic = new Anthropic({ apiKey: anthropicKey });
 
-    const today = new Date().toLocaleDateString('en-GB', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
+  const today = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
 
-    let systemPrompt: string;
-    let userPrompt: string;
+  let systemPrompt: string;
+  let userPrompt: string;
 
-    if (isCustom) {
-      systemPrompt = CUSTOM_TOPIC_PROMPT;
-      userPrompt = `Today is ${today}. Search for the most important news from the last 24-48 hours about: "${topic}". Find 5-7 real, current stories relevant to small business owners. Include specific names, numbers, and facts.`;
-    } else {
-      systemPrompt = DAILY_BRIEFING_PROMPT;
-      userPrompt = `Today is ${today}. Compile today's daily briefing.
+  if (isCustom) {
+    systemPrompt = CUSTOM_TOPIC_PROMPT;
+    userPrompt = `Today is ${today}. Search for the most important news from the last 24-48 hours about: "${topic}". Find 5-7 real, current stories relevant to small business owners. Include specific names, numbers, and facts.`;
+  } else {
+    systemPrompt = DAILY_BRIEFING_PROMPT;
+    userPrompt = `Today is ${today}. Compile today's daily briefing.
 
 Search for the latest AI and business news using these queries:
 - "AI small business news today"
@@ -183,40 +182,68 @@ Search for the latest AI and business news using these queries:
 - "AI regulation policy news today"
 
 Select 5-7 stories from the last 24 hours. Every story must be real and verifiable. Include specific company names, people, dollar amounts, and user counts. Lead with the most impactful story.`;
-    }
+  }
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 6000,
-      system: systemPrompt,
-      tools: [{
-        type: 'web_search_20250305' as any,
-        name: 'web_search',
-        max_uses: 5,
-      }],
-      messages: [{ role: 'user', content: userPrompt }],
-    });
+  const encoder = new TextEncoder();
 
-    // Extract text from multi-block response
-    let rawText = '';
-    for (const block of message.content) {
-      if ((block as any).type === 'text') {
-        rawText += (block as any).text;
+  const stream = new ReadableStream({
+    async start(controller) {
+      // Send heartbeats every 5s to keep Vercel connection alive
+      const heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(`data: {"type":"heartbeat"}\n\n`));
+        } catch (_) {
+          clearInterval(heartbeat);
+        }
+      }, 5000);
+
+      try {
+        // Send initial status
+        controller.enqueue(encoder.encode(`data: {"type":"status","message":"Searching for today's news..."}\n\n`));
+
+        const message = await anthropic.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 6000,
+          system: systemPrompt,
+          tools: [{
+            type: 'web_search_20250305' as any,
+            name: 'web_search',
+            max_uses: 5,
+          }],
+          messages: [{ role: 'user', content: userPrompt }],
+        });
+
+        clearInterval(heartbeat);
+
+        // Extract text from multi-block response
+        let rawText = '';
+        for (const block of message.content) {
+          if ((block as any).type === 'text') {
+            rawText += (block as any).text;
+          }
+        }
+
+        const start = rawText.indexOf('{');
+        const end = rawText.lastIndexOf('}');
+        if (start === -1 || end === -1) throw new Error('No JSON found in response');
+        const briefing = JSON.parse(rawText.slice(start, end + 1));
+
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'result', success: true, briefing })}\n\n`));
+      } catch (err: any) {
+        clearInterval(heartbeat);
+        console.error('Research briefing error:', err);
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: err?.message || 'Generation failed' })}\n\n`));
+      } finally {
+        controller.close();
       }
     }
+  });
 
-    const start = rawText.indexOf('{');
-    const end = rawText.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('No JSON found in response');
-    const briefing = JSON.parse(rawText.slice(start, end + 1));
-
-    return new Response(JSON.stringify({ success: true, briefing }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (err: any) {
-    console.error('Research briefing error:', err);
-    return new Response(JSON.stringify({ error: 'Failed to generate briefing', detail: err?.message }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
 };
