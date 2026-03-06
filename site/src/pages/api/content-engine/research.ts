@@ -87,7 +87,7 @@ Choose a one-line coaching theme that threads through the briefing. Examples:
 60% AI/business insight, 40% coaching/leadership. The AI news is the hook. The coaching moments are what make them come back. Neither should dominate.
 
 ## LENGTH
-Lead story: 250-400 words. Middle stories: 150-300 words. Closing thought: 100-200 words. 3-7 stories plus closing. It is better to have 3-4 excellent, well-sourced stories from today than 7 stories padded with older or vague content. Quality and recency over quantity. Never pad.
+Total: 2,000-3,000 words. Lead story: 250-400 words. Middle stories: 150-300 words. Closing thought: 100-200 words. 5-7 stories plus closing. Aim for at least 5 stories to give enough material for a 15-20 minute video. If you genuinely cannot find 5 stories from today or yesterday, include what you can find but never pad with stale content.
 
 ## OUTPUT FORMAT
 Return valid JSON only (no markdown fences):
@@ -191,7 +191,7 @@ Compile today's daily briefing. Search for the latest AI and business news using
 - "AI jobs hiring layoffs today"
 - "AI tools productivity business"
 
-Select 3-7 stories. Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. It is better to have 3 excellent stories than 7 with stale ones mixed in. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story.`;
+Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. It is better to have 3 excellent stories than 7 with stale ones mixed in. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story.`;
   }
 
   const encoder = new TextEncoder();
@@ -213,12 +213,12 @@ Select 3-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
 
         const message = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 6000,
+          max_tokens: 10000,
           system: systemPrompt,
           tools: [{
             type: 'web_search_20250305' as any,
             name: 'web_search',
-            max_uses: 5,
+            max_uses: 10,
           }],
           messages: [{ role: 'user', content: userPrompt }],
         });
