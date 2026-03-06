@@ -64,7 +64,9 @@ Search for stories across these categories:
 - Trend / future signal (Agentic AI, new capabilities, regulation, what's coming)
 - World events touching AI (Government policy, geopolitics, regulation)
 
-Aim for a mix. Lead with the most impactful or surprising story. A brilliant small business story can lead, but a major tech announcement with a strong small-business angle is equally good.
+Aim for a mix. Bias towards UK and US stories. Will's audience is primarily UK-based small business owners, with a secondary US audience. Prioritise stories from UK and US sources, about UK and US companies, and with UK and US relevance. International stories are fine if they are genuinely significant, but default to UK/US.
+
+Lead with the most impactful or surprising story. A brilliant small business story can lead, but a major tech announcement with a strong small-business angle is equally good.
 
 ## THREE-PART STORY STRUCTURE
 
