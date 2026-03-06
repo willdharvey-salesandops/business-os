@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  // Debug: check all possible ways to read the env var
+  // Debug: check all env var access methods (rebuild after adding FAL_KEY)
   const fromImportMeta = import.meta.env.FAL_KEY || '';
   const k = 'FAL_KEY';
   const fromProcessEnv = process.env[k] || '';
