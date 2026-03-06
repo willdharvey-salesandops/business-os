@@ -1700,31 +1700,68 @@
     result.classList.add('hidden');
 
     try {
+      // Submit the training job (returns immediately)
       const res = await fetch('/api/thumbnails/train-lora', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ images_zip_url: zipUrl, trigger_word: triggerWord, steps }),
       });
       const data = await res.json();
-      if (data.success) {
-        addCost(parseFloat(data.estimated_cost.replace('$', '')));
-        result.classList.remove('hidden');
-        result.innerHTML = `
-          <div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--green);">
-            <strong>LoRA trained successfully!</strong><br>
-            Trigger word: ${data.trigger_word}<br>
-            Cost: ${data.estimated_cost}
-          </div>
-        `;
-        checkLoraStatus();
-      } else {
-        result.classList.remove('hidden');
-        result.innerHTML = `<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Training failed: ${data.error || 'Unknown error'}</div>`;
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit training');
       }
+
+      addCost(parseFloat(data.estimated_cost.replace('$', '')));
+      result.classList.remove('hidden');
+      result.innerHTML = '<div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--text-primary);"><strong>Training submitted!</strong> Polling for progress...</div>';
+
+      // Poll for status every 10 seconds
+      const requestId = data.request_id;
+      var pollCount = 0;
+      var pollTimer = setInterval(async function() {
+        pollCount++;
+        try {
+          var statusRes = await fetch('/api/thumbnails/train-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ request_id: requestId, trigger_word: triggerWord, steps }),
+          });
+          var statusData = await statusRes.json();
+
+          if (statusData.status === 'COMPLETED') {
+            clearInterval(pollTimer);
+            loader.classList.remove('visible');
+            btn.disabled = false;
+            result.innerHTML = '<div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--green);"><strong>LoRA trained successfully!</strong><br>Trigger word: ' + (statusData.trigger_word || triggerWord) + '</div>';
+            checkLoraStatus();
+          } else if (statusData.error) {
+            clearInterval(pollTimer);
+            loader.classList.remove('visible');
+            btn.disabled = false;
+            result.innerHTML = '<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Training failed: ' + statusData.error + '</div>';
+          } else {
+            // Still processing
+            var mins = Math.floor(pollCount * 10 / 60);
+            var secs = (pollCount * 10) % 60;
+            result.innerHTML = '<div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--text-primary);"><strong>Training in progress...</strong> Status: ' + (statusData.status || 'PROCESSING') + ' (' + mins + 'm ' + secs + 's elapsed)</div>';
+          }
+        } catch (pollErr) {
+          // Don't stop polling on transient errors
+          console.error('Poll error:', pollErr);
+        }
+
+        // Stop polling after 15 minutes
+        if (pollCount > 90) {
+          clearInterval(pollTimer);
+          loader.classList.remove('visible');
+          btn.disabled = false;
+          result.innerHTML = '<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Training timed out. Check fal.ai dashboard for status.</div>';
+        }
+      }, 10000);
+
     } catch (err) {
       result.classList.remove('hidden');
-      result.innerHTML = `<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Error: ${err.message}</div>`;
-    } finally {
+      result.innerHTML = '<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Error: ' + err.message + '</div>';
       btn.disabled = false;
       loader.classList.remove('visible');
     }
