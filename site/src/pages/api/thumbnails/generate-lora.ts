@@ -4,7 +4,7 @@ import { fal } from '@fal-ai/client';
 export const prerender = false;
 
 function getFalKey(): string {
-  return import.meta.env.FAL_KEY || process.env.FAL_KEY || '';
+  const k = 'FAL_KEY'; return import.meta.env.FAL_KEY || process.env[k] || '';
 }
 
 function getSupabaseConfig() {
