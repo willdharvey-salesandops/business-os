@@ -23,8 +23,7 @@ ${CLIENT_CONTEXT}
 - **Preview text**: One sentence that complements the subject. Under 90 characters.
 - **Short intro hook**: 2-3 sentences max. No "Hope you're well." No "Happy Friday." Jump straight into the most interesting thing from the recording. Pull them in.
 - **2-4 main stories/sections**: Each gets a headline. Each has Will's take on the story. Keep it conversational, opinionated, practical. The reader should finish each section knowing what to think or what to do.
-- **CTA at the end**: "If you want something built for free in your business to help save you time, speed up your revenue engine, and free you up, just reply to this email." Keep it warm, low-pressure, one sentence.
-- **Sign-off**: Brief, warm. "Will" or similar.
+- **Sign-off**: Brief, warm. "Will" or similar. Do NOT include a CTA in the body. The CTA is handled separately by the page template.
 
 ## WRITING RULES
 - Length: 400-700 words total. Respect their time.
@@ -40,7 +39,8 @@ Return valid JSON only (no markdown fences):
 {
   "subject": "Subject line",
   "preview_text": "Preview text",
-  "body_markdown": "Full newsletter body in markdown"
+  "body_markdown": "Full newsletter body in markdown (no CTA, just the stories and sign-off)",
+  "cta_text": "One warm paragraph that leads into the audit form below. E.g. 'If you want to see exactly how much time and money AI could save in your business, fill in the form below. It takes 60 seconds, and you will get a personalised breakdown of what is possible.' Keep it specific, warm, no pressure."
 }`;
 
 export const POST: APIRoute = async ({ request }) => {

@@ -1,0 +1,101 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const SUPABASE_URL = import.meta.env.SUPABASE_URL || 'https://zgtaskiordteelfvlmti.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+
+let newsletters: any[] = [];
+let error = '';
+
+try {
+  const now = new Date().toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/newsletters?published=eq.true&published_at=lte.${now}&order=published_at.desc`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  if (res.ok) {
+    newsletters = await res.json();
+  } else {
+    error = 'Failed to load newsletters.';
+  }
+} catch (e) {
+  error = 'Failed to load newsletters.';
+}
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+---
+
+<Layout
+  title="Newsletter | Leadership Growth Consulting"
+  description="Weekly insights on AI, leadership, and building a business that runs without you."
+>
+  <Nav />
+
+  <section class="bg-white pt-28 pb-12 lg:pt-36 lg:pb-16">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+      <p class="text-brand uppercase tracking-widest text-xs font-semibold mb-4">Newsletter</p>
+      <h1 class="font-serif text-4xl lg:text-5xl text-zinc-900 leading-tight mb-4">
+        The weekly brief.
+      </h1>
+      <p class="text-lg text-zinc-500 max-w-md mx-auto">
+        AI, leadership, and building a business that doesn't need you in every room.
+      </p>
+    </div>
+  </section>
+
+  <section class="pb-20 lg:pb-28">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+      {error && (
+        <p class="text-center text-zinc-400 py-12">{error}</p>
+      )}
+
+      {!error && newsletters.length === 0 && (
+        <div class="text-center py-12">
+          <p class="text-zinc-400 text-lg">No newsletters yet.</p>
+          <p class="text-zinc-400 text-sm mt-1">Check back soon.</p>
+        </div>
+      )}
+
+      {newsletters.length > 0 && (
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {newsletters.map((nl: any) => (
+            <a
+              href={`/newsletter/${nl.slug}`}
+              class="group block bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
+              <div class="p-6 flex flex-col flex-1">
+                <p class="text-brand text-xs font-semibold uppercase tracking-wider mb-2">
+                  Newsletter
+                </p>
+                <h3 class="font-serif text-xl text-zinc-900 leading-snug mb-2 group-hover:text-brand transition-colors">
+                  {nl.subject}
+                </h3>
+                <p class="text-zinc-500 text-sm leading-relaxed mb-4 flex-1">
+                  {nl.preview_text || ''}
+                </p>
+                <div class="text-xs text-zinc-400">
+                  <span>{formatDate(nl.published_at)}</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

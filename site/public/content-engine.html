@@ -1262,6 +1262,7 @@
         session.research = { topic: s.research_topic || '', output: s.research_output };
         session.transcript = { text: s.transcript || '', source: s.transcript_source };
         session.newsletter = s.newsletter_output;
+        session.newsletter_slug = s.newsletter_output?.published_slug || null;
         session.shortScripts = s.short_scripts;
         session.blog = s.blog_output;
         session.distribution = {
@@ -1282,6 +1283,7 @@
         research: { topic: '', output: null },
         transcript: { text: '', source: null },
         newsletter: null,
+        newsletter_slug: null,
         shortScripts: null,
         blog: null,
         distribution: { snippets: null, checklist: {} }
@@ -1311,7 +1313,7 @@
         research_output: session.research.output,
         transcript: session.transcript.text,
         transcript_source: session.transcript.source,
-        newsletter_output: session.newsletter,
+        newsletter_output: session.newsletter ? { ...session.newsletter, published_slug: session.newsletter_slug || null } : null,
         short_scripts: session.shortScripts,
         blog_output: session.blog,
         blog_post_id: session.blog?.blog_post_id || null,
@@ -1755,15 +1757,20 @@
 
     function renderNewsletter(nl) {
       const el = document.getElementById('newsletterOutput');
+      const publishedInfo = session.newsletter_slug
+        ? `<a href="/newsletter/${esc(session.newsletter_slug)}" target="_blank" style="font-size:0.72rem;color:var(--green);font-weight:600;">Published &rarr; View</a>`
+        : `<button class="btn btn-sm btn-primary" onclick="publishNewsletter()">Publish to Site</button>`;
       el.innerHTML = `
         <div class="newsletter-preview">
           <div class="newsletter-subject">${esc(nl.subject)}</div>
           <div class="newsletter-preview-text">${esc(nl.preview_text)}</div>
           <div class="newsletter-body">${markdownToHtml(nl.body_markdown)}</div>
+          ${nl.cta_text ? `<div style="margin-top:1rem;padding:1rem;background:var(--surface-2);border-radius:8px;font-size:0.85rem;color:var(--text-2)"><strong>CTA (shown on published page):</strong> ${esc(nl.cta_text)}</div>` : ''}
         </div>
         <div class="actions-row">
           <button class="btn btn-sm" onclick="copyText(getNewsletterPlain())">Copy Plain Text</button>
           <button class="btn btn-sm" onclick="copyText(getNewsletterHtml())">Copy HTML</button>
+          ${publishedInfo}
         </div>`;
       el.style.display = 'block';
     }
@@ -1776,6 +1783,34 @@
     function getNewsletterHtml() {
       if (!session.newsletter) return '';
       return `<h1>${session.newsletter.subject}</h1>\n${markdownToHtml(session.newsletter.body_markdown)}`;
+    }
+
+    async function publishNewsletter() {
+      if (!session.newsletter) { showToast('No newsletter to publish'); return; }
+
+      try {
+        const res = await fetch('/api/content-engine/publish-newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subject: session.newsletter.subject,
+            preview_text: session.newsletter.preview_text,
+            body_markdown: session.newsletter.body_markdown,
+            cta_text: session.newsletter.cta_text || '',
+            publish: true,
+            session_id: session.id
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Publish failed');
+
+        session.newsletter_slug = data.slug;
+        renderNewsletter(session.newsletter);
+        saveSession();
+        showToast('Newsletter published');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
     }
 
     // ---- STAGE 4: SHORT-FORM SCRIPTS ----
