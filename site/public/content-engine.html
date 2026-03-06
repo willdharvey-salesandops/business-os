@@ -1483,6 +1483,18 @@
           }
         }
 
+        // Process any remaining data in buffer after stream ends
+        if (buffer.trim()) {
+          const remaining = buffer.trim();
+          if (remaining.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(remaining.slice(6));
+              if (data.type === 'result' && data.success) briefingData = data.briefing;
+              else if (data.type === 'error') streamError = data.error;
+            } catch (_) {}
+          }
+        }
+
         if (streamError) throw new Error(streamError);
         if (!briefingData) throw new Error('No briefing data received');
 
