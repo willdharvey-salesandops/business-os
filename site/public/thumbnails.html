@@ -1618,13 +1618,37 @@
       const keyData = await keyRes.json();
       if (!keyData.fal_key) throw new Error(keyData.error || 'Could not get upload credentials');
 
-      // Upload directly from browser to fal.ai storage (bypasses Vercel size limit)
-      const uploadRes = await fetch('https://fal.run/fal-ai/storage/upload/file', {
-        method: 'PUT',
+      // Step 1: Initiate upload to get a presigned URL
+      const initiateRes = await fetch('https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3', {
+        method: 'POST',
         headers: {
           'Authorization': 'Key ' + keyData.fal_key,
-          'Content-Type': 'application/octet-stream',
-          'X-Fal-File-Name': 'training_photos.zip',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file_name: 'training_photos.zip',
+          content_type: 'application/zip',
+        }),
+      });
+
+      if (!initiateRes.ok) {
+        const errText = await initiateRes.text();
+        throw new Error('fal.ai initiate failed (' + initiateRes.status + '): ' + errText);
+      }
+
+      const initiateData = await initiateRes.json();
+      const uploadUrl = initiateData.upload_url;
+      const fileUrl = initiateData.file_url;
+
+      if (!uploadUrl) throw new Error('No upload_url returned from fal.ai');
+
+      // Step 2: Upload the file to the presigned URL
+      statusEl.textContent = 'Uploading ZIP to fal.ai storage...';
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/zip',
         },
         body: zipFile,
       });
@@ -1633,9 +1657,6 @@
         const errText = await uploadRes.text();
         throw new Error('fal.ai upload failed (' + uploadRes.status + '): ' + errText);
       }
-
-      const uploadData = await uploadRes.json();
-      const fileUrl = uploadData.url || uploadData.file_url || uploadData.access_url;
 
       if (fileUrl) {
         document.getElementById('loraZipUrl').value = fileUrl;
