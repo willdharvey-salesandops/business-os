@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const POST: APIRoute = async () => {
+export const GET: APIRoute = async () => {
   // Debug: check all possible ways to read the env var
   const fromImportMeta = import.meta.env.FAL_KEY || '';
   const k = 'FAL_KEY';
