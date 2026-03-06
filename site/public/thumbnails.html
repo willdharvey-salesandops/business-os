@@ -1610,24 +1610,39 @@
       statusEl.textContent = 'Compressing ' + selectedPhotos.length + ' photos...';
       const blob = await zip.generateAsync({ type: 'blob' });
 
-      statusEl.textContent = 'Uploading to fal.ai...';
+      const zipFile = new File([blob], 'training_photos.zip', { type: 'application/zip' });
+      statusEl.textContent = 'Uploading to fal.ai (' + (zipFile.size / 1024 / 1024).toFixed(1) + ' MB)...';
 
-      const formData = new FormData();
-      formData.append('file', new File([blob], 'training_photos.zip', { type: 'application/zip' }));
+      // Get FAL_KEY from our server (small JSON response, no size issue)
+      const keyRes = await fetch('/api/thumbnails/get-upload-url', { method: 'POST' });
+      const keyData = await keyRes.json();
+      if (!keyData.fal_key) throw new Error(keyData.error || 'Could not get upload credentials');
 
-      const res = await fetch('/api/thumbnails/upload-photos', {
-        method: 'POST',
-        body: formData,
+      // Upload directly from browser to fal.ai storage (bypasses Vercel size limit)
+      const uploadRes = await fetch('https://fal.run/fal-ai/storage/upload/file', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Key ' + keyData.fal_key,
+          'Content-Type': 'application/octet-stream',
+          'X-Fal-File-Name': 'training_photos.zip',
+        },
+        body: zipFile,
       });
-      const data = await res.json();
 
-      if (data.success && data.url) {
-        document.getElementById('loraZipUrl').value = data.url;
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        throw new Error('fal.ai upload failed (' + uploadRes.status + '): ' + errText);
+      }
+
+      const uploadData = await uploadRes.json();
+      const fileUrl = uploadData.url || uploadData.file_url || uploadData.access_url;
+
+      if (fileUrl) {
+        document.getElementById('loraZipUrl').value = fileUrl;
         statusEl.textContent = 'Uploaded successfully. ZIP URL set automatically.';
         statusEl.style.color = 'var(--green)';
       } else {
-        statusEl.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
-        statusEl.style.color = 'var(--red)';
+        throw new Error('No URL returned from fal.ai upload');
       }
     } catch (err) {
       statusEl.textContent = 'Upload error: ' + err.message;
