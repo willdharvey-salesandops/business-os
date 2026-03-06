@@ -218,7 +218,7 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
           tools: [{
             type: 'web_search_20250305' as any,
             name: 'web_search',
-            max_uses: 10,
+            max_uses: 7,
           }],
           messages: [{ role: 'user', content: userPrompt }],
         });
