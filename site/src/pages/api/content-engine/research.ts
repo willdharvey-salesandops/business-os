@@ -54,17 +54,17 @@ CRITICAL RECENCY RULE: Every single story MUST have a verifiable source URL from
 
 SOURCING RULE: Every story MUST include the source URL and the publication date you found. Do NOT invent sources or make up URLs. Do NOT use vague attributions like "a report circulating this week" or "analysis from March 2026." Name the specific publication, author if available, and provide the actual URL. If you cannot find a specific, dated source for a story, do not include that story. It is better to have 3 well-sourced stories than 7 poorly sourced ones.
 
-RELEVANCE RULE: Every story must pass the "plumber test." If a plumber with 8 employees would not care about this story, it is too big or too abstract. Translate everything down to the level of someone running a small team. Big tech announcements are only relevant if you can draw a direct line to how they affect a business with 1-50 employees. Prioritise stories about real people using AI in real businesses over corporate announcements.
+RELEVANCE RULE: Every story must be translated for small business owners with 1-50 employees. Big tech announcements and major AI news are welcome, but you MUST always explain why a plumber, accountant, restaurant owner, or marketing agency should care. The "your angle" section is where you make the connection. If you cannot draw a clear line from the story to someone running a small team, skip it.
 
-Search for stories across these categories. Prioritise the first three:
-- Small business adoption (Real people/businesses using AI in practice. This is the BEST category.)
+Search for stories across these categories:
+- Big tech / industry moves (OpenAI, Google, Nvidia, Microsoft, Apple, Meta announcements)
+- Small business adoption (Real people/businesses using AI in practice)
 - Practical tools / savings (AI tools saving time or money for normal businesses)
-- Jobs / workforce impact (Hiring, skills shifts, what it means for small teams)
-- Big tech moves (Only if directly relevant to small business owners)
-- Trend / future signal (Only if you can make it practical and actionable)
-- World events touching AI (Only if it directly affects small business)
+- Jobs / workforce impact (Hiring, layoffs, new roles, skills shifts)
+- Trend / future signal (Agentic AI, new capabilities, regulation, what's coming)
+- World events touching AI (Government policy, geopolitics, regulation)
 
-Lead with the most relatable, practical story. A brilliant small business story should ALWAYS lead over a big tech announcement.
+Aim for a mix. Lead with the most impactful or surprising story. A brilliant small business story can lead, but a major tech announcement with a strong small-business angle is equally good.
 
 ## THREE-PART STORY STRUCTURE
 
@@ -184,18 +184,14 @@ export const POST: APIRoute = async ({ request }) => {
 
 IMPORTANT: Only include stories published on ${today} or ${yesterday}. Check every source date. If the article is from any other date, do not use it.
 
-Compile today's daily briefing. Search for stories using these queries:
-- "small business AI tools saving time"
-- "AI automation small business owner"
-- "AI customer service small business"
-- "AI hiring recruitment small teams"
-- "AI productivity small company"
-- "ChatGPT small business use case"
-- "AI news today business"
+Compile today's daily briefing. Search for the latest AI and business news using these queries:
+- "AI news today"
+- "AI small business news today"
+- "OpenAI Google AI announcement today"
+- "AI jobs hiring layoffs today"
+- "AI tools productivity business"
 
-Focus on stories that a plumber, accountant, restaurant owner, or marketing agency with 5-20 employees would find directly useful. Big tech news is only worth including if you can clearly explain why a small business owner should care.
-
-Select 5-7 stories. Every story must be real, verifiable, and published today or yesterday. Lead with the most practical, relatable story.`;
+Select 3-7 stories. Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. It is better to have 3 excellent stories than 7 with stale ones mixed in. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story.`;
   }
 
   const encoder = new TextEncoder();
