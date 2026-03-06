@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 export const POST: APIRoute = async () => {
-  const falKey = import.meta.env.FAL_KEY || '';
+  const falKey = import.meta.env.FAL_KEY || process.env.FAL_KEY || '';
 
   if (!falKey) {
     return new Response(JSON.stringify({
