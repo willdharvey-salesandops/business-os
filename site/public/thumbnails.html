@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thumbnail Generator | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* ---- LOGIN ---- */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .login-box {
+      background: var(--ink-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 340px;
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .login-box p { color: var(--grey-400); font-size: 0.82rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--teal-bright); }
+    .login-box input::placeholder { color: var(--grey-400); }
+    .login-box button {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.2s;
+      margin-top: 0.25rem;
+    }
+    .login-box button:hover { background: var(--teal-hover); }
+    .login-error { color: var(--red); font-size: 0.78rem; margin-bottom: 0.5rem; display: none; }
+
+    /* ---- LAYOUT ---- */
+    .app { max-width: 1200px; margin: 0 auto; padding: 2rem; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- HEADER ---- */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .header h1 {
+      font-family: var(--font-heading);
+      font-size: 1.5rem; font-weight: 700;
+      color: var(--ink);
+    }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+    /* ---- STATUS BADGE ---- */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .status-badge.active { background: rgba(22, 163, 74, 0.1); color: var(--green); }
+    .status-badge.inactive { background: rgba(220, 38, 38, 0.1); color: var(--red); }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ---- TABS ---- */
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      border-bottom: 2px solid var(--grey-200);
+    }
+    .tab {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--grey-400);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      background: none; border-top: none; border-left: none; border-right: none;
+      font-family: var(--font-body);
+    }
+    .tab:hover { color: var(--grey-600); }
+    .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ---- CARDS ---- */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+    }
+    .card-subtitle {
+      font-size: 0.8rem; color: var(--grey-400);
+      margin-bottom: 1rem;
+    }
+
+    /* ---- FORMS ---- */
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block; font-size: 0.8rem;
+      font-weight: 600; color: var(--grey-600);
+      margin-bottom: 0.35rem;
+    }
+    .form-input, .form-textarea, .form-select {
+      width: 100%; padding: 0.6rem 0.8rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.85rem; color: var(--ink);
+      background: var(--white);
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--teal);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--teal); color: var(--white); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: var(--white); color: var(--teal);
+      border: 1px solid var(--grey-200);
+    }
+    .btn-secondary:hover { background: var(--grey-100); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+    .btn-danger { background: var(--red); color: var(--white); }
+    .btn-danger:hover { opacity: 0.9; }
+
+    /* ---- COST BADGE ---- */
+    .cost-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--blue);
+      border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600;
+    }
+
+    /* ---- IMAGE GRID ---- */
+    .image-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .image-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--grey-100);
+    }
+    .image-card:hover { border-color: var(--teal-bright); }
+    .image-card.selected { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal-glow); }
+    .image-card img {
+      width: 100%; height: auto; display: block;
+      aspect-ratio: 16/9; object-fit: cover;
+    }
+    .image-card .overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      padding: 0.75rem;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .image-card .overlay-text {
+      color: white; font-size: 0.75rem; font-weight: 500;
+    }
+    .image-card .overlay-views {
+      color: rgba(255,255,255,0.8); font-size: 0.7rem;
+    }
+    .image-card .check-badge {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      width: 24px; height: 24px;
+      background: var(--teal);
+      border-radius: 50%;
+      display: none;
+      align-items: center; justify-content: center;
+      color: white; font-size: 0.7rem;
+    }
+    .image-card.selected .check-badge { display: flex; }
+    .image-card .swap-score {
+      position: absolute; top: 0.5rem; left: 0.5rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700;
+      color: white;
+    }
+    .swap-score.high { background: var(--green); }
+    .swap-score.medium { background: var(--amber); }
+    .swap-score.low { background: var(--red); }
+
+    /* ---- EXPRESSION CHIPS ---- */
+    .expression-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .expression-chip {
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--grey-200);
+      border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--grey-600);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--white);
+    }
+    .expression-chip:hover { border-color: var(--teal); color: var(--teal); }
+    .expression-chip.selected {
+      background: var(--teal); color: var(--white);
+      border-color: var(--teal);
+    }
+
+    /* ---- STEPS ---- */
+    .steps { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .step {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--grey-400);
+      background: var(--grey-100);
+    }
+    .step.active { background: var(--teal); color: var(--white); }
+    .step.done { background: rgba(22, 163, 74, 0.1); color: var(--green); }
+    .step-number {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 700;
+      background: currentColor;
+      color: var(--white);
+    }
+    .step.active .step-number { background: rgba(255,255,255,0.3); color: var(--white); }
+    .step.done .step-number { background: var(--green); color: var(--white); }
+
+    /* ---- LOADER ---- */
+    .loader {
+      display: none; align-items: center; gap: 0.75rem;
+      padding: 1.5rem; background: var(--grey-100);
+      border-radius: var(--radius-lg);
+      margin: 1rem 0;
+    }
+    .loader.visible { display: flex; }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--grey-200);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-size: 0.82rem; color: var(--grey-500); }
+
+    /* ---- MEDIA LIBRARY ---- */
+    .library-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .library-item {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--grey-100);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .library-item:hover { transform: scale(1.02); }
+    .library-item img {
+      width: 100%; height: auto; display: block;
+      aspect-ratio: 16/9; object-fit: cover;
+    }
+    .library-item .actions {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      display: flex; gap: 0.3rem;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .library-item:hover .actions { opacity: 1; }
+    .library-item .action-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      transition: background 0.2s;
+    }
+    .library-item .action-btn:hover { background: rgba(0,0,0,0.8); }
+    .library-method {
+      position: absolute; bottom: 0.5rem; left: 0.5rem;
+      padding: 0.15rem 0.5rem;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border-radius: 999px;
+      font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* ---- EXPANDED IMAGE MODAL ---- */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,0.8);
+      display: none; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal-content {
+      max-width: 90vw; max-height: 90vh;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .modal-content img { max-width: 100%; max-height: 85vh; display: block; }
+    .modal-close {
+      position: fixed; top: 1.5rem; right: 1.5rem;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ---- CONCEPTS LIST ---- */
+    .concept-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 0.75rem;
+    }
+    .concept-card:hover { border-color: var(--teal); }
+    .concept-card.selected { border-color: var(--teal); background: var(--teal-glow); }
+    .concept-name {
+      font-weight: 600; color: var(--ink);
+      font-size: 0.88rem; margin-bottom: 0.3rem;
+    }
+    .concept-text-overlay {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      background: var(--ink);
+      color: var(--white);
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem; font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .concept-mood { font-size: 0.78rem; color: var(--grey-400); }
+
+    /* ---- EMPTY STATE ---- */
+    .empty-state {
+      text-align: center; padding: 3rem;
+      color: var(--grey-400);
+    }
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-state-text { font-size: 0.88rem; }
+
+    /* ---- SETUP PANEL ---- */
+    .setup-panel {
+      display: flex; gap: 1rem; margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .setup-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      font-size: 0.8rem;
+    }
+    .setup-item .label { color: var(--grey-400); }
+    .setup-item .value { font-weight: 600; color: var(--ink); }
+
+    /* ---- UTILITY ---- */
+    .flex { display: flex; }
+    .gap-sm { gap: 0.5rem; }
+    .gap-md { gap: 1rem; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .mt-1 { margin-top: 1rem; }
+    .mt-2 { margin-top: 1.5rem; }
+    .mb-1 { margin-bottom: 1rem; }
+    .text-sm { font-size: 0.8rem; }
+    .text-muted { color: var(--grey-400); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h1>Thumbnail Generator</h1>
+    <p>AI-powered thumbnail creation</p>
+    <div class="login-error" id="loginError">Incorrect password</div>
+    <input type="password" id="loginPassword" placeholder="Password" autofocus>
+    <button onclick="handleLogin()">Enter</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Thumbnail Generator</h1>
+    </div>
+    <div class="header-actions">
+      <div id="loraStatus"></div>
+      <button class="btn btn-secondary btn-sm" onclick="showTab('library')">Media Library</button>
+    </div>
+  </div>
+
+  <!-- SETUP PANEL -->
+  <div class="setup-panel" id="setupPanel">
+    <div class="setup-item">
+      <span class="label">LoRA Model:</span>
+      <span class="value" id="loraModelStatus">Checking...</span>
+    </div>
+    <div class="setup-item">
+      <span class="label">Running Cost:</span>
+      <span class="value" id="runningCost">$0.00</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('scratch')">Generate from Scratch</button>
+    <button class="tab" onclick="showTab('swap')">Competitor Swap</button>
+    <button class="tab" onclick="showTab('library')">Media Library</button>
+    <button class="tab" onclick="showTab('setup')">Setup</button>
+  </div>
+
+  <!-- TAB: GENERATE FROM SCRATCH -->
+  <div class="tab-content active" id="tab-scratch">
+    <!-- Steps indicator -->
+    <div class="steps" id="scratchSteps">
+      <div class="step active" data-step="1"><span class="step-number">1</span> Concept</div>
+      <div class="step" data-step="2"><span class="step-number">2</span> Base Image</div>
+      <div class="step" data-step="3"><span class="step-number">3</span> Your Photos</div>
+      <div class="step" data-step="4"><span class="step-number">4</span> Body Swap</div>
+    </div>
+
+    <!-- Step 1: Concept -->
+    <div id="scratch-step-1">
+      <div class="card">
+        <div class="card-title">What's the video about?</div>
+        <div class="card-subtitle">Describe your video topic and Claude will brainstorm thumbnail concepts</div>
+        <div class="form-group">
+          <label class="form-label">Video Topic / Title</label>
+          <input type="text" class="form-input" id="videoTopic" placeholder="e.g. I built a $8,500 supercomputer">
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="generateConceptsBtn" onclick="generateConcepts()">Generate Concepts</button>
+          <span class="text-sm text-muted">or write your own prompt below</span>
+        </div>
+      </div>
+
+      <div class="loader" id="conceptsLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Claude is brainstorming thumbnail ideas...</span>
+      </div>
+
+      <div id="conceptsList"></div>
+
+      <div class="card mt-1 hidden" id="customPromptCard">
+        <div class="card-title">Custom Prompt</div>
+        <div class="card-subtitle">Or write your own image generation prompt directly</div>
+        <div class="form-group">
+          <textarea class="form-textarea" id="customPrompt" rows="4" placeholder="Describe the thumbnail you want to generate..."></textarea>
+        </div>
+      </div>
+
+      <div class="mt-1 flex gap-sm">
+        <button class="btn btn-secondary btn-sm" onclick="toggleCustomPrompt()">Write Custom Prompt</button>
+        <button class="btn btn-primary hidden" id="toStep2Btn" onclick="goToScratchStep(2)">Next: Generate Base Images</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Base Image -->
+    <div id="scratch-step-2" class="hidden">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="card-title">Generate Base Thumbnails</div>
+            <div class="card-subtitle">AI will create thumbnail layouts with a placeholder person</div>
+          </div>
+          <div class="cost-badge">~$0.60 for 4 images</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image Prompt</label>
+          <textarea class="form-textarea" id="basePrompt" rows="4"></textarea>
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="generateBaseBtn" onclick="generateBase()">Generate 4 Base Images</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToScratchStep(1)">Back</button>
+        </div>
+      </div>
+
+      <div class="loader" id="baseLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Generating base thumbnails with Nano Banana Pro...</span>
+      </div>
+
+      <div class="image-grid" id="baseImages"></div>
+
+      <div class="mt-1 hidden" id="baseNextActions">
+        <button class="btn btn-primary" id="toStep3Btn" onclick="goToScratchStep(3)">Next: Generate Your Photos</button>
+      </div>
+    </div>
+
+    <!-- Step 3: LoRA Photos -->
+    <div id="scratch-step-3" class="hidden">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="card-title">Generate Photos of You</div>
+            <div class="card-subtitle">Choose expressions and your LoRA model will generate matching photos</div>
+          </div>
+          <div class="cost-badge">~$0.12 for 4 images</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Expressions</label>
+          <div class="expression-chips" id="expressionChips">
+            <div class="expression-chip" data-expr="excited" onclick="toggleExpression(this)">Excited</div>
+            <div class="expression-chip selected" data-expr="confident" onclick="toggleExpression(this)">Confident</div>
+            <div class="expression-chip" data-expr="thinking" onclick="toggleExpression(this)">Thinking</div>
+            <div class="expression-chip" data-expr="pointing" onclick="toggleExpression(this)">Pointing</div>
+            <div class="expression-chip" data-expr="surprised" onclick="toggleExpression(this)">Surprised</div>
+            <div class="expression-chip" data-expr="professional" onclick="toggleExpression(this)">Professional</div>
+          </div>
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="generateLoraBtn" onclick="generateLora()">Generate 4 Photos</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToScratchStep(2)">Back</button>
+        </div>
+      </div>
+
+      <div class="loader" id="loraLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Generating your photos with Flux LoRA...</span>
+      </div>
+
+      <div class="image-grid" id="loraImages"></div>
+
+      <div class="mt-1 hidden" id="loraNextActions">
+        <button class="btn btn-primary" id="toStep4Btn" onclick="goToScratchStep(4)">Next: Body Swap</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Body Swap -->
+    <div id="scratch-step-4" class="hidden">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="card-title">Body Swap</div>
+            <div class="card-subtitle">Swapping your photo onto the base thumbnail</div>
+          </div>
+          <div class="cost-badge">~$0.60 for 4 images</div>
+        </div>
+        <div class="flex gap-sm mb-1">
+          <div style="flex:1">
+            <div class="text-sm text-muted mb-1">Base Image</div>
+            <div id="selectedBasePreview" style="border-radius:var(--radius-md);overflow:hidden;"></div>
+          </div>
+          <div style="flex:1">
+            <div class="text-sm text-muted mb-1">Your Photo</div>
+            <div id="selectedLoraPreview" style="border-radius:var(--radius-md);overflow:hidden;"></div>
+          </div>
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="bodySwapBtn" onclick="bodySwap()">Generate 4 Swaps</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToScratchStep(3)">Back</button>
+        </div>
+      </div>
+
+      <div class="loader" id="swapLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Swapping your body onto the thumbnail...</span>
+      </div>
+
+      <div class="image-grid" id="swapImages"></div>
+
+      <div class="mt-1 hidden" id="swapActions">
+        <button class="btn btn-primary" onclick="saveSelectedToLibrary('scratch')">Save Selected to Library</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadSelected()">Download Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: COMPETITOR SWAP -->
+  <div class="tab-content" id="tab-swap">
+    <div class="steps" id="swapSteps">
+      <div class="step active" data-step="1"><span class="step-number">1</span> Find Thumbnails</div>
+      <div class="step" data-step="2"><span class="step-number">2</span> Your Photos</div>
+      <div class="step" data-step="3"><span class="step-number">3</span> Body Swap</div>
+    </div>
+
+    <!-- Swap Step 1: Search -->
+    <div id="swap-step-1">
+      <div class="card">
+        <div class="card-title">Search Competitor Thumbnails</div>
+        <div class="card-subtitle">Enter keywords to find top-performing thumbnails in your niche</div>
+        <div class="form-group">
+          <label class="form-label">Keywords (comma-separated)</label>
+          <input type="text" class="form-input" id="competitorKeywords" placeholder="e.g. supercomputer, home server, build your own computer">
+        </div>
+        <button class="btn btn-primary" id="searchCompBtn" onclick="searchCompetitors()">Search Thumbnails</button>
+      </div>
+
+      <div class="loader" id="competitorLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Searching YouTube and analyzing thumbnails with Claude...</span>
+      </div>
+
+      <div class="image-grid" id="competitorThumbnails"></div>
+
+      <div class="mt-1 hidden" id="compNextActions">
+        <button class="btn btn-primary" onclick="goToSwapStep(2)">Next: Generate Your Photos</button>
+      </div>
+    </div>
+
+    <!-- Swap Step 2: LoRA Photos -->
+    <div id="swap-step-2" class="hidden">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="card-title">Generate Photos of You</div>
+            <div class="card-subtitle">Choose expressions for the swap</div>
+          </div>
+          <div class="cost-badge">~$0.12 for 4 images</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Expressions</label>
+          <div class="expression-chips" id="swapExpressionChips">
+            <div class="expression-chip" data-expr="excited" onclick="toggleExpression(this)">Excited</div>
+            <div class="expression-chip selected" data-expr="confident" onclick="toggleExpression(this)">Confident</div>
+            <div class="expression-chip" data-expr="thinking" onclick="toggleExpression(this)">Thinking</div>
+            <div class="expression-chip" data-expr="pointing" onclick="toggleExpression(this)">Pointing</div>
+            <div class="expression-chip" data-expr="surprised" onclick="toggleExpression(this)">Surprised</div>
+            <div class="expression-chip" data-expr="professional" onclick="toggleExpression(this)">Professional</div>
+          </div>
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="swapGenLoraBtn" onclick="generateLoraForSwap()">Generate 4 Photos</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToSwapStep(1)">Back</button>
+        </div>
+      </div>
+
+      <div class="loader" id="swapLoraLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Generating your photos with Flux LoRA...</span>
+      </div>
+
+      <div class="image-grid" id="swapLoraImages"></div>
+
+      <div class="mt-1 hidden" id="swapLoraNextActions">
+        <button class="btn btn-primary" onclick="goToSwapStep(3)">Next: Body Swap</button>
+      </div>
+    </div>
+
+    <!-- Swap Step 3: Results -->
+    <div id="swap-step-3" class="hidden">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="card-title">Body Swap Results</div>
+            <div class="card-subtitle">Your photo swapped onto the competitor thumbnail</div>
+          </div>
+          <div class="cost-badge">~$0.60 for 4 swaps</div>
+        </div>
+        <div class="flex gap-sm mb-1">
+          <div style="flex:1">
+            <div class="text-sm text-muted mb-1">Competitor Thumbnail</div>
+            <div id="selectedCompPreview" style="border-radius:var(--radius-md);overflow:hidden;"></div>
+          </div>
+          <div style="flex:1">
+            <div class="text-sm text-muted mb-1">Your Photo</div>
+            <div id="selectedSwapLoraPreview" style="border-radius:var(--radius-md);overflow:hidden;"></div>
+          </div>
+        </div>
+        <div class="flex gap-sm items-center">
+          <button class="btn btn-primary" id="compSwapBtn" onclick="competitorBodySwap()">Generate 4 Swaps</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToSwapStep(2)">Back</button>
+        </div>
+      </div>
+
+      <div class="loader" id="compSwapLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Swapping your body onto the competitor thumbnail...</span>
+      </div>
+
+      <div class="image-grid" id="compSwapImages"></div>
+
+      <div class="mt-1 hidden" id="compSwapActions">
+        <button class="btn btn-primary" onclick="saveSelectedToLibrary('swap')">Save Selected to Library</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadSelected()">Download Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: MEDIA LIBRARY -->
+  <div class="tab-content" id="tab-library">
+    <div class="card">
+      <div class="flex justify-between items-center">
+        <div class="card-title">Media Library</div>
+        <button class="btn btn-secondary btn-sm" onclick="loadLibrary()">Refresh</button>
+      </div>
+    </div>
+    <div id="libraryContent">
+      <div class="empty-state">
+        <div class="empty-state-icon">🖼</div>
+        <div class="empty-state-text">No thumbnails saved yet. Generate some first.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SETUP -->
+  <div class="tab-content" id="tab-setup">
+    <div class="card">
+      <div class="card-title">Train Your LoRA Model</div>
+      <div class="card-subtitle">Upload 15-20 clear photos of yourself from different angles. Train once, use forever.</div>
+      <div class="form-group">
+        <label class="form-label">Training Photos ZIP URL</label>
+        <input type="text" class="form-input" id="loraZipUrl" placeholder="URL to a .zip file containing your photos">
+        <div class="text-sm text-muted mt-1">Upload your ZIP to a file hosting service and paste the URL here. Minimum 4 photos, recommended 15-20.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trigger Word</label>
+        <input type="text" class="form-input" id="loraTriggerWord" value="WILLH" placeholder="WILLH">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Training Steps</label>
+        <input type="number" class="form-input" id="loraSteps" value="1000" min="500" max="5000">
+      </div>
+      <div class="flex gap-sm items-center">
+        <button class="btn btn-primary" id="trainLoraBtn" onclick="trainLora()">Train LoRA Model</button>
+        <div class="cost-badge">~$2.40 for 1000 steps</div>
+      </div>
+
+      <div class="loader mt-1" id="trainLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Training your LoRA model... This can take a few minutes.</span>
+      </div>
+
+      <div id="trainResult" class="mt-1 hidden"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Current LoRA Models</div>
+      <div id="loraModelsList">
+        <div class="text-sm text-muted">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPANDED IMAGE MODAL -->
+<div class="modal-overlay" id="imageModal" onclick="closeModal()">
+  <button class="modal-close" onclick="closeModal()">&#10005;</button>
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <img id="modalImage" src="" alt="Expanded thumbnail">
+  </div>
+</div>
+
+<script>
+  // ---- STATE ----
+  const state = {
+    loraModel: null,
+    runningCost: 0,
+    // Scratch flow
+    concepts: [],
+    selectedConcept: null,
+    baseImages: [],
+    selectedBase: null,
+    loraImages: [],
+    selectedLora: null,
+    swapResults: [],
+    // Competitor flow
+    competitorVideos: [],
+    selectedCompetitor: null,
+    swapLoraImages: [],
+    selectedSwapLora: null,
+    compSwapResults: [],
+    // Library
+    library: [],
+    // Selected for download/save
+    selectedImages: new Set(),
+  };
+
+  // ---- AUTH ----
+  const PASS_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // admin
+
+  async function sha256(text) {
+    const encoded = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', encoded);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function handleLogin() {
+    const pw = document.getElementById('loginPassword').value;
+    const hash = await sha256(pw);
+    if (hash === PASS_HASH) {
+      sessionStorage.setItem('thumb_auth', '1');
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      init();
+    } else {
+      const err = document.getElementById('loginError');
+      err.style.display = 'block';
+    }
+  }
+
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  if (sessionStorage.getItem('thumb_auth')) {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    init();
+  }
+
+  // ---- INIT ----
+  function init() {
+    checkLoraStatus();
+    loadLibrary();
+  }
+
+  // ---- TABS ----
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => {
+      if (t.textContent.toLowerCase().includes(name) ||
+          (name === 'scratch' && t.textContent.includes('Scratch')) ||
+          (name === 'swap' && t.textContent.includes('Swap')) ||
+          (name === 'library' && t.textContent.includes('Library')) ||
+          (name === 'setup' && t.textContent.includes('Setup'))) {
+        t.classList.add('active');
+      }
+    });
+    const tabEl = document.getElementById('tab-' + name);
+    if (tabEl) tabEl.classList.add('active');
+    if (name === 'library') loadLibrary();
+  }
+
+  // ---- LORA STATUS ----
+  async function checkLoraStatus() {
+    const statusEl = document.getElementById('loraModelStatus');
+    const headerStatus = document.getElementById('loraStatus');
+    try {
+      const res = await fetch('/api/thumbnails/generate-lora', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expressions: ['confident'], num_images: 0 }),
+      });
+      // If we get a 400 with "No LoRA model found", it means no model trained
+      const data = await res.json();
+      if (data.error && data.error.includes('No LoRA')) {
+        statusEl.textContent = 'Not trained';
+        statusEl.style.color = 'var(--red)';
+        headerStatus.innerHTML = '<span class="status-badge inactive"><span class="status-dot"></span>No LoRA</span>';
+        state.loraModel = null;
+      } else {
+        statusEl.textContent = 'Active';
+        statusEl.style.color = 'var(--green)';
+        headerStatus.innerHTML = '<span class="status-badge active"><span class="status-dot"></span>LoRA Ready</span>';
+        state.loraModel = true;
+      }
+    } catch {
+      statusEl.textContent = 'Unknown';
+      headerStatus.innerHTML = '<span class="status-badge inactive"><span class="status-dot"></span>Error</span>';
+    }
+  }
+
+  // ---- COST TRACKER ----
+  function addCost(amount) {
+    state.runningCost += amount;
+    document.getElementById('runningCost').textContent = '$' + state.runningCost.toFixed(2);
+  }
+
+  // ---- SCRATCH FLOW ----
+
+  // Step navigation
+  function goToScratchStep(step) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('scratch-step-' + i);
+      if (el) el.classList.toggle('hidden', i !== step);
+    }
+    document.querySelectorAll('#scratchSteps .step').forEach(s => {
+      const sStep = parseInt(s.dataset.step);
+      s.classList.remove('active', 'done');
+      if (sStep === step) s.classList.add('active');
+      else if (sStep < step) s.classList.add('done');
+    });
+
+    // Populate previews
+    if (step === 4) {
+      const basePreview = document.getElementById('selectedBasePreview');
+      const loraPreview = document.getElementById('selectedLoraPreview');
+      if (state.selectedBase) basePreview.innerHTML = `<img src="${state.selectedBase}" style="width:100%;border-radius:var(--radius-md);">`;
+      if (state.selectedLora) loraPreview.innerHTML = `<img src="${state.selectedLora}" style="width:100%;border-radius:var(--radius-md);">`;
+    }
+  }
+
+  // Step 1: Generate concepts
+  async function generateConcepts() {
+    const topic = document.getElementById('videoTopic').value.trim();
+    if (!topic) return alert('Enter a video topic first');
+
+    const btn = document.getElementById('generateConceptsBtn');
+    const loader = document.getElementById('conceptsLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/concepts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_topic: topic }),
+      });
+      const data = await res.json();
+      if (data.concepts) {
+        state.concepts = data.concepts;
+        renderConcepts();
+      }
+    } catch (err) {
+      alert('Failed to generate concepts: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  function renderConcepts() {
+    const container = document.getElementById('conceptsList');
+    container.innerHTML = state.concepts.map((c, i) => `
+      <div class="concept-card ${state.selectedConcept === i ? 'selected' : ''}" onclick="selectConcept(${i})">
+        <div class="concept-name">${c.name}</div>
+        <span class="concept-text-overlay">${c.text_overlay}</span>
+        <div class="concept-mood">${c.mood} - ${c.click_reason}</div>
+      </div>
+    `).join('');
+
+    if (state.concepts.length > 0) {
+      document.getElementById('toStep2Btn').classList.remove('hidden');
+    }
+  }
+
+  function selectConcept(index) {
+    state.selectedConcept = index;
+    renderConcepts();
+    // Pre-fill the base prompt
+    const concept = state.concepts[index];
+    document.getElementById('basePrompt').value = concept.image_prompt;
+  }
+
+  function toggleCustomPrompt() {
+    const card = document.getElementById('customPromptCard');
+    card.classList.toggle('hidden');
+    if (!card.classList.contains('hidden')) {
+      document.getElementById('toStep2Btn').classList.remove('hidden');
+    }
+  }
+
+  // Step 2: Generate base images
+  async function generateBase() {
+    let prompt = document.getElementById('basePrompt').value.trim();
+    if (!prompt) {
+      const custom = document.getElementById('customPrompt').value.trim();
+      if (custom) prompt = custom;
+      else return alert('Enter or select a prompt first');
+    }
+
+    const btn = document.getElementById('generateBaseBtn');
+    const loader = document.getElementById('baseLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/generate-base', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, num_images: 4, aspect_ratio: '16:9' }),
+      });
+      const data = await res.json();
+      if (data.images) {
+        state.baseImages = data.images;
+        addCost(0.60);
+        renderImageGrid('baseImages', state.baseImages, 'base');
+        document.getElementById('baseNextActions').classList.remove('hidden');
+      } else {
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  // Step 3: Generate LoRA photos
+  async function generateLora() {
+    const chips = document.querySelectorAll('#expressionChips .expression-chip.selected');
+    const expressions = Array.from(chips).map(c => c.dataset.expr);
+    if (expressions.length === 0) return alert('Select at least one expression');
+
+    const btn = document.getElementById('generateLoraBtn');
+    const loader = document.getElementById('loraLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/generate-lora', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expressions, num_images: 4 }),
+      });
+      const data = await res.json();
+      if (data.images) {
+        state.loraImages = data.images;
+        addCost(0.12);
+        renderImageGrid('loraImages', state.loraImages, 'lora');
+        document.getElementById('loraNextActions').classList.remove('hidden');
+      } else {
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  // Step 4: Body swap
+  async function bodySwap() {
+    if (!state.selectedBase || !state.selectedLora) {
+      return alert('Select a base image and a photo of you first');
+    }
+
+    const btn = document.getElementById('bodySwapBtn');
+    const loader = document.getElementById('swapLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/body-swap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base_image_url: state.selectedBase,
+          lora_image_url: state.selectedLora,
+          num_images: 4,
+        }),
+      });
+      const data = await res.json();
+      if (data.images) {
+        state.swapResults = data.images;
+        addCost(0.60);
+        renderImageGrid('swapImages', state.swapResults, 'swap-result');
+        document.getElementById('swapActions').classList.remove('hidden');
+      } else {
+        alert('Swap failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  // ---- COMPETITOR SWAP FLOW ----
+
+  function goToSwapStep(step) {
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById('swap-step-' + i);
+      if (el) el.classList.toggle('hidden', i !== step);
+    }
+    document.querySelectorAll('#swapSteps .step').forEach(s => {
+      const sStep = parseInt(s.dataset.step);
+      s.classList.remove('active', 'done');
+      if (sStep === step) s.classList.add('active');
+      else if (sStep < step) s.classList.add('done');
+    });
+
+    if (step === 3) {
+      const compPreview = document.getElementById('selectedCompPreview');
+      const loraPreview = document.getElementById('selectedSwapLoraPreview');
+      if (state.selectedCompetitor) compPreview.innerHTML = `<img src="${state.selectedCompetitor}" style="width:100%;border-radius:var(--radius-md);">`;
+      if (state.selectedSwapLora) loraPreview.innerHTML = `<img src="${state.selectedSwapLora}" style="width:100%;border-radius:var(--radius-md);">`;
+    }
+  }
+
+  async function searchCompetitors() {
+    const input = document.getElementById('competitorKeywords').value.trim();
+    if (!input) return alert('Enter keywords to search');
+
+    const keywords = input.split(',').map(k => k.trim()).filter(Boolean);
+    const btn = document.getElementById('searchCompBtn');
+    const loader = document.getElementById('competitorLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/search-competitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keywords }),
+      });
+      const data = await res.json();
+      if (data.videos) {
+        state.competitorVideos = data.videos;
+        renderCompetitorThumbnails();
+        if (data.videos.length > 0) {
+          document.getElementById('compNextActions').classList.remove('hidden');
+        }
+      }
+    } catch (err) {
+      alert('Search failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  function renderCompetitorThumbnails() {
+    const container = document.getElementById('competitorThumbnails');
+    container.innerHTML = state.competitorVideos.map((v, i) => {
+      const score = v.swap_suitability?.score || 0;
+      const scoreClass = score >= 7 ? 'high' : score >= 4 ? 'medium' : 'low';
+      const views = v.view_count >= 1000000
+        ? (v.view_count / 1000000).toFixed(1) + 'M'
+        : v.view_count >= 1000
+        ? (v.view_count / 1000).toFixed(0) + 'K'
+        : v.view_count;
+
+      return `
+        <div class="image-card ${state.selectedCompetitor === v.thumbnail_url ? 'selected' : ''}"
+             onclick="selectCompetitor(${i})" ondblclick="expandImage('${v.thumbnail_url}')">
+          <img src="${v.thumbnail_url}" alt="${v.title}" loading="lazy">
+          ${score ? `<span class="swap-score ${scoreClass}">${score}/10</span>` : ''}
+          <span class="check-badge">&#10003;</span>
+          <div class="overlay">
+            <span class="overlay-text">${v.title.substring(0, 40)}${v.title.length > 40 ? '...' : ''}</span>
+            <span class="overlay-views">${views} views</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectCompetitor(index) {
+    const video = state.competitorVideos[index];
+    state.selectedCompetitor = video.thumbnail_url;
+    renderCompetitorThumbnails();
+  }
+
+  async function generateLoraForSwap() {
+    const chips = document.querySelectorAll('#swapExpressionChips .expression-chip.selected');
+    const expressions = Array.from(chips).map(c => c.dataset.expr);
+    if (expressions.length === 0) return alert('Select at least one expression');
+
+    const btn = document.getElementById('swapGenLoraBtn');
+    const loader = document.getElementById('swapLoraLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/generate-lora', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expressions, num_images: 4 }),
+      });
+      const data = await res.json();
+      if (data.images) {
+        state.swapLoraImages = data.images;
+        addCost(0.12);
+        renderImageGrid('swapLoraImages', state.swapLoraImages, 'swap-lora');
+        document.getElementById('swapLoraNextActions').classList.remove('hidden');
+      } else {
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  async function competitorBodySwap() {
+    if (!state.selectedCompetitor || !state.selectedSwapLora) {
+      return alert('Select a competitor thumbnail and a photo of you first');
+    }
+
+    const btn = document.getElementById('compSwapBtn');
+    const loader = document.getElementById('compSwapLoader');
+    btn.disabled = true;
+    loader.classList.add('visible');
+
+    try {
+      const res = await fetch('/api/thumbnails/body-swap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base_image_url: state.selectedCompetitor,
+          lora_image_url: state.selectedSwapLora,
+          num_images: 4,
+        }),
+      });
+      const data = await res.json();
+      if (data.images) {
+        state.compSwapResults = data.images;
+        addCost(0.60);
+        renderImageGrid('compSwapImages', state.compSwapResults, 'comp-swap-result');
+        document.getElementById('compSwapActions').classList.remove('hidden');
+      } else {
+        alert('Swap failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  // ---- IMAGE GRID RENDERING ----
+  function renderImageGrid(containerId, images, type) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = images.map((img, i) => {
+      const url = img.url || img;
+      const isSelected = (type === 'base' && state.selectedBase === url) ||
+                         (type === 'lora' && state.selectedLora === url) ||
+                         (type === 'swap-lora' && state.selectedSwapLora === url) ||
+                         state.selectedImages.has(url);
+      return `
+        <div class="image-card ${isSelected ? 'selected' : ''}"
+             onclick="selectImage('${type}', ${i}, '${url}')"
+             ondblclick="expandImage('${url}')">
+          <img src="${url}" alt="Generated image ${i + 1}" loading="lazy">
+          <span class="check-badge">&#10003;</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectImage(type, index, url) {
+    if (type === 'base') {
+      state.selectedBase = url;
+      renderImageGrid('baseImages', state.baseImages, 'base');
+    } else if (type === 'lora') {
+      state.selectedLora = url;
+      renderImageGrid('loraImages', state.loraImages, 'lora');
+    } else if (type === 'swap-lora') {
+      state.selectedSwapLora = url;
+      renderImageGrid('swapLoraImages', state.swapLoraImages, 'swap-lora');
+    } else {
+      // Toggle selection for results
+      if (state.selectedImages.has(url)) state.selectedImages.delete(url);
+      else state.selectedImages.add(url);
+      if (type === 'swap-result') renderImageGrid('swapImages', state.swapResults, 'swap-result');
+      if (type === 'comp-swap-result') renderImageGrid('compSwapImages', state.compSwapResults, 'comp-swap-result');
+    }
+  }
+
+  // ---- EXPRESSION CHIPS ----
+  function toggleExpression(el) {
+    el.classList.toggle('selected');
+  }
+
+  // ---- MODAL ----
+  function expandImage(url) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('imageModal').classList.add('visible');
+  }
+
+  function closeModal() {
+    document.getElementById('imageModal').classList.remove('visible');
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ---- DOWNLOAD ----
+  function downloadSelected() {
+    state.selectedImages.forEach(url => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'thumbnail-' + Date.now() + '.png';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
+
+  // ---- MEDIA LIBRARY ----
+  async function loadLibrary() {
+    const container = document.getElementById('libraryContent');
+    try {
+      const sbUrl = window.__SUPABASE_URL__;
+      const sbKey = window.__SUPABASE_KEY__;
+      if (!sbUrl || !sbKey) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-text">Supabase not configured. Thumbnails are saved per session only.</div></div>';
+        // Show session-stored items
+        if (state.library.length > 0) renderLibraryGrid();
+        return;
+      }
+
+      const res = await fetch(`${sbUrl}/rest/v1/thumbnail_library?order=created_at.desc&limit=50`, {
+        headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey },
+      });
+      if (res.ok) {
+        state.library = await res.json();
+        renderLibraryGrid();
+      }
+    } catch {
+      if (state.library.length > 0) renderLibraryGrid();
+    }
+  }
+
+  function renderLibraryGrid() {
+    const container = document.getElementById('libraryContent');
+    if (state.library.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🖼</div><div class="empty-state-text">No thumbnails saved yet.</div></div>';
+      return;
+    }
+    container.innerHTML = '<div class="library-grid">' + state.library.map(item => `
+      <div class="library-item" ondblclick="expandImage('${item.image_url}')">
+        <img src="${item.image_url}" alt="Thumbnail" loading="lazy">
+        <div class="actions">
+          <button class="action-btn" onclick="event.stopPropagation();downloadSingle('${item.image_url}')" title="Download">&#8615;</button>
+          <button class="action-btn" onclick="event.stopPropagation();deleteFromLibrary('${item.id}')" title="Delete">&#10005;</button>
+        </div>
+        <span class="library-method">${item.method}</span>
+      </div>
+    `).join('') + '</div>';
+  }
+
+  async function saveSelectedToLibrary(method) {
+    const urls = Array.from(state.selectedImages);
+    if (urls.length === 0) return alert('Select at least one image to save');
+
+    for (const url of urls) {
+      const item = { image_url: url, method, concept: document.getElementById('videoTopic')?.value || '', created_at: new Date().toISOString() };
+      state.library.unshift(item);
+
+      // Try Supabase
+      try {
+        const sbUrl = window.__SUPABASE_URL__;
+        const sbKey = window.__SUPABASE_KEY__;
+        if (sbUrl && sbKey) {
+          await fetch(`${sbUrl}/rest/v1/thumbnail_library`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': sbKey,
+              'Authorization': 'Bearer ' + sbKey,
+            },
+            body: JSON.stringify({ image_url: url, method, concept: item.concept }),
+          });
+        }
+      } catch {}
+    }
+
+    state.selectedImages.clear();
+    alert(urls.length + ' thumbnail(s) saved to library');
+    renderLibraryGrid();
+  }
+
+  async function deleteFromLibrary(id) {
+    if (!confirm('Delete this thumbnail?')) return;
+    try {
+      const sbUrl = window.__SUPABASE_URL__;
+      const sbKey = window.__SUPABASE_KEY__;
+      if (sbUrl && sbKey) {
+        await fetch(`${sbUrl}/rest/v1/thumbnail_library?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey },
+        });
+      }
+      state.library = state.library.filter(item => item.id !== id);
+      renderLibraryGrid();
+    } catch {}
+  }
+
+  function downloadSingle(url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'thumbnail-' + Date.now() + '.png';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ---- LORA TRAINING ----
+  async function trainLora() {
+    const zipUrl = document.getElementById('loraZipUrl').value.trim();
+    if (!zipUrl) return alert('Enter a ZIP URL with your training photos');
+
+    const triggerWord = document.getElementById('loraTriggerWord').value.trim() || 'WILLH';
+    const steps = parseInt(document.getElementById('loraSteps').value) || 1000;
+
+    const btn = document.getElementById('trainLoraBtn');
+    const loader = document.getElementById('trainLoader');
+    const result = document.getElementById('trainResult');
+    btn.disabled = true;
+    loader.classList.add('visible');
+    result.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/thumbnails/train-lora', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images_zip_url: zipUrl, trigger_word: triggerWord, steps }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        addCost(parseFloat(data.estimated_cost.replace('$', '')));
+        result.classList.remove('hidden');
+        result.innerHTML = `
+          <div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--green);">
+            <strong>LoRA trained successfully!</strong><br>
+            Trigger word: ${data.trigger_word}<br>
+            Cost: ${data.estimated_cost}
+          </div>
+        `;
+        checkLoraStatus();
+      } else {
+        result.classList.remove('hidden');
+        result.innerHTML = `<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Training failed: ${data.error || 'Unknown error'}</div>`;
+      }
+    } catch (err) {
+      result.classList.remove('hidden');
+      result.innerHTML = `<div style="padding:1rem;background:rgba(220,38,38,0.08);border-radius:var(--radius-md);color:var(--red);">Error: ${err.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  // ---- SUPABASE CONFIG (injected or from env) ----
+  // These would be set by the server or hardcoded for the dashboard
+  // For now, they're populated if available
+  window.__SUPABASE_URL__ = '';
+  window.__SUPABASE_KEY__ = '';
+
+  // Try to detect from existing pages or meta tags
+  (function detectSupabase() {
+    // Will be set via the setup or environment
+    const metaUrl = document.querySelector('meta[name="supabase-url"]');
+    const metaKey = document.querySelector('meta[name="supabase-key"]');
+    if (metaUrl) window.__SUPABASE_URL__ = metaUrl.content;
+    if (metaKey) window.__SUPABASE_KEY__ = metaKey.content;
+  })();
+</script>
+</body>
+</html>
