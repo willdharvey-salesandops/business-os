@@ -5,6 +5,6 @@ import vercel from '@astrojs/vercel/serverless';
 export default defineConfig({
   site: 'https://leadershipgrowthconsulting.com',
   output: 'hybrid',
-  adapter: vercel({ maxDuration: 120 }),
+  adapter: vercel({ maxDuration: 300 }),
   integrations: [tailwind()],
 });
