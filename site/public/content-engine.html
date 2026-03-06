@@ -733,6 +733,76 @@
       transition: width 0.3s;
     }
 
+    /* ---- THUMBNAIL STAGE ---- */
+    .headshot-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--grey-200);
+    }
+    .headshot-cutout-preview {
+      background: repeating-conic-gradient(#e5e5e5 0% 25%, #fff 0% 50%) 50% / 14px 14px;
+    }
+    .thumb-drop-zone {
+      border: 2px dashed var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .thumb-drop-zone:hover, .thumb-drop-zone.dragover {
+      border-color: var(--teal);
+      background: var(--teal-muted);
+    }
+    .bg-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+    }
+    .bg-option {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .bg-option:hover { transform: scale(1.02); }
+    .bg-option.selected { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal-muted); }
+    .bg-option img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+    .position-chips {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+    .position-chip {
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--grey-400);
+      transition: all 0.15s;
+    }
+    .position-chip.selected {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: var(--white);
+    }
+    .thumb-canvas-wrap {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--grey-200);
+      margin-top: 0.75rem;
+    }
+    .thumb-canvas-wrap canvas {
+      width: 100%;
+      display: block;
+    }
+
     /* ---- ACTIONS ROW ---- */
     .actions-row {
       display: flex;
@@ -1129,6 +1199,96 @@
         </div>
       </div>
 
+      <!-- STAGE 8: YOUTUBE THUMBNAIL -->
+      <div class="stage locked" id="stage8" data-stage="8">
+        <div class="stage-header" onclick="toggleStage(8)">
+          <div class="stage-number">8</div>
+          <div class="stage-title">YouTube Thumbnail</div>
+          <div class="stage-summary" id="stage8Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+
+            <!-- Headshot setup (shown if no cutout stored) -->
+            <div id="headshotSetup">
+              <p style="font-size:0.78rem;color:var(--grey-400);margin-bottom:0.75rem;">Upload your headshot once. Background is removed and saved for all future thumbnails.</p>
+              <div class="thumb-drop-zone" id="headshotDropZone" onclick="document.getElementById('headshotInput').click()">
+                <div style="font-size:0.82rem;font-weight:600;color:var(--grey-400);margin-bottom:0.25rem;">Drop your headshot or click to browse</div>
+                <div style="font-size:0.68rem;color:var(--grey-300);">Clear, well-lit photo. PNG or JPG.</div>
+                <input type="file" id="headshotInput" accept="image/*" style="display:none" onchange="handleHeadshotUpload(this.files[0])">
+              </div>
+              <div id="headshotProcessing" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  Removing background...
+                </div>
+              </div>
+            </div>
+
+            <!-- Headshot ready indicator (shown if cutout exists) -->
+            <div id="headshotReady" style="display:none">
+              <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+                <img id="headshotPreviewImg" class="headshot-preview headshot-cutout-preview" src="" alt="Headshot cutout">
+                <div>
+                  <div style="font-size:0.78rem;font-weight:600;color:var(--ink);">Headshot ready</div>
+                  <button class="btn btn-sm btn-ghost" onclick="resetHeadshot()" style="margin-top:0.25rem;">Change photo</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Thumbnail settings -->
+            <div class="form-group" style="margin-bottom:0.5rem;">
+              <label class="field-label">Thumbnail Headline</label>
+              <input type="text" class="field-input" id="thumbHeadline" placeholder="YOUR HEADLINE HERE" style="text-transform:uppercase;font-weight:700;">
+            </div>
+            <div class="form-group" style="margin-bottom:0.75rem;">
+              <label class="field-label">Highlight Words <span style="font-weight:400;color:var(--grey-300);font-size:0.65rem;">comma-separated, shown in yellow</span></label>
+              <input type="text" class="field-input" id="thumbHighlightWords" placeholder="WORD1, WORD2">
+            </div>
+
+            <!-- Generate backgrounds -->
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnGenBgs" onclick="generateThumbnailBgs()">
+                Generate 4 Backgrounds
+                <span class="cost-badge">~$0.60</span>
+              </button>
+            </div>
+            <div id="bgLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Generating backgrounds...
+              </div>
+            </div>
+
+            <!-- Background selection grid -->
+            <div id="bgOptions" class="bg-options" style="display:none"></div>
+
+            <!-- Headshot position selector -->
+            <div id="positionControls" style="display:none;margin-top:0.75rem;">
+              <label class="field-label">Headshot Position</label>
+              <div class="position-chips">
+                <button class="position-chip" onclick="setHeadshotPos('left')">Left</button>
+                <button class="position-chip selected" onclick="setHeadshotPos('right')">Right</button>
+              </div>
+            </div>
+
+            <!-- Canvas preview + download -->
+            <div id="thumbPreview" style="display:none">
+              <div class="thumb-canvas-wrap">
+                <canvas id="thumbCanvas" width="1280" height="720"></canvas>
+              </div>
+              <div class="actions-row">
+                <button class="btn btn-primary" onclick="downloadThumbnail()">Download PNG</button>
+                <button class="btn btn-sm" onclick="composeThumbnail()">Refresh</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -1184,6 +1344,7 @@
       document.getElementById('loginOverlay').classList.add('hidden');
       document.getElementById('app').classList.add('visible');
       loadSessions();
+      checkHeadshotReady();
     }
 
     // ---- SUPABASE ----
@@ -1269,6 +1430,7 @@
           snippets: s.distribution_snippets,
           checklist: s.distribution_checklist || {}
         };
+        session.thumbnail = s.thumbnail_data || { headline: '', highlightWords: [], backgrounds: [], selectedBgIndex: null, headshotPosition: 'right' };
         restoreUI();
         showToast('Session loaded');
       } catch (e) {
@@ -1286,7 +1448,8 @@
         newsletter_slug: null,
         shortScripts: null,
         blog: null,
-        distribution: { snippets: null, checklist: {} }
+        distribution: { snippets: null, checklist: {} },
+        thumbnail: { headline: '', highlightWords: [], backgrounds: [], selectedBgIndex: null, headshotPosition: 'right' }
       };
       document.getElementById('sessionSelect').value = '';
       document.getElementById('researchTopic').value = '';
@@ -1296,10 +1459,16 @@
       document.getElementById('scriptsOutput').style.display = 'none';
       document.getElementById('blogOutput').style.display = 'none';
       document.getElementById('distOutput').style.display = 'none';
+      document.getElementById('bgOptions').style.display = 'none';
+      document.getElementById('positionControls').style.display = 'none';
+      document.getElementById('thumbPreview').style.display = 'none';
+      document.getElementById('thumbHeadline').value = '';
+      document.getElementById('thumbHighlightWords').value = '';
       document.getElementById('wordCount').textContent = '0 words';
       updateWordCount();
+      checkHeadshotReady();
       // Reset stage summaries
-      for (let i = 1; i <= 7; i++) {
+      for (let i = 1; i <= 8; i++) {
         document.getElementById(`stage${i}Summary`).textContent = '';
       }
       updateStageStates();
@@ -1319,6 +1488,7 @@
         blog_post_id: session.blog?.blog_post_id || null,
         distribution_snippets: session.distribution.snippets,
         distribution_checklist: session.distribution.checklist,
+        thumbnail_data: session.thumbnail,
         updated_at: new Date().toISOString(),
         status: 'in_progress'
       };
@@ -1366,7 +1536,7 @@
     }
 
     function updateStageStates() {
-      for (let i = 1; i <= 7; i++) {
+      for (let i = 1; i <= 8; i++) {
         const el = document.getElementById(`stage${i}`);
         if (i < session.stage) {
           el.classList.remove('locked');
@@ -1375,10 +1545,11 @@
           el.classList.remove('locked');
           el.classList.add('active');
         } else {
-          // Unlock stages 3-6 once transcript exists (stage >= 3)
-          if (i >= 3 && i <= 6 && session.stage >= 3) {
+          // Unlock stages 3-7 once transcript exists (stage >= 3)
+          if (i >= 3 && i <= 7 && session.stage >= 3) {
             el.classList.remove('locked');
-          } else if (i === 7 && session.stage >= 3) {
+          // Stage 8 (Thumbnail) unlocks when research exists (stage >= 2)
+          } else if (i === 8 && session.stage >= 2) {
             el.classList.remove('locked');
           } else {
             el.classList.add('locked');
@@ -1434,9 +1605,25 @@
         });
         updateChecklist();
       }
+      // Thumbnail
+      if (session.thumbnail) {
+        if (session.thumbnail.headline) document.getElementById('thumbHeadline').value = session.thumbnail.headline;
+        if (session.thumbnail.highlightWords?.length) document.getElementById('thumbHighlightWords').value = session.thumbnail.highlightWords.join(', ');
+        if (session.thumbnail.backgrounds?.length) {
+          renderBgOptions(session.thumbnail.backgrounds, session.thumbnail.selectedBgIndex);
+        }
+      }
+      checkHeadshotReady();
+      // Pre-fill thumbnail headline from research if not already set
+      if (!session.thumbnail?.headline && session.research.output?.metadata?.thumbnail_headline) {
+        document.getElementById('thumbHeadline').value = session.research.output.metadata.thumbnail_headline;
+        if (session.research.output.metadata.thumbnail_highlight_words?.length) {
+          document.getElementById('thumbHighlightWords').value = session.research.output.metadata.thumbnail_highlight_words.join(', ');
+        }
+      }
       updateStageStates();
       // Expand current stage
-      const currentStage = document.getElementById(`stage${Math.min(session.stage, 7)}`);
+      const currentStage = document.getElementById(`stage${Math.min(session.stage, 8)}`);
       if (currentStage) currentStage.classList.add('expanded');
     }
 
@@ -1503,6 +1690,13 @@
         session.research.output = briefingData;
         renderBriefing(briefingData);
         document.getElementById('stage1Summary').textContent = topic;
+        // Pre-fill thumbnail headline from research metadata
+        if (briefingData.metadata?.thumbnail_headline) {
+          document.getElementById('thumbHeadline').value = briefingData.metadata.thumbnail_headline;
+        }
+        if (briefingData.metadata?.thumbnail_highlight_words?.length) {
+          document.getElementById('thumbHighlightWords').value = briefingData.metadata.thumbnail_highlight_words.join(', ');
+        }
         completeStage(1);
         activateStage(2);
         saveSession();
@@ -2092,6 +2286,278 @@
       } catch (e) {
         showToast('Error: ' + e.message);
       }
+    }
+
+    // ---- STAGE 8: THUMBNAIL ----
+    function checkHeadshotReady() {
+      const cutoutUrl = localStorage.getItem('headshot_cutout_url');
+      if (cutoutUrl) {
+        document.getElementById('headshotSetup').style.display = 'none';
+        document.getElementById('headshotReady').style.display = 'block';
+        document.getElementById('headshotPreviewImg').src = cutoutUrl;
+        return true;
+      }
+      document.getElementById('headshotSetup').style.display = 'block';
+      document.getElementById('headshotReady').style.display = 'none';
+      return false;
+    }
+
+    function resetHeadshot() {
+      localStorage.removeItem('headshot_cutout_url');
+      localStorage.removeItem('headshot_original_url');
+      checkHeadshotReady();
+    }
+
+    // Drag and drop for headshot
+    (function() {
+      const dz = document.getElementById('headshotDropZone');
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) handleHeadshotUpload(file);
+      });
+    })();
+
+    async function handleHeadshotUpload(file) {
+      if (!file) return;
+      document.getElementById('headshotDropZone').style.display = 'none';
+      document.getElementById('headshotProcessing').style.display = 'block';
+
+      try {
+        // 1. Upload to fal.ai
+        const formData = new FormData();
+        formData.append('file', file);
+        const uploadRes = await fetch('/api/thumbnails/upload-photos', { method: 'POST', body: formData });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok || !uploadData.success) throw new Error(uploadData.error || 'Upload failed');
+
+        // 2. Remove background
+        const bgRes = await fetch('/api/thumbnails/remove-bg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: uploadData.url })
+        });
+        const bgData = await bgRes.json();
+        if (!bgRes.ok || !bgData.success) throw new Error(bgData.error || 'Background removal failed');
+
+        // 3. Store
+        localStorage.setItem('headshot_cutout_url', bgData.cutout_url);
+        localStorage.setItem('headshot_original_url', uploadData.url);
+        checkHeadshotReady();
+        showToast('Headshot ready');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+        document.getElementById('headshotDropZone').style.display = 'block';
+      } finally {
+        document.getElementById('headshotProcessing').style.display = 'none';
+      }
+    }
+
+    async function generateThumbnailBgs() {
+      const headline = document.getElementById('thumbHeadline').value.trim();
+      if (!headline) { showToast('Enter a thumbnail headline first'); return; }
+
+      document.getElementById('btnGenBgs').disabled = true;
+      document.getElementById('bgLoading').style.display = 'block';
+      document.getElementById('bgOptions').style.display = 'none';
+      document.getElementById('positionControls').style.display = 'none';
+      document.getElementById('thumbPreview').style.display = 'none';
+
+      try {
+        const prompt = `Professional YouTube thumbnail background, cinematic lighting, no people, no text, no letters, no words. Theme: ${headline}. 16:9 aspect ratio, vibrant colours, slight bokeh depth of field, high contrast, dramatic mood.`;
+        const res = await fetch('/api/thumbnails/generate-base', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, num_images: 4, aspect_ratio: '16:9' })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.thumbnail.headline = headline;
+        session.thumbnail.highlightWords = document.getElementById('thumbHighlightWords').value.split(',').map(w => w.trim().toUpperCase()).filter(Boolean);
+        session.thumbnail.backgrounds = data.images;
+        session.thumbnail.selectedBgIndex = 0;
+        renderBgOptions(data.images, 0);
+        saveSession();
+        showToast('Backgrounds generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnGenBgs').disabled = false;
+        document.getElementById('bgLoading').style.display = 'none';
+      }
+    }
+
+    function renderBgOptions(images, selectedIdx) {
+      const container = document.getElementById('bgOptions');
+      container.innerHTML = images.map((img, i) =>
+        `<div class="bg-option ${i === selectedIdx ? 'selected' : ''}" onclick="selectBg(${i})">
+          <img src="${img.url}" alt="Background ${i + 1}" crossorigin="anonymous">
+        </div>`
+      ).join('');
+      container.style.display = 'grid';
+      document.getElementById('positionControls').style.display = 'block';
+      document.getElementById('stage8Summary').textContent = 'Backgrounds ready';
+
+      // Auto-compose if headshot is ready
+      if (localStorage.getItem('headshot_cutout_url') && selectedIdx != null) {
+        composeThumbnail();
+      }
+    }
+
+    function selectBg(idx) {
+      session.thumbnail.selectedBgIndex = idx;
+      document.querySelectorAll('.bg-option').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+      composeThumbnail();
+      saveSession();
+    }
+
+    function setHeadshotPos(pos) {
+      session.thumbnail.headshotPosition = pos;
+      document.querySelectorAll('.position-chip').forEach(el => {
+        el.classList.toggle('selected', el.textContent.trim().toLowerCase() === pos);
+      });
+      composeThumbnail();
+      saveSession();
+    }
+
+    function composeThumbnail() {
+      const cutoutUrl = localStorage.getItem('headshot_cutout_url');
+      const bgIdx = session.thumbnail.selectedBgIndex;
+      if (cutoutUrl == null || bgIdx == null || !session.thumbnail.backgrounds[bgIdx]) return;
+
+      const canvas = document.getElementById('thumbCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1280;
+      canvas.height = 720;
+
+      const bgImg = new Image();
+      bgImg.crossOrigin = 'anonymous';
+      const cutoutImg = new Image();
+      cutoutImg.crossOrigin = 'anonymous';
+
+      let loaded = 0;
+      function onLoad() {
+        loaded++;
+        if (loaded < 2) return;
+
+        // 1. Draw background
+        ctx.drawImage(bgImg, 0, 0, 1280, 720);
+
+        // 2. Dark gradient on text side for readability
+        const pos = session.thumbnail.headshotPosition || 'right';
+        const grad = ctx.createLinearGradient(
+          pos === 'right' ? 0 : 1280, 0,
+          pos === 'right' ? 700 : 580, 0
+        );
+        grad.addColorStop(0, 'rgba(0,0,0,0.55)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1280, 720);
+
+        // 3. Draw headshot cutout
+        const cutH = canvas.height * 0.88;
+        const scale = cutH / cutoutImg.height;
+        const cutW = cutoutImg.width * scale;
+        const cutX = pos === 'right' ? canvas.width - cutW + 20 : -20;
+        const cutY = canvas.height - cutH;
+        ctx.drawImage(cutoutImg, cutX, cutY, cutW, cutH);
+
+        // 4. Draw text overlay
+        const headline = (document.getElementById('thumbHeadline').value.trim() || session.thumbnail.headline || '').toUpperCase();
+        const hlWords = document.getElementById('thumbHighlightWords').value.split(',').map(w => w.trim().toUpperCase()).filter(Boolean);
+        if (headline) {
+          const textCenterX = pos === 'right' ? canvas.width * 0.3 : canvas.width * 0.7;
+          drawThumbText(ctx, headline, textCenterX, canvas.height / 2, hlWords);
+        }
+
+        document.getElementById('thumbPreview').style.display = 'block';
+      }
+
+      bgImg.onload = onLoad;
+      cutoutImg.onload = onLoad;
+      bgImg.onerror = () => showToast('Failed to load background image');
+      cutoutImg.onerror = () => showToast('Failed to load headshot cutout');
+      bgImg.src = session.thumbnail.backgrounds[bgIdx].url;
+      cutoutImg.src = cutoutUrl;
+    }
+
+    function drawThumbText(ctx, text, centerX, centerY, highlightWords) {
+      const words = text.split(/\s+/);
+      const maxW = 480;
+
+      // Auto-size font
+      let fontSize = 96;
+      ctx.font = `900 ${fontSize}px "Impact", "Arial Black", sans-serif`;
+      const lines = wrapThumbText(ctx, words, maxW);
+
+      // Shrink if too many lines
+      while (lines.length > 3 && fontSize > 40) {
+        fontSize -= 8;
+        ctx.font = `900 ${fontSize}px "Impact", "Arial Black", sans-serif`;
+        lines.length = 0;
+        lines.push(...wrapThumbText(ctx, words, maxW));
+      }
+
+      const lineH = fontSize * 1.2;
+      const startY = centerY - ((lines.length - 1) * lineH) / 2;
+
+      lines.forEach((lineWords, li) => {
+        const y = startY + li * lineH;
+        const lineText = lineWords.join(' ');
+
+        // Black outline
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = fontSize / 6;
+        ctx.lineJoin = 'round';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.strokeText(lineText, centerX, y);
+
+        // Draw word by word for highlight colouring
+        const totalW = ctx.measureText(lineText).width;
+        let wordX = centerX - totalW / 2;
+        ctx.textAlign = 'left';
+        lineWords.forEach((word, wi) => {
+          const isHL = highlightWords.some(hw => word.includes(hw));
+          ctx.fillStyle = isHL ? '#FFDD00' : '#FFFFFF';
+          ctx.fillText(word, wordX, y);
+          wordX += ctx.measureText(word).width + ctx.measureText(' ').width;
+        });
+      });
+    }
+
+    function wrapThumbText(ctx, words, maxWidth) {
+      const lines = [];
+      let current = [];
+      words.forEach(word => {
+        current.push(word);
+        if (ctx.measureText(current.join(' ')).width > maxWidth) {
+          if (current.length > 1) {
+            current.pop();
+            lines.push([...current]);
+            current = [word];
+          } else {
+            lines.push([...current]);
+            current = [];
+          }
+        }
+      });
+      if (current.length) lines.push(current);
+      return lines;
+    }
+
+    function downloadThumbnail() {
+      const canvas = document.getElementById('thumbCanvas');
+      const link = document.createElement('a');
+      link.download = `thumbnail-${(session.thumbnail.headline || 'untitled').toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
 
     // ---- UTILITIES ----
