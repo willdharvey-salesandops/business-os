@@ -50,17 +50,19 @@ DON'T:
 - Over-explain. Trust the audience to connect the dots
 
 ## CONTENT RULES
-CRITICAL: Every single story MUST be from the last 24 hours. Not last week. Not last month. TODAY or YESTERDAY only. Check the publication date on every source. If you cannot verify a story is from the last 24 hours, do not include it.
+CRITICAL RECENCY RULE: Every single story MUST have been published or reported TODAY or YESTERDAY. Not 3 days ago. Not last week. Not last month. You MUST check the publication date on every source you find. If an article was published more than 24 hours before today's date, DO NOT include it. It does not matter how relevant the story is. If it is older than 24 hours, it is STALE and must be excluded. Will reads this on camera and says "today" and "this morning." If the story is from last week, he looks like he does not know what he is talking about. This is non-negotiable.
 
-Search for stories across these categories. Aim for at least one from each, but don't force it:
-- Big tech / industry moves (OpenAI, Google, Nvidia, Microsoft, Apple, Meta announcements)
-- Small business adoption (Real people/businesses using AI in practice)
+RELEVANCE RULE: Every story must pass the "plumber test." If a plumber with 8 employees would not care about this story, it is too big or too abstract. Translate everything down to the level of someone running a small team. Big tech announcements are only relevant if you can draw a direct line to how they affect a business with 1-50 employees. Prioritise stories about real people using AI in real businesses over corporate announcements.
+
+Search for stories across these categories. Prioritise the first three:
+- Small business adoption (Real people/businesses using AI in practice. This is the BEST category.)
 - Practical tools / savings (AI tools saving time or money for normal businesses)
-- Jobs / workforce impact (Hiring, layoffs, new roles, skills shifts)
-- Trend / future signal (Agentic AI, new capabilities, regulation, what's coming)
-- World events touching AI (Government policy, geopolitics, regulation)
+- Jobs / workforce impact (Hiring, skills shifts, what it means for small teams)
+- Big tech moves (Only if directly relevant to small business owners)
+- Trend / future signal (Only if you can make it practical and actionable)
+- World events touching AI (Only if it directly affects small business)
 
-Lead with the most impactful or surprising story. A brilliant small business story can lead.
+Lead with the most relatable, practical story. A brilliant small business story should ALWAYS lead over a big tech announcement.
 
 ## THREE-PART STORY STRUCTURE
 
@@ -170,18 +172,25 @@ export const POST: APIRoute = async ({ request }) => {
     userPrompt = `Today is ${today}. Search for the most important news from the last 24-48 hours about: "${topic}". Find 5-7 real, current stories relevant to small business owners. Include specific names, numbers, and facts.`;
   } else {
     systemPrompt = DAILY_BRIEFING_PROMPT;
-    userPrompt = `Today is ${today}. Compile today's daily briefing.
+    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+      userPrompt = `Today is ${today}. Yesterday was ${yesterday}.
 
-Search for the latest AI and business news using these queries:
-- "AI small business news today"
-- "AI business automation news today"
-- "artificial intelligence company news today"
-- "ChatGPT OpenAI Google AI news today"
-- "AI productivity efficiency news today"
-- "AI startup funding news today"
-- "AI regulation policy news today"
+IMPORTANT: Only include stories published on ${today} or ${yesterday}. Check every source date. If the article is from any other date, do not use it.
 
-Select 5-7 stories from the last 24 hours. Every story must be real and verifiable. Include specific company names, people, dollar amounts, and user counts. Lead with the most impactful story.`;
+Compile today's daily briefing. Search for stories using these queries:
+- "small business AI tools saving time"
+- "AI automation small business owner"
+- "AI customer service small business"
+- "AI hiring recruitment small teams"
+- "AI productivity small company"
+- "ChatGPT small business use case"
+- "AI news today business"
+
+Focus on stories that a plumber, accountant, restaurant owner, or marketing agency with 5-20 employees would find directly useful. Big tech news is only worth including if you can clearly explain why a small business owner should care.
+
+Select 5-7 stories. Every story must be real, verifiable, and published today or yesterday. Lead with the most practical, relatable story.`;
   }
 
   const encoder = new TextEncoder();
