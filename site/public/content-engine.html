@@ -884,8 +884,8 @@
         <div class="stage-body">
           <div class="stage-inner">
             <div class="stage-divider"></div>
-            <label class="field-label">Topic</label>
-            <input type="text" class="field-input" id="researchTopic" placeholder="e.g. delegation, AI for small business owners, sales systems">
+            <label class="field-label">Topic <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Leave blank for the daily AI & Small Business briefing</span></label>
+            <input type="text" class="field-input" id="researchTopic" placeholder="Leave blank for daily briefing, or enter a custom topic">
             <div class="actions-row">
               <button class="btn btn-primary" id="btnResearch" onclick="generateResearch()">
                 Generate Briefing
@@ -1441,9 +1441,7 @@
     // ---- STAGE 1: RESEARCH ----
     async function generateResearch() {
       const topic = document.getElementById('researchTopic').value.trim();
-      if (!topic) { showToast('Enter a topic first'); return; }
-
-      session.research.topic = topic;
+      session.research.topic = topic || 'AI & Small Business';
       document.getElementById('btnResearch').disabled = true;
       document.getElementById('researchLoading').style.display = 'block';
       document.getElementById('researchOutput').style.display = 'none';
@@ -1452,7 +1450,7 @@
         const res = await fetch('/api/content-engine/research', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic })
+          body: JSON.stringify({ topic: topic || '' })
         });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
@@ -1475,9 +1473,33 @@
     function renderBriefing(briefing) {
       let html = '';
 
-      // Date header
+      // Date + coaching theme header
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">`;
       if (briefing.date) {
-        html += `<div style="font-size:0.75rem;color:var(--grey-400);margin-bottom:1rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${esc(briefing.date)}</div>`;
+        html += `<div style="font-size:0.75rem;color:var(--grey-400);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${esc(briefing.date)}</div>`;
+      }
+      if (briefing.coaching_theme) {
+        html += `<div style="font-size:0.7rem;font-style:italic;color:var(--teal);font-weight:500;max-width:50%;text-align:right;">${esc(briefing.coaching_theme)}</div>`;
+      }
+      html += `</div>`;
+
+      // Metadata bar (thumbnail headline, etc.)
+      if (briefing.metadata) {
+        const m = briefing.metadata;
+        html += `<div style="display:flex;gap:0.65rem;margin-bottom:1rem;flex-wrap:wrap;">`;
+        if (m.headline) {
+          html += `<div style="flex:1;min-width:200px;background:var(--grey-100);border-radius:var(--radius-md);padding:0.5rem 0.75rem;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey-400);margin-bottom:0.15rem;">Headline</div>
+            <div style="font-size:0.82rem;font-weight:600;color:var(--ink);">${esc(m.headline)}</div>
+          </div>`;
+        }
+        if (m.thumbnail_headline) {
+          html += `<div style="background:var(--ink);border-radius:var(--radius-md);padding:0.5rem 0.75rem;min-width:140px;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey-400);margin-bottom:0.15rem;">Thumbnail</div>
+            <div style="font-size:0.82rem;font-weight:800;color:var(--white);text-transform:uppercase;">${esc(m.thumbnail_headline)}</div>
+          </div>`;
+        }
+        html += `</div>`;
       }
 
       // News stories
@@ -1488,10 +1510,15 @@
               <span style="color:var(--teal);font-weight:700;">${story.number}.</span>
               ${esc(story.headline)}
               ${story.lead_tag ? `<span style="display:inline-block;font-size:0.6rem;font-weight:700;background:rgba(234,88,12,0.08);color:var(--orange);padding:0.1rem 0.4rem;border-radius:3px;margin-left:0.4rem;text-transform:uppercase;">${esc(story.lead_tag)}</span>` : ''}
+              ${story.category ? `<span style="display:inline-block;font-size:0.58rem;font-weight:600;background:var(--teal-muted);color:var(--teal);padding:0.1rem 0.35rem;border-radius:3px;margin-left:0.25rem;">${esc(story.category.replace('_', ' '))}</span>` : ''}
             </div>
             <div class="briefing-item-detail" style="margin-bottom:0.5rem;">${esc(story.detail)}</div>
-            <div style="font-size:0.75rem;font-weight:600;color:var(--teal);margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.06em;">Your angle</div>
-            <div class="briefing-item-detail">${esc(story.your_angle)}</div>
+            <div style="font-size:0.68rem;font-weight:700;color:var(--teal);margin-bottom:0.15rem;text-transform:uppercase;letter-spacing:0.06em;">Your angle</div>
+            <div class="briefing-item-detail" style="margin-bottom:0.5rem;">${esc(story.your_angle)}</div>
+            ${story.coaching_moment ? `
+              <div style="font-size:0.68rem;font-weight:700;color:var(--purple);margin-bottom:0.15rem;text-transform:uppercase;letter-spacing:0.06em;">Coaching moment</div>
+              <div class="briefing-item-detail" style="font-style:italic;">${esc(story.coaching_moment)}</div>
+            ` : ''}
           </div>`;
         });
       }
@@ -1499,7 +1526,7 @@
       // Closing thought
       if (briefing.closing) {
         html += `<div class="briefing-item" style="background:var(--teal-muted);border-left:3px solid var(--teal);">
-          <div class="briefing-item-headline">${esc(briefing.closing.title || "Today's Takeaway")}</div>
+          <div class="briefing-item-headline">${esc(briefing.closing.title || "Today's Closing Thought")}</div>
           <div class="briefing-item-detail">${esc(briefing.closing.text)}</div>
         </div>`;
       }
