@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Engine | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LOGIN ---- */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .login-box {
+      background: var(--ink-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 340px;
+    }
+    .login-box h1 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .login-box p { color: var(--grey-400); font-size: 0.82rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--teal-bright); }
+    .login-box input::placeholder { color: var(--grey-400); }
+    .login-box button {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.2s;
+      margin-top: 0.25rem;
+    }
+    .login-box button:hover { background: var(--teal-hover); }
+    .login-error { color: var(--red); font-size: 0.78rem; margin-bottom: 0.5rem; display: none; }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 4rem;
+      scroll-behavior: smooth;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SESSION SELECTOR ---- */
+    .session-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .session-select {
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: var(--grey-600);
+      outline: none;
+      cursor: pointer;
+      max-width: 200px;
+    }
+    .session-select:focus { border-color: var(--teal); }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { background: var(--grey-100); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--grey-400); }
+    .btn-ghost:hover { color: var(--grey-600); background: var(--grey-100); }
+    .btn-success { background: var(--green); color: var(--white); border-color: var(--green); }
+    .btn-success:hover { background: #15803d; }
+    .btn.spinning svg { animation: spin 0.8s linear infinite; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- COST BADGE ---- */
+    .cost-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--blue);
+      background: rgba(37, 99, 235, 0.06);
+      padding: 0.15rem 0.45rem;
+      border-radius: 100px;
+      margin-left: 0.35rem;
+    }
+
+    /* ---- STAGE CARD ---- */
+    .stage {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      transition: all 0.3s;
+      overflow: hidden;
+    }
+    .stage.active {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 1px var(--teal), var(--shadow-md);
+    }
+    .stage.completed {
+      border-color: rgba(22, 163, 74, 0.2);
+    }
+    .stage.locked {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .stage-header:hover { background: var(--grey-100); }
+    .stage.active .stage-header:hover { background: var(--teal-glow); }
+    .stage-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--grey-100);
+      color: var(--grey-400);
+      border: 1.5px solid var(--grey-200);
+      transition: all 0.3s;
+    }
+    .stage.active .stage-number {
+      background: var(--teal);
+      color: var(--white);
+      border-color: var(--teal);
+    }
+    .stage.completed .stage-number {
+      background: var(--green);
+      color: var(--white);
+      border-color: var(--green);
+    }
+    .stage-title {
+      font-family: var(--font-heading);
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+      flex: 1;
+    }
+    .stage-summary {
+      font-size: 0.7rem;
+      color: var(--grey-400);
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .stage.completed .stage-summary { color: var(--green); }
+    .stage-chevron {
+      width: 16px;
+      height: 16px;
+      color: var(--grey-300);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .stage.expanded .stage-chevron { transform: rotate(180deg); }
+    .stage-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+    .stage.expanded .stage-body {
+      max-height: 3000px;
+    }
+    .stage-inner {
+      padding: 0 1.25rem 1.25rem;
+    }
+    .stage-divider {
+      height: 1px;
+      background: var(--grey-200);
+      margin-bottom: 1rem;
+    }
+
+    /* ---- FORM ELEMENTS ---- */
+    .field-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.3rem;
+    }
+    .field-input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--white);
+    }
+    .field-input:focus { border-color: var(--teal); }
+    .field-input::placeholder { color: var(--grey-300); }
+    textarea.field-input {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    /* ---- BRIEFING OUTPUT ---- */
+    .briefing-section {
+      margin-bottom: 1rem;
+    }
+    .briefing-section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .briefing-item {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.4rem;
+    }
+    .briefing-item-headline {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+    .briefing-item-detail {
+      font-size: 0.78rem;
+      color: var(--grey-500);
+      line-height: 1.5;
+    }
+
+    /* ---- TRANSCRIPT INPUT TABS ---- */
+    .input-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .input-tab {
+      flex: 1;
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--grey-400);
+      background: var(--grey-100);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-right: 1px solid var(--grey-200);
+    }
+    .input-tab:last-child { border-right: none; }
+    .input-tab:hover { color: var(--grey-600); }
+    .input-tab.active {
+      background: var(--white);
+      color: var(--teal);
+    }
+    .input-panel { display: none; }
+    .input-panel.active { display: block; }
+
+    /* ---- DROP ZONE ---- */
+    .drop-zone {
+      border: 2px dashed var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--teal-bright);
+      background: var(--teal-glow);
+    }
+    .drop-zone-icon {
+      width: 32px;
+      height: 32px;
+      color: var(--grey-300);
+      margin: 0 auto 0.5rem;
+    }
+    .drop-zone-text {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+    }
+    .drop-zone-hint {
+      font-size: 0.7rem;
+      color: var(--grey-300);
+      margin-top: 0.25rem;
+    }
+
+    /* ---- WORD COUNT ---- */
+    .word-count {
+      font-size: 0.68rem;
+      color: var(--grey-300);
+      text-align: right;
+      margin-top: 0.25rem;
+    }
+
+    /* ---- NEWSLETTER OUTPUT ---- */
+    .newsletter-preview {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+    .newsletter-subject {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+    .newsletter-preview-text {
+      font-size: 0.75rem;
+      color: var(--grey-400);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .newsletter-body {
+      font-size: 0.85rem;
+      color: var(--grey-600);
+      line-height: 1.7;
+    }
+    .newsletter-body h1, .newsletter-body h2, .newsletter-body h3 {
+      font-family: var(--font-heading);
+      color: var(--ink);
+      margin: 1rem 0 0.4rem;
+    }
+    .newsletter-body h2 { font-size: 1rem; }
+    .newsletter-body h3 { font-size: 0.9rem; }
+    .newsletter-body p { margin-bottom: 0.6rem; }
+    .newsletter-body ul, .newsletter-body ol { padding-left: 1.25rem; margin-bottom: 0.6rem; }
+    .newsletter-body strong { color: var(--ink); }
+
+    /* ---- SCRIPT CARDS ---- */
+    .script-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .script-card {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .script-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .script-card-header:hover { background: var(--grey-200); }
+    .script-card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .script-card-duration {
+      font-size: 0.65rem;
+      color: var(--grey-400);
+      font-weight: 500;
+    }
+    .script-card-body {
+      display: none;
+      padding: 0 0.85rem 0.85rem;
+    }
+    .script-card.expanded .script-card-body { display: block; }
+    .script-section-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+      margin: 0.65rem 0 0.25rem;
+    }
+    .script-section-label:first-child { margin-top: 0; }
+    .script-text {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      line-height: 1.6;
+    }
+    .on-screen-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.5rem;
+    }
+    .on-screen-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: rgba(37, 99, 235, 0.06);
+      color: var(--blue);
+      padding: 0.2rem 0.5rem;
+      border-radius: 100px;
+    }
+
+    /* ---- BLOG PREVIEW ---- */
+    .blog-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+    .blog-meta-grid .full { grid-column: 1 / -1; }
+    .blog-preview {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--grey-600);
+      line-height: 1.7;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .blog-preview::-webkit-scrollbar { width: 4px; }
+    .blog-preview::-webkit-scrollbar-track { background: transparent; }
+    .blog-preview::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .blog-preview h1, .blog-preview h2, .blog-preview h3 {
+      font-family: var(--font-heading);
+      color: var(--ink);
+      margin: 1rem 0 0.4rem;
+    }
+    .blog-preview h1 { font-size: 1.2rem; }
+    .blog-preview h2 { font-size: 1rem; }
+    .blog-preview h3 { font-size: 0.9rem; }
+    .blog-preview p { margin-bottom: 0.6rem; }
+    .blog-preview ul, .blog-preview ol { padding-left: 1.25rem; margin-bottom: 0.6rem; }
+    .blog-preview strong { color: var(--ink); }
+
+    /* ---- DISTRIBUTION ---- */
+    .dist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+    .dist-card {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+    }
+    .dist-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .dist-card-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .dist-card-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--grey-400);
+    }
+    .dist-card-content {
+      font-size: 0.78rem;
+      color: var(--grey-500);
+      line-height: 1.5;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .dist-card-content::-webkit-scrollbar { width: 3px; }
+    .dist-card-content::-webkit-scrollbar-track { background: transparent; }
+    .dist-card-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+
+    /* ---- CHECKLIST ---- */
+    .checklist { list-style: none; }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--grey-100);
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checklist-item label {
+      font-size: 0.82rem;
+      color: var(--ink);
+      cursor: pointer;
+      flex: 1;
+    }
+    .checklist-item.checked label {
+      text-decoration: line-through;
+      color: var(--grey-300);
+    }
+    .checklist-progress {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--grey-400);
+      margin-top: 0.75rem;
+    }
+    .checklist-progress-bar {
+      height: 4px;
+      background: var(--grey-100);
+      border-radius: 2px;
+      margin-top: 0.35rem;
+      overflow: hidden;
+    }
+    .checklist-progress-fill {
+      height: 100%;
+      background: var(--teal);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ---- ACTIONS ROW ---- */
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .actions-row-right {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ---- LOADING SPINNER ---- */
+    .generating-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 0;
+      color: var(--grey-400);
+      font-size: 0.82rem;
+    }
+    .spinner-dots {
+      display: flex;
+      gap: 3px;
+    }
+    .spinner-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: dot-pulse 1.2s ease-in-out infinite;
+    }
+    .spinner-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dot-pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 500;
+      pointer-events: none;
+      max-width: 500px;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h1>Content Engine</h1>
+      <p>Sign in to start producing</p>
+      <div class="login-error" id="loginError"></div>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+      <button onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link" href="control.html" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link" href="research.html" title="Research">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="nav-tooltip">Research</span>
+      </a>
+      <a class="nav-link" href="pipeline.html" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-tooltip">Pipeline</span>
+      </a>
+      <a class="nav-link active" title="Content Engine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span class="nav-tooltip">Content Engine</span>
+      </a>
+      <a class="nav-link" href="thumbnails.html" title="Thumbnails">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span class="nav-tooltip">Thumbnails</span>
+      </a>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" onclick="doLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-tooltip">Sign Out</span>
+      </a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title">Content Engine</div>
+          <div class="page-subtitle">One recording. Twenty pieces of content.</div>
+        </div>
+        <div class="session-controls">
+          <select class="session-select" id="sessionSelect" onchange="loadSession(this.value)">
+            <option value="">New Session</option>
+          </select>
+          <button class="btn btn-sm" onclick="newSession()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 1: RESEARCH BRIEFING -->
+      <div class="stage active expanded animate-in delay-1" id="stage1" data-stage="1">
+        <div class="stage-header" onclick="toggleStage(1)">
+          <div class="stage-number">1</div>
+          <div class="stage-title">Research Briefing</div>
+          <div class="stage-summary" id="stage1Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <label class="field-label">Topic</label>
+            <input type="text" class="field-input" id="researchTopic" placeholder="e.g. delegation, AI for small business owners, sales systems">
+            <div class="actions-row">
+              <button class="btn btn-primary" id="btnResearch" onclick="generateResearch()">
+                Generate Briefing
+                <span class="cost-badge">~$0.08, ~20s</span>
+              </button>
+            </div>
+            <div id="researchLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Generating morning briefing...
+              </div>
+            </div>
+            <div id="researchOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2: RECORD & TRANSCRIBE -->
+      <div class="stage locked animate-in delay-2" id="stage2" data-stage="2">
+        <div class="stage-header" onclick="toggleStage(2)">
+          <div class="stage-number">2</div>
+          <div class="stage-title">Record & Transcribe</div>
+          <div class="stage-summary" id="stage2Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Record 15-60 minutes reacting to the briefing above. Use Voice Memos, Plaud, or any recorder. Then bring the transcript here.</p>
+            <div class="input-tabs">
+              <button class="input-tab active" onclick="switchInputTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchInputTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchInputTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="panelPaste">
+              <textarea class="field-input" id="transcriptPaste" placeholder="Paste your transcript here..." style="min-height:180px;" oninput="updateWordCount()"></textarea>
+              <div class="word-count" id="wordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="panelFile">
+              <div class="drop-zone" id="fileDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFileDrop(event)">
+                <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div class="drop-zone-text">Drop a .txt file here or click to browse</div>
+                <div class="drop-zone-hint">Plain text transcript files only</div>
+                <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
+              </div>
+            </div>
+            <div class="input-panel" id="panelAudio">
+              <div class="drop-zone" id="audioDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleAudioDrop(event)">
+                <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <div class="drop-zone-text">Drop an audio file here or click to browse</div>
+                <div class="drop-zone-hint">.mp3, .m4a, .wav, .webm</div>
+                <input type="file" id="audioInput" accept=".mp3,.m4a,.wav,.webm,audio/*" style="display:none" onchange="handleAudioSelect(event)">
+              </div>
+              <div id="transcribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  Transcribing audio... this may take 30-60 seconds.
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" id="btnTranscript" onclick="confirmTranscript()">
+                Use This Transcript
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 3: NEWSLETTER -->
+      <div class="stage locked animate-in delay-3" id="stage3" data-stage="3">
+        <div class="stage-header" onclick="toggleStage(3)">
+          <div class="stage-number">3</div>
+          <div class="stage-title">Newsletter</div>
+          <div class="stage-summary" id="stage3Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnNewsletter" onclick="generateNewsletter()">
+                Generate Newsletter
+                <span class="cost-badge">~$0.004, ~5s</span>
+              </button>
+            </div>
+            <div id="newsletterLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Writing newsletter...
+              </div>
+            </div>
+            <div id="newsletterOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 4: SHORT-FORM SCRIPTS -->
+      <div class="stage locked animate-in delay-4" id="stage4" data-stage="4">
+        <div class="stage-header" onclick="toggleStage(4)">
+          <div class="stage-number">4</div>
+          <div class="stage-title">Short-Form Scripts</div>
+          <div class="stage-summary" id="stage4Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <label class="field-label" style="margin:0;">Scripts</label>
+                <select class="session-select" id="scriptCount" style="max-width:60px;">
+                  <option value="9" selected>9</option>
+                  <option value="10">10</option>
+                  <option value="12">12</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="btnScripts" onclick="generateScripts()">
+                Generate Scripts
+                <span class="cost-badge">~$0.02, ~15s</span>
+              </button>
+            </div>
+            <div id="scriptsLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Writing short-form scripts...
+              </div>
+            </div>
+            <div id="scriptsOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 5: BLOG -->
+      <div class="stage locked" id="stage5" data-stage="5">
+        <div class="stage-header" onclick="toggleStage(5)">
+          <div class="stage-number">5</div>
+          <div class="stage-title">Blog Article + SEO</div>
+          <div class="stage-summary" id="stage5Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnBlog" onclick="generateBlog()">
+                Generate Blog Article
+                <span class="cost-badge">~$0.07, ~20s</span>
+              </button>
+            </div>
+            <div id="blogLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Writing blog article with SEO...
+              </div>
+            </div>
+            <div id="blogOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 6: DISTRIBUTION SNIPPETS -->
+      <div class="stage locked" id="stage6" data-stage="6">
+        <div class="stage-header" onclick="toggleStage(6)">
+          <div class="stage-number">6</div>
+          <div class="stage-title">Distribution Snippets</div>
+          <div class="stage-summary" id="stage6Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnDist" onclick="generateDistribution()">
+                Generate Snippets
+                <span class="cost-badge">~$0.004, ~5s</span>
+              </button>
+            </div>
+            <div id="distLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                Adapting content for each platform...
+              </div>
+            </div>
+            <div id="distOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 7: DISTRIBUTION CHECKLIST -->
+      <div class="stage locked" id="stage7" data-stage="7">
+        <div class="stage-header" onclick="toggleStage(7)">
+          <div class="stage-number">7</div>
+          <div class="stage-title">Distribution Checklist</div>
+          <div class="stage-summary" id="stage7Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <ul class="checklist" id="checklist">
+              <li class="checklist-item" data-channel="newsletter">
+                <input type="checkbox" id="chkNewsletter" onchange="updateChecklist()">
+                <label for="chkNewsletter">Email newsletter sent</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('newsletter')">Copy</button>
+              </li>
+              <li class="checklist-item" data-channel="blog">
+                <input type="checkbox" id="chkBlog" onchange="updateChecklist()">
+                <label for="chkBlog">Blog article published</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('blog')">Copy</button>
+              </li>
+              <li class="checklist-item" data-channel="linkedin">
+                <input type="checkbox" id="chkLinkedin" onchange="updateChecklist()">
+                <label for="chkLinkedin">LinkedIn post published</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('linkedin')">Copy</button>
+              </li>
+              <li class="checklist-item" data-channel="twitter">
+                <input type="checkbox" id="chkTwitter" onchange="updateChecklist()">
+                <label for="chkTwitter">Twitter/X thread posted</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('twitter')">Copy</button>
+              </li>
+              <li class="checklist-item" data-channel="youtube">
+                <input type="checkbox" id="chkYoutube" onchange="updateChecklist()">
+                <label for="chkYoutube">YouTube description added</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('youtube')">Copy</button>
+              </li>
+              <li class="checklist-item" data-channel="instagram">
+                <input type="checkbox" id="chkInstagram" onchange="updateChecklist()">
+                <label for="chkInstagram">Instagram caption posted</label>
+                <button class="btn btn-sm btn-ghost" onclick="copyContent('instagram')">Copy</button>
+              </li>
+            </ul>
+            <div class="checklist-progress" id="checklistProgress">0 / 6 distributed</div>
+            <div class="checklist-progress-bar">
+              <div class="checklist-progress-fill" id="checklistBar" style="width:0%"></div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-success" onclick="completeSession()">Mark Session Complete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+    let authToken = null;
+
+    // ---- SESSION STATE ----
+    let session = {
+      id: null,
+      stage: 1,
+      research: { topic: '', output: null },
+      transcript: { text: '', source: null },
+      newsletter: null,
+      shortScripts: null,
+      blog: null,
+      distribution: { snippets: null, checklist: {} }
+    };
+
+    // ---- AUTH ----
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password: pass })
+        });
+        if (!res.ok) { errEl.textContent = 'Invalid credentials'; errEl.style.display = 'block'; return; }
+        const data = await res.json();
+        authToken = data.access_token;
+        localStorage.setItem('control_token', authToken);
+        showApp();
+      } catch (e) { errEl.textContent = 'Connection error'; errEl.style.display = 'block'; }
+    }
+
+    function doLogout() {
+      authToken = null;
+      localStorage.removeItem('control_token');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      document.getElementById('app').classList.remove('visible');
+    }
+
+    function showApp() {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      loadSessions();
+    }
+
+    // ---- SUPABASE ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${authToken || SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        showToast('Session expired. Please log in again.');
+        doLogout();
+        throw new Error('Session expired');
+      }
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPost(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase POST ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPatch(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'PATCH',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase PATCH ${res.status}`);
+      return res.json();
+    }
+
+    // ---- TOAST ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ---- SESSIONS ----
+    async function loadSessions() {
+      try {
+        const sessions = await sbGet('content_sessions?order=updated_at.desc&limit=20');
+        const sel = document.getElementById('sessionSelect');
+        sel.innerHTML = '<option value="">New Session</option>';
+        sessions.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.title} (${new Date(s.updated_at).toLocaleDateString()})`;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Failed to load sessions:', e);
+      }
+    }
+
+    async function loadSession(id) {
+      if (!id) { newSession(); return; }
+      try {
+        const rows = await sbGet(`content_sessions?id=eq.${id}`);
+        if (!rows.length) return;
+        const s = rows[0];
+        session.id = s.id;
+        session.stage = s.stage || 1;
+        session.research = { topic: s.research_topic || '', output: s.research_output };
+        session.transcript = { text: s.transcript || '', source: s.transcript_source };
+        session.newsletter = s.newsletter_output;
+        session.shortScripts = s.short_scripts;
+        session.blog = s.blog_output;
+        session.distribution = {
+          snippets: s.distribution_snippets,
+          checklist: s.distribution_checklist || {}
+        };
+        restoreUI();
+        showToast('Session loaded');
+      } catch (e) {
+        console.error('Failed to load session:', e);
+        showToast('Failed to load session');
+      }
+    }
+
+    function newSession() {
+      session = {
+        id: null, stage: 1,
+        research: { topic: '', output: null },
+        transcript: { text: '', source: null },
+        newsletter: null,
+        shortScripts: null,
+        blog: null,
+        distribution: { snippets: null, checklist: {} }
+      };
+      document.getElementById('sessionSelect').value = '';
+      document.getElementById('researchTopic').value = '';
+      document.getElementById('transcriptPaste').value = '';
+      document.getElementById('researchOutput').style.display = 'none';
+      document.getElementById('newsletterOutput').style.display = 'none';
+      document.getElementById('scriptsOutput').style.display = 'none';
+      document.getElementById('blogOutput').style.display = 'none';
+      document.getElementById('distOutput').style.display = 'none';
+      document.getElementById('wordCount').textContent = '0 words';
+      updateWordCount();
+      // Reset stage summaries
+      for (let i = 1; i <= 7; i++) {
+        document.getElementById(`stage${i}Summary`).textContent = '';
+      }
+      updateStageStates();
+    }
+
+    async function saveSession() {
+      const data = {
+        title: session.research.topic || 'Untitled Session',
+        stage: session.stage,
+        research_topic: session.research.topic,
+        research_output: session.research.output,
+        transcript: session.transcript.text,
+        transcript_source: session.transcript.source,
+        newsletter_output: session.newsletter,
+        short_scripts: session.shortScripts,
+        blog_output: session.blog,
+        blog_post_id: session.blog?.blog_post_id || null,
+        distribution_snippets: session.distribution.snippets,
+        distribution_checklist: session.distribution.checklist,
+        updated_at: new Date().toISOString(),
+        status: 'in_progress'
+      };
+
+      try {
+        if (session.id) {
+          await sbPatch(`content_sessions?id=eq.${session.id}`, data);
+        } else {
+          const rows = await sbPost('content_sessions', data);
+          if (rows && rows[0]) {
+            session.id = rows[0].id;
+            await loadSessions();
+            document.getElementById('sessionSelect').value = session.id;
+          }
+        }
+      } catch (e) {
+        console.error('Auto-save failed:', e);
+      }
+    }
+
+    // ---- STAGE MANAGEMENT ----
+    function toggleStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      if (el.classList.contains('locked')) return;
+      el.classList.toggle('expanded');
+    }
+
+    function activateStage(n) {
+      // Collapse previous active
+      document.querySelectorAll('.stage.expanded').forEach(s => s.classList.remove('expanded'));
+      const el = document.getElementById(`stage${n}`);
+      el.classList.remove('locked');
+      el.classList.add('expanded', 'active');
+      updateStageStates();
+      // Scroll to stage
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    function completeStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      el.classList.add('completed');
+      el.classList.remove('active');
+      session.stage = Math.max(session.stage, n + 1);
+      updateStageStates();
+    }
+
+    function updateStageStates() {
+      for (let i = 1; i <= 7; i++) {
+        const el = document.getElementById(`stage${i}`);
+        if (i < session.stage) {
+          el.classList.remove('locked');
+          el.classList.add('completed');
+        } else if (i === session.stage) {
+          el.classList.remove('locked');
+          el.classList.add('active');
+        } else {
+          // Unlock stages 3-6 once transcript exists (stage >= 3)
+          if (i >= 3 && i <= 6 && session.stage >= 3) {
+            el.classList.remove('locked');
+          } else if (i === 7 && session.stage >= 3) {
+            el.classList.remove('locked');
+          } else {
+            el.classList.add('locked');
+          }
+          el.classList.remove('active');
+        }
+      }
+    }
+
+    function restoreUI() {
+      // Research
+      if (session.research.topic) {
+        document.getElementById('researchTopic').value = session.research.topic;
+      }
+      if (session.research.output) {
+        renderBriefing(session.research.output);
+        document.getElementById('stage1Summary').textContent = session.research.topic;
+      }
+      // Transcript
+      if (session.transcript.text) {
+        document.getElementById('transcriptPaste').value = session.transcript.text;
+        updateWordCount();
+        document.getElementById('stage2Summary').textContent = `${wordCountOf(session.transcript.text)} words`;
+      }
+      // Newsletter
+      if (session.newsletter) {
+        renderNewsletter(session.newsletter);
+        document.getElementById('stage3Summary').textContent = session.newsletter.subject || 'Generated';
+      }
+      // Scripts
+      if (session.shortScripts) {
+        renderScripts(session.shortScripts);
+        document.getElementById('stage4Summary').textContent = `${session.shortScripts.length} scripts`;
+      }
+      // Blog
+      if (session.blog) {
+        renderBlog(session.blog);
+        document.getElementById('stage5Summary').textContent = session.blog.title || 'Generated';
+      }
+      // Distribution
+      if (session.distribution.snippets) {
+        renderDistribution(session.distribution.snippets);
+        document.getElementById('stage6Summary').textContent = 'Generated';
+      }
+      // Checklist
+      if (session.distribution.checklist) {
+        Object.entries(session.distribution.checklist).forEach(([ch, done]) => {
+          const chk = document.getElementById(`chk${ch.charAt(0).toUpperCase() + ch.slice(1)}`);
+          if (chk) {
+            chk.checked = done;
+            chk.closest('.checklist-item').classList.toggle('checked', done);
+          }
+        });
+        updateChecklist();
+      }
+      updateStageStates();
+      // Expand current stage
+      const currentStage = document.getElementById(`stage${Math.min(session.stage, 7)}`);
+      if (currentStage) currentStage.classList.add('expanded');
+    }
+
+    // ---- STAGE 1: RESEARCH ----
+    async function generateResearch() {
+      const topic = document.getElementById('researchTopic').value.trim();
+      if (!topic) { showToast('Enter a topic first'); return; }
+
+      session.research.topic = topic;
+      document.getElementById('btnResearch').disabled = true;
+      document.getElementById('researchLoading').style.display = 'block';
+      document.getElementById('researchOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.research.output = data.briefing;
+        renderBriefing(data.briefing);
+        document.getElementById('stage1Summary').textContent = topic;
+        completeStage(1);
+        activateStage(2);
+        saveSession();
+        showToast('Briefing generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnResearch').disabled = false;
+        document.getElementById('researchLoading').style.display = 'none';
+      }
+    }
+
+    function renderBriefing(briefing) {
+      let html = '';
+
+      // Date header
+      if (briefing.date) {
+        html += `<div style="font-size:0.75rem;color:var(--grey-400);margin-bottom:1rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${esc(briefing.date)}</div>`;
+      }
+
+      // News stories
+      if (briefing.stories && briefing.stories.length) {
+        briefing.stories.forEach(story => {
+          html += `<div class="briefing-item" style="margin-bottom:0.75rem;">
+            <div class="briefing-item-headline">
+              <span style="color:var(--teal);font-weight:700;">${story.number}.</span>
+              ${esc(story.headline)}
+              ${story.lead_tag ? `<span style="display:inline-block;font-size:0.6rem;font-weight:700;background:rgba(234,88,12,0.08);color:var(--orange);padding:0.1rem 0.4rem;border-radius:3px;margin-left:0.4rem;text-transform:uppercase;">${esc(story.lead_tag)}</span>` : ''}
+            </div>
+            <div class="briefing-item-detail" style="margin-bottom:0.5rem;">${esc(story.detail)}</div>
+            <div style="font-size:0.75rem;font-weight:600;color:var(--teal);margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.06em;">Your angle</div>
+            <div class="briefing-item-detail">${esc(story.your_angle)}</div>
+          </div>`;
+        });
+      }
+
+      // Closing thought
+      if (briefing.closing) {
+        html += `<div class="briefing-item" style="background:var(--teal-muted);border-left:3px solid var(--teal);">
+          <div class="briefing-item-headline">${esc(briefing.closing.title || "Today's Takeaway")}</div>
+          <div class="briefing-item-detail">${esc(briefing.closing.text)}</div>
+        </div>`;
+      }
+
+      const el = document.getElementById('researchOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 2: TRANSCRIPT ----
+    function switchInputTab(tab) {
+      document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.input-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`panel${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('transcriptPaste').value.trim();
+      const count = text ? text.split(/\s+/).length : 0;
+      document.getElementById('wordCount').textContent = `${count} words`;
+    }
+
+    function wordCountOf(text) {
+      return text.trim() ? text.trim().split(/\s+/).length : 0;
+    }
+
+    // Drop zone click handlers
+    document.getElementById('fileDropZone').addEventListener('click', () => {
+      document.getElementById('fileInput').click();
+    });
+    document.getElementById('audioDropZone').addEventListener('click', () => {
+      document.getElementById('audioInput').click();
+    });
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) readTextFile(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files?.[0];
+      if (file) readTextFile(file);
+    }
+
+    function readTextFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('transcriptPaste').value = e.target.result;
+        updateWordCount();
+        // Switch to paste tab to show the text
+        switchInputTabTo('paste');
+        showToast(`Loaded ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
+
+    function switchInputTabTo(tab) {
+      document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.input-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`.input-tab:nth-child(${tab === 'paste' ? 1 : tab === 'file' ? 2 : 3})`).classList.add('active');
+      document.getElementById(`panel${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    }
+
+    function handleAudioDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) uploadAndTranscribe(file);
+    }
+
+    function handleAudioSelect(e) {
+      const file = e.target.files?.[0];
+      if (file) uploadAndTranscribe(file);
+    }
+
+    async function uploadAndTranscribe(file) {
+      document.getElementById('transcribeLoading').style.display = 'block';
+      try {
+        // Step 1: Get FAL key
+        const keyRes = await fetch('/api/thumbnails/get-upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        const keyData = await keyRes.json();
+        if (!keyData.fal_key) throw new Error('Could not get upload key');
+
+        // Step 2: Upload to fal.ai storage
+        const initRes = await fetch('https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Key ${keyData.fal_key}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            file_name: file.name,
+            content_type: file.type || 'audio/mpeg'
+          })
+        });
+        const initData = await initRes.json();
+        if (!initData.upload_url) throw new Error('No upload URL returned');
+
+        await fetch(initData.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type || 'audio/mpeg' },
+          body: file
+        });
+
+        const audioUrl = initData.file_url;
+
+        // Step 3: Transcribe
+        const transRes = await fetch('/api/content-engine/transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio_url: audioUrl })
+        });
+        const transData = await transRes.json();
+        if (!transRes.ok || !transData.success) throw new Error(transData.error || 'Transcription failed');
+
+        document.getElementById('transcriptPaste').value = transData.text;
+        updateWordCount();
+        switchInputTabTo('paste');
+        showToast(`Transcribed ${Math.round(transData.duration_seconds / 60)} minutes of audio`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('transcribeLoading').style.display = 'none';
+      }
+    }
+
+    function confirmTranscript() {
+      const text = document.getElementById('transcriptPaste').value.trim();
+      if (!text) { showToast('Enter or upload a transcript first'); return; }
+      if (wordCountOf(text) < 50) { showToast('Transcript seems too short (under 50 words)'); return; }
+
+      session.transcript.text = text;
+      session.transcript.source = 'paste';
+      session.stage = Math.max(session.stage, 3);
+      document.getElementById('stage2Summary').textContent = `${wordCountOf(text)} words`;
+      completeStage(2);
+      activateStage(3);
+      saveSession();
+      showToast('Transcript confirmed');
+    }
+
+    // ---- STAGE 3: NEWSLETTER ----
+    async function generateNewsletter() {
+      if (!session.transcript.text) { showToast('No transcript available'); return; }
+
+      document.getElementById('btnNewsletter').disabled = true;
+      document.getElementById('newsletterLoading').style.display = 'block';
+      document.getElementById('newsletterOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.transcript.text,
+            topic: session.research.topic
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.newsletter = data.newsletter;
+        renderNewsletter(data.newsletter);
+        document.getElementById('stage3Summary').textContent = data.newsletter.subject || 'Generated';
+        completeStage(3);
+        saveSession();
+        showToast('Newsletter generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnNewsletter').disabled = false;
+        document.getElementById('newsletterLoading').style.display = 'none';
+      }
+    }
+
+    function renderNewsletter(nl) {
+      const el = document.getElementById('newsletterOutput');
+      el.innerHTML = `
+        <div class="newsletter-preview">
+          <div class="newsletter-subject">${esc(nl.subject)}</div>
+          <div class="newsletter-preview-text">${esc(nl.preview_text)}</div>
+          <div class="newsletter-body">${markdownToHtml(nl.body_markdown)}</div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-sm" onclick="copyText(getNewsletterPlain())">Copy Plain Text</button>
+          <button class="btn btn-sm" onclick="copyText(getNewsletterHtml())">Copy HTML</button>
+        </div>`;
+      el.style.display = 'block';
+    }
+
+    function getNewsletterPlain() {
+      if (!session.newsletter) return '';
+      return `Subject: ${session.newsletter.subject}\n\n${session.newsletter.body_markdown}`;
+    }
+
+    function getNewsletterHtml() {
+      if (!session.newsletter) return '';
+      return `<h1>${session.newsletter.subject}</h1>\n${markdownToHtml(session.newsletter.body_markdown)}`;
+    }
+
+    // ---- STAGE 4: SHORT-FORM SCRIPTS ----
+    async function generateScripts() {
+      if (!session.transcript.text) { showToast('No transcript available'); return; }
+
+      const count = parseInt(document.getElementById('scriptCount').value);
+      document.getElementById('btnScripts').disabled = true;
+      document.getElementById('scriptsLoading').style.display = 'block';
+      document.getElementById('scriptsOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/short-scripts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.transcript.text,
+            count
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.shortScripts = data.scripts;
+        renderScripts(data.scripts);
+        document.getElementById('stage4Summary').textContent = `${data.scripts.length} scripts`;
+        completeStage(4);
+        saveSession();
+        showToast(`${data.scripts.length} scripts generated`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnScripts').disabled = false;
+        document.getElementById('scriptsLoading').style.display = 'none';
+      }
+    }
+
+    function renderScripts(scripts) {
+      const el = document.getElementById('scriptsOutput');
+      let html = '<div class="script-cards">';
+      scripts.forEach((s, i) => {
+        html += `
+          <div class="script-card${i === 0 ? ' expanded' : ''}" data-idx="${i}">
+            <div class="script-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+              <div class="script-card-title">
+                <span style="color:var(--teal);font-weight:700;">${i + 1}.</span>
+                ${esc(s.title)}
+              </div>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span class="script-card-duration">${esc(s.estimated_duration || '~45s')}</span>
+                <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();copyScript(${i})">Copy</button>
+              </div>
+            </div>
+            <div class="script-card-body">
+              <div class="script-section-label">Hook (first 3 seconds)</div>
+              <div class="script-text">${esc(s.hook)}</div>
+              <div class="script-section-label">Body</div>
+              <div class="script-text">${esc(s.body)}</div>
+              <div class="script-section-label">CTA</div>
+              <div class="script-text">${esc(s.cta)}</div>
+              ${s.on_screen_text?.length ? `
+                <div class="script-section-label">On-Screen Text</div>
+                <div class="on-screen-tags">
+                  ${s.on_screen_text.map(t => `<span class="on-screen-tag">${esc(t)}</span>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    function copyScript(idx) {
+      const s = session.shortScripts[idx];
+      if (!s) return;
+      const text = `${s.title}\n\nHOOK: ${s.hook}\n\nBODY: ${s.body}\n\nCTA: ${s.cta}`;
+      copyText(text);
+    }
+
+    // ---- STAGE 5: BLOG ----
+    async function generateBlog() {
+      if (!session.transcript.text) { showToast('No transcript available'); return; }
+
+      document.getElementById('btnBlog').disabled = true;
+      document.getElementById('blogLoading').style.display = 'block';
+      document.getElementById('blogOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.transcript.text,
+            topic: session.research.topic,
+            publish_draft: true
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.blog = { ...data.blog, blog_post_id: data.blog_post_id };
+        renderBlog(session.blog);
+        document.getElementById('stage5Summary').textContent = data.blog.title || 'Generated';
+        completeStage(5);
+        saveSession();
+        showToast(data.blog_post_id ? 'Blog saved as draft' : 'Blog generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnBlog').disabled = false;
+        document.getElementById('blogLoading').style.display = 'none';
+      }
+    }
+
+    function renderBlog(blog) {
+      const el = document.getElementById('blogOutput');
+      el.innerHTML = `
+        <div class="blog-meta-grid">
+          <div>
+            <label class="field-label">Title</label>
+            <input type="text" class="field-input" value="${esc(blog.title)}" readonly>
+          </div>
+          <div>
+            <label class="field-label">Category</label>
+            <input type="text" class="field-input" value="${esc(blog.category)}" readonly>
+          </div>
+          <div class="full">
+            <label class="field-label">Excerpt</label>
+            <input type="text" class="field-input" value="${esc(blog.excerpt)}" readonly>
+          </div>
+          <div class="full">
+            <label class="field-label">Meta Description</label>
+            <input type="text" class="field-input" value="${esc(blog.meta_description)}" readonly>
+          </div>
+        </div>
+        <label class="field-label">Article Preview</label>
+        <div class="blog-preview">${markdownToHtml(blog.content)}</div>
+        <div class="actions-row">
+          <button class="btn btn-sm" onclick="copyText(session.blog.content)">Copy Markdown</button>
+          ${blog.blog_post_id ? '<span style="font-size:0.72rem;color:var(--green);font-weight:600;">Saved as draft in blog</span>' : ''}
+        </div>`;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 6: DISTRIBUTION ----
+    async function generateDistribution() {
+      if (!session.transcript.text) { showToast('No transcript available'); return; }
+
+      document.getElementById('btnDist').disabled = true;
+      document.getElementById('distLoading').style.display = 'block';
+      document.getElementById('distOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/distribution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.transcript.text,
+            newsletter_subject: session.newsletter?.subject,
+            blog_title: session.blog?.title,
+            blog_excerpt: session.blog?.excerpt
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+
+        session.distribution.snippets = data.snippets;
+        renderDistribution(data.snippets);
+        document.getElementById('stage6Summary').textContent = 'Generated';
+        completeStage(6);
+        activateStage(7);
+        saveSession();
+        showToast('Distribution snippets generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnDist').disabled = false;
+        document.getElementById('distLoading').style.display = 'none';
+      }
+    }
+
+    function renderDistribution(snippets) {
+      const platforms = [
+        { key: 'linkedin_post', name: 'LinkedIn', icon: 'in' },
+        { key: 'twitter_thread', name: 'Twitter/X', icon: 'X' },
+        { key: 'youtube_description', name: 'YouTube', icon: 'YT' },
+        { key: 'instagram_caption', name: 'Instagram', icon: 'IG' }
+      ];
+
+      let html = '<div class="dist-grid">';
+      platforms.forEach(p => {
+        const content = snippets[p.key];
+        const displayText = Array.isArray(content) ? content.join('\n\n') : (content || '');
+        html += `
+          <div class="dist-card">
+            <div class="dist-card-header">
+              <div class="dist-card-name">
+                <span style="font-weight:800;font-size:0.7rem;color:var(--teal);">${p.icon}</span>
+                ${p.name}
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="copyText(\`${displayText.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">Copy</button>
+            </div>
+            <div class="dist-card-content">${esc(displayText)}</div>
+          </div>`;
+      });
+      html += '</div>';
+
+      const el = document.getElementById('distOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 7: CHECKLIST ----
+    function updateChecklist() {
+      const items = document.querySelectorAll('.checklist-item');
+      let done = 0;
+      items.forEach(item => {
+        const chk = item.querySelector('input[type="checkbox"]');
+        const channel = item.dataset.channel;
+        if (chk.checked) {
+          item.classList.add('checked');
+          done++;
+        } else {
+          item.classList.remove('checked');
+        }
+        session.distribution.checklist[channel] = chk.checked;
+      });
+      document.getElementById('checklistProgress').textContent = `${done} / ${items.length} distributed`;
+      document.getElementById('checklistBar').style.width = `${(done / items.length) * 100}%`;
+      saveSession();
+    }
+
+    function copyContent(channel) {
+      let text = '';
+      switch (channel) {
+        case 'newsletter':
+          text = getNewsletterPlain();
+          break;
+        case 'blog':
+          text = session.blog?.content || '';
+          break;
+        case 'linkedin':
+          text = session.distribution.snippets?.linkedin_post || '';
+          break;
+        case 'twitter':
+          text = Array.isArray(session.distribution.snippets?.twitter_thread)
+            ? session.distribution.snippets.twitter_thread.join('\n\n')
+            : (session.distribution.snippets?.twitter_thread || '');
+          break;
+        case 'youtube':
+          text = session.distribution.snippets?.youtube_description || '';
+          break;
+        case 'instagram':
+          text = session.distribution.snippets?.instagram_caption || '';
+          break;
+      }
+      if (text) {
+        copyText(text);
+      } else {
+        showToast(`No ${channel} content generated yet`);
+      }
+    }
+
+    async function completeSession() {
+      session.distribution.checklist.status = 'completed';
+      try {
+        if (session.id) {
+          await sbPatch(`content_sessions?id=eq.${session.id}`, {
+            status: 'completed',
+            distribution_checklist: session.distribution.checklist,
+            updated_at: new Date().toISOString()
+          });
+        }
+        showToast('Session marked complete');
+        document.getElementById('stage7Summary').textContent = 'Complete';
+        document.getElementById(`stage7`).classList.add('completed');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
+    // ---- UTILITIES ----
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard');
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      });
+    }
+
+    function markdownToHtml(md) {
+      if (!md) return '';
+      return md
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(?!<[hulo])(.+)$/gm, '<p>$1</p>')
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p>(<h[123]>)/g, '$1')
+        .replace(/(<\/h[123]>)<\/p>/g, '$1')
+        .replace(/<p>(<ul>)/g, '$1')
+        .replace(/(<\/ul>)<\/p>/g, '$1')
+        .replace(/<p>(<li>)/g, '$1')
+        .replace(/(<\/li>)<\/p>/g, '$1');
+    }
+
+    // ---- INIT ----
+    (function init() {
+      const saved = localStorage.getItem('control_token');
+      if (saved) {
+        authToken = saved;
+        showApp();
+      }
+    })();
+  </script>
+</body>
+</html>
