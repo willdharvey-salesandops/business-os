@@ -54,15 +54,24 @@ export const POST: APIRoute = async ({ request }) => {
       requestId: request_id,
     });
 
+    // Try multiple paths for the weights URL since the structure may vary
     const data = result.data as any;
-    const weightsUrl = data?.diffusers_lora_file?.url || '';
-    const configUrl = data?.config_file?.url || '';
+    const weightsUrl = data?.diffusers_lora_file?.url
+      || data?.diffusers_lora_file
+      || (result as any)?.diffusers_lora_file?.url
+      || (result as any)?.diffusers_lora_file
+      || '';
+    const configUrl = data?.config_file?.url
+      || data?.config_file
+      || (result as any)?.config_file?.url
+      || '';
 
     // Save to Supabase if configured
     const sb = getSupabaseConfig();
+    let dbSaved = false;
     if (sb.url && sb.key && weightsUrl) {
       try {
-        await fetch(`${sb.url}/rest/v1/lora_models`, {
+        const dbRes = await fetch(`${sb.url}/rest/v1/lora_models`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -76,6 +85,10 @@ export const POST: APIRoute = async ({ request }) => {
             training_steps: steps,
           }),
         });
+        dbSaved = dbRes.ok;
+        if (!dbRes.ok) {
+          console.error('Supabase save failed:', dbRes.status, await dbRes.text());
+        }
       } catch (dbErr) {
         console.error('Failed to save LoRA to Supabase:', dbErr);
       }
@@ -88,6 +101,8 @@ export const POST: APIRoute = async ({ request }) => {
       config_url: configUrl,
       trigger_word,
       steps,
+      db_saved: dbSaved,
+      debug_keys: weightsUrl ? undefined : Object.keys(data || {}),
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

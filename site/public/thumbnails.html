@@ -972,13 +972,24 @@
   async function checkLoraStatus() {
     const statusEl = document.getElementById('loraModelStatus');
     const headerStatus = document.getElementById('loraStatus');
+
+    // Check localStorage first (fastest, always available)
+    var localWeights = localStorage.getItem('lora_weights_url');
+    if (localWeights) {
+      statusEl.textContent = 'Active';
+      statusEl.style.color = 'var(--green)';
+      headerStatus.innerHTML = '<span class="status-badge active"><span class="status-dot"></span>LoRA Ready</span>';
+      state.loraModel = true;
+      return;
+    }
+
+    // Fallback: check Supabase via generate-lora endpoint
     try {
       const res = await fetch('/api/thumbnails/generate-lora', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ expressions: ['confident'], num_images: 0 }),
       });
-      // If we get a 400 with "No LoRA model found", it means no model trained
       const data = await res.json();
       if (data.error && data.error.includes('No LoRA')) {
         statusEl.textContent = 'Not trained';
@@ -1139,7 +1150,7 @@
       const res = await fetch('/api/thumbnails/generate-lora', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expressions, num_images: 4 }),
+        body: JSON.stringify({ expressions, num_images: 4, lora_url: localStorage.getItem('lora_weights_url') || undefined }),
       });
       const data = await res.json();
       if (data.images) {
@@ -1296,7 +1307,7 @@
       const res = await fetch('/api/thumbnails/generate-lora', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expressions, num_images: 4 }),
+        body: JSON.stringify({ expressions, num_images: 4, lora_url: localStorage.getItem('lora_weights_url') || undefined }),
       });
       const data = await res.json();
       if (data.images) {
@@ -1732,7 +1743,12 @@
             clearInterval(pollTimer);
             loader.classList.remove('visible');
             btn.disabled = false;
-            result.innerHTML = '<div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--green);"><strong>LoRA trained successfully!</strong><br>Trigger word: ' + (statusData.trigger_word || triggerWord) + '</div>';
+            // Save weights URL to localStorage as fallback
+            if (statusData.weights_url) {
+              localStorage.setItem('lora_weights_url', statusData.weights_url);
+              localStorage.setItem('lora_trigger_word', statusData.trigger_word || triggerWord);
+            }
+            result.innerHTML = '<div style="padding:1rem;background:rgba(22,163,74,0.08);border-radius:var(--radius-md);color:var(--green);"><strong>LoRA trained successfully!</strong><br>Trigger word: ' + (statusData.trigger_word || triggerWord) + (statusData.weights_url ? '' : '<br><span style="color:var(--red);">Warning: no weights URL returned</span>') + '</div>';
             checkLoraStatus();
           } else if (statusData.error) {
             clearInterval(pollTimer);
