@@ -233,9 +233,23 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
           }
         }
 
+        // Find balanced JSON object - handles cases where model outputs text after JSON
         const start = rawText.indexOf('{');
-        const end = rawText.lastIndexOf('}');
-        if (start === -1 || end === -1) throw new Error('No JSON found in response');
+        if (start === -1) throw new Error('No JSON found in response');
+        let depth = 0;
+        let end = -1;
+        let inString = false;
+        let escape = false;
+        for (let i = start; i < rawText.length; i++) {
+          const ch = rawText[i];
+          if (escape) { escape = false; continue; }
+          if (ch === '\\' && inString) { escape = true; continue; }
+          if (ch === '"') { inString = !inString; continue; }
+          if (inString) continue;
+          if (ch === '{') depth++;
+          if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
+        }
+        if (end === -1) throw new Error('Malformed JSON in response');
         const briefing = JSON.parse(rawText.slice(start, end + 1));
 
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'result', success: true, briefing })}\n\n`));
