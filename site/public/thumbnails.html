@@ -819,10 +819,34 @@
     <div class="card">
       <div class="card-title">Train Your LoRA Model</div>
       <div class="card-subtitle">Upload 15-20 clear photos of yourself from different angles. Train once, use forever.</div>
+
+      <!-- Step 1: Upload photos -->
       <div class="form-group">
-        <label class="form-label">Training Photos ZIP URL</label>
+        <label class="form-label">Step 1: Upload Your Photos</label>
+        <div id="dropZone" style="border:2px dashed var(--grey-300);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--grey-100);">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem;">📸</div>
+          <div style="font-weight:600;color:var(--ink);margin-bottom:0.3rem;">Drag photos here or click to select</div>
+          <div class="text-sm text-muted">JPG, PNG, or WEBP. 15-20 photos recommended. Different angles and expressions.</div>
+          <input type="file" id="photoInput" multiple accept="image/*" style="display:none;">
+        </div>
+        <div id="photoPreview" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;"></div>
+        <div id="uploadStatus" class="text-sm mt-1" style="display:none;"></div>
+      </div>
+
+      <div class="flex gap-sm items-center mb-1">
+        <button class="btn btn-primary btn-sm" id="uploadPhotosBtn" onclick="uploadPhotosAsZip()" disabled>Upload & Create ZIP</button>
+        <span class="text-sm text-muted" id="photoCount">0 photos selected</span>
+      </div>
+
+      <div class="loader" id="uploadLoader">
+        <div class="spinner"></div>
+        <span class="loader-text">Zipping and uploading photos to fal.ai...</span>
+      </div>
+
+      <!-- Step 2: Or paste a URL directly -->
+      <div class="form-group" style="border-top:1px solid var(--grey-200);padding-top:1rem;margin-top:1rem;">
+        <label class="form-label">Or paste a ZIP URL directly</label>
         <input type="text" class="form-input" id="loraZipUrl" placeholder="URL to a .zip file containing your photos">
-        <div class="text-sm text-muted mt-1">Upload your ZIP to a file hosting service and paste the URL here. Minimum 4 photos, recommended 15-20.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Trigger Word</label>
@@ -1497,10 +1521,137 @@
     document.body.removeChild(a);
   }
 
+  // ---- PHOTO UPLOAD ----
+  let selectedPhotos = [];
+
+  // Drag and drop setup
+  const dropZone = document.getElementById('dropZone');
+  const photoInput = document.getElementById('photoInput');
+
+  if (dropZone) {
+    dropZone.addEventListener('click', () => photoInput.click());
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--teal)';
+      dropZone.style.background = 'var(--teal-glow)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--grey-300)';
+      dropZone.style.background = 'var(--grey-100)';
+    });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--grey-300)';
+      dropZone.style.background = 'var(--grey-100)';
+      addPhotos(Array.from(e.dataTransfer.files));
+    });
+  }
+
+  if (photoInput) {
+    photoInput.addEventListener('change', () => {
+      addPhotos(Array.from(photoInput.files));
+    });
+  }
+
+  function addPhotos(files) {
+    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    selectedPhotos = selectedPhotos.concat(imageFiles);
+    updatePhotoPreview();
+  }
+
+  function removePhoto(index) {
+    selectedPhotos.splice(index, 1);
+    updatePhotoPreview();
+  }
+
+  function updatePhotoPreview() {
+    const preview = document.getElementById('photoPreview');
+    const countEl = document.getElementById('photoCount');
+    const btn = document.getElementById('uploadPhotosBtn');
+
+    countEl.textContent = selectedPhotos.length + ' photo' + (selectedPhotos.length !== 1 ? 's' : '') + ' selected';
+    btn.disabled = selectedPhotos.length < 4;
+
+    preview.innerHTML = selectedPhotos.map((f, i) => {
+      const url = URL.createObjectURL(f);
+      return `<div style="position:relative;width:60px;height:60px;border-radius:var(--radius-sm);overflow:hidden;">
+        <img src="${url}" style="width:100%;height:100%;object-fit:cover;">
+        <button onclick="removePhoto(${i})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,0.6);color:white;border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;">&times;</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function uploadPhotosAsZip() {
+    if (selectedPhotos.length < 4) return alert('Add at least 4 photos');
+
+    const btn = document.getElementById('uploadPhotosBtn');
+    const loader = document.getElementById('uploadLoader');
+    const statusEl = document.getElementById('uploadStatus');
+    btn.disabled = true;
+    loader.classList.add('visible');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Creating ZIP file...';
+    statusEl.style.color = 'var(--grey-500)';
+
+    try {
+      // Build a ZIP using JSZip (loaded dynamically)
+      if (!window.JSZip) {
+        statusEl.textContent = 'Loading ZIP library...';
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      }
+
+      const zip = new JSZip();
+      for (let i = 0; i < selectedPhotos.length; i++) {
+        const file = selectedPhotos[i];
+        const ext = file.name.split('.').pop() || 'jpg';
+        zip.file(`photo_${String(i + 1).padStart(2, '0')}.${ext}`, file);
+      }
+
+      statusEl.textContent = 'Compressing ' + selectedPhotos.length + ' photos...';
+      const blob = await zip.generateAsync({ type: 'blob' });
+
+      statusEl.textContent = 'Uploading to fal.ai...';
+
+      const formData = new FormData();
+      formData.append('file', new File([blob], 'training_photos.zip', { type: 'application/zip' }));
+
+      const res = await fetch('/api/thumbnails/upload-photos', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        document.getElementById('loraZipUrl').value = data.url;
+        statusEl.textContent = 'Uploaded successfully. ZIP URL set automatically.';
+        statusEl.style.color = 'var(--green)';
+      } else {
+        statusEl.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
+        statusEl.style.color = 'var(--red)';
+      }
+    } catch (err) {
+      statusEl.textContent = 'Upload error: ' + err.message;
+      statusEl.style.color = 'var(--red)';
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('visible');
+    }
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
   // ---- LORA TRAINING ----
   async function trainLora() {
     const zipUrl = document.getElementById('loraZipUrl').value.trim();
-    if (!zipUrl) return alert('Enter a ZIP URL with your training photos');
+    if (!zipUrl) return alert('Upload photos first or enter a ZIP URL');
 
     const triggerWord = document.getElementById('loraTriggerWord').value.trim() || 'WILLH';
     const steps = parseInt(document.getElementById('loraSteps').value) || 1000;
