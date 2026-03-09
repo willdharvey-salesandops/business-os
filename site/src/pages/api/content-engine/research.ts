@@ -54,6 +54,8 @@ DON'T:
 ## CONTENT RULES
 CRITICAL RECENCY RULE: Every single story MUST have a verifiable source URL from an article published TODAY or YESTERDAY. Not 3 days ago. Not last week. Not last month. You MUST check the publication date on every source you find. If an article was published more than 24 hours before today's date, DO NOT include it. It does not matter how relevant the story is. If it is older than 24 hours, it is STALE and must be excluded. Will reads this on camera and says "today" and "this morning." If the story is from last week, he looks like he does not know what he is talking about. This is non-negotiable.
 
+NO EXCEPTIONS. Do NOT include older stories as "context", "background", "essential context", or under any other label. If a story is older than 24 hours, it does not go in the briefing, period. No "NOTE, this falls outside the window but..." disclaimers. If there aren't enough fresh stories, run with fewer stories. 3 fresh stories beats 7 stories with stale filler.
+
 SOURCING RULE: Every story MUST include the source URL and the publication date you found. Do NOT invent sources or make up URLs. Do NOT use vague attributions like "a report circulating this week" or "analysis from March 2026." Name the specific publication, author if available, and provide the actual URL. If you cannot find a specific, dated source for a story, do not include that story. It is better to have 3 well-sourced stories than 7 poorly sourced ones.
 
 RELEVANCE RULE: Every story must connect back to the core message: helping business owners build a business that runs without them. AI is the hook, but the angle must always tie to: building systems, getting the owner out of the day-to-day, making the business more efficient, delegation, hiring right, sales running without the owner, or lifestyle freedom. Big tech announcements and major AI news are welcome, but the "your angle" section must draw a clear line to someone running a team of 3-20 people who is stuck in the middle of everything. If you cannot connect the story to building a better business and a better life, skip it.
@@ -94,11 +96,20 @@ Choose a one-line coaching theme that threads through the briefing. The theme sh
 ## LENGTH
 Total: 2,000-3,000 words. Lead story: 250-400 words. Middle stories: 150-300 words. Closing thought: 100-200 words. 5-7 stories plus closing. Aim for at least 5 stories to give enough material for a 15-20 minute video. If you genuinely cannot find 5 stories from today or yesterday, include what you can find but never pad with stale content.
 
+## HOOK AND CREDIBILITY INTRO
+Before the stories, write two sections:
+
+HOOK (2-3 sentences): Open with the single most striking or consequential thing from today's news. Make it punchy, make the reader feel they would be behind if they skipped this. This is the "why you should keep reading" moment. Do not summarise every story, just pull in the one thing that earns attention.
+
+CREDIBILITY INTRO (2-3 sentences): Position the briefing. Core message: "Every morning I go through the noise so you don't have to. I pull out what actually matters for small business owners, the stuff that helps you save time, run leaner, and build a business that gives you the life you actually want. Here's what you need to know today." Vary this daily but keep the core: I filter AI/business news, translate it for small business owners, connect it to running a leaner operation and living a better life.
+
 ## OUTPUT FORMAT
 Return valid JSON only (no markdown fences):
 {
   "date": "Full day name DD Month YYYY",
   "coaching_theme": "One-line coaching theme for today",
+  "hook": "2-3 punchy sentences opening with the most striking thing from today",
+  "credibility_intro": "2-3 sentences positioning Will as the filter, saving readers time, helping them run leaner and live better",
   "stories": [
     {
       "number": 1,
@@ -216,23 +227,40 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
         // Send initial status
         controller.enqueue(encoder.encode(`data: {"type":"status","message":"Searching for today's news..."}\n\n`));
 
-        const message = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 8000,
-          system: systemPrompt,
-          tools: [{
-            type: 'web_search_20250305' as any,
-            name: 'web_search',
-            max_uses: 7,
-          }],
-          messages: [{ role: 'user', content: userPrompt }],
-        });
+        // Retry with exponential backoff on 429 rate limit errors
+        let message: Anthropic.Message;
+        const maxRetries = 3;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            message = await anthropic.messages.create({
+              model: 'claude-sonnet-4-6',
+              max_tokens: 8000,
+              system: systemPrompt,
+              tools: [{
+                type: 'web_search_20250305' as any,
+                name: 'web_search',
+                max_uses: 7,
+              }],
+              messages: [{ role: 'user', content: userPrompt }],
+            });
+            break;
+          } catch (apiErr: any) {
+            const status = apiErr?.status || apiErr?.error?.status;
+            if (status === 429 && attempt < maxRetries) {
+              const wait = Math.pow(2, attempt + 1) * 5000; // 10s, 20s, 40s
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'status', message: `Rate limited, retrying in ${wait / 1000}s...` })}\n\n`));
+              await new Promise(r => setTimeout(r, wait));
+              continue;
+            }
+            throw apiErr;
+          }
+        }
 
         clearInterval(heartbeat);
 
         // Extract text from multi-block response
         let rawText = '';
-        for (const block of message.content) {
+        for (const block of message!.content) {
           if ((block as any).type === 'text') {
             rawText += (block as any).text;
           }

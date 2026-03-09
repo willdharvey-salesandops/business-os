@@ -1741,6 +1741,18 @@
         html += `</div>`;
       }
 
+      // Hook and credibility intro
+      if (briefing.hook || briefing.credibility_intro) {
+        html += `<div style="margin-bottom:1rem;padding:0.75rem 1rem;background:linear-gradient(135deg, var(--teal-muted), rgba(45,212,191,0.06));border-radius:var(--radius-lg);border-left:3px solid var(--teal-bright);">`;
+        if (briefing.hook) {
+          html += `<div style="font-size:0.82rem;font-weight:600;color:var(--ink);line-height:1.55;margin-bottom:0.5rem;">${esc(briefing.hook)}</div>`;
+        }
+        if (briefing.credibility_intro) {
+          html += `<div style="font-size:0.78rem;color:var(--grey-600);line-height:1.55;">${esc(briefing.credibility_intro)}</div>`;
+        }
+        html += `</div>`;
+      }
+
       // News stories
       if (briefing.stories && briefing.stories.length) {
         briefing.stories.forEach(story => {
