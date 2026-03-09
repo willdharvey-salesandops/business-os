@@ -200,12 +200,29 @@ export const POST: APIRoute = async ({ request }) => {
 
 IMPORTANT: Only include stories published on ${today} or ${yesterday}. Check every source date. If the article is from any other date, do not use it.
 
-Compile today's daily briefing. Search for the latest AI and business news using these queries:
-- "AI news today"
-- "AI small business efficiency automation today"
-- "OpenAI Google AI announcement today"
-- "AI tools saving time business owners"
-- "small business systems delegation growth"
+Compile today's daily briefing. You MUST search broadly and persistently. Do NOT give up after a few searches. Run ALL of these searches:
+
+Round 1 (general AI news):
+- "AI news today ${today}"
+- "artificial intelligence news March 2026"
+- "OpenAI Google Microsoft AI news today"
+
+Round 2 (business and tools):
+- "AI business news today"
+- "AI tools small business 2026"
+- "ChatGPT enterprise business update"
+
+Round 3 (jobs, regulation, adoption):
+- "AI jobs layoffs hiring news today"
+- "AI regulation policy news today"
+- "AI startup funding news today"
+
+Round 4 (broader net if needed):
+- "technology business news today"
+- "AI productivity automation news"
+- "small business technology news today"
+
+If early searches return mostly older articles, keep searching with different queries. The news exists, you just need to find it. Try variations, different publications, different angles. Do not stop at 5 searches and declare there is nothing.
 
 Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. It is better to have 3 excellent stories than 7 with stale ones mixed in. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story. Remember: AI is the hook, but every angle must connect to building a business that runs without the owner in the middle of everything.`;
   }
@@ -234,12 +251,12 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
           try {
             message = await anthropic.messages.create({
               model: 'claude-sonnet-4-6',
-              max_tokens: 8000,
+              max_tokens: 16000,
               system: systemPrompt,
               tools: [{
                 type: 'web_search_20250305' as any,
                 name: 'web_search',
-                max_uses: 7,
+                max_uses: 15,
               }],
               messages: [{ role: 'user', content: userPrompt }],
             });
