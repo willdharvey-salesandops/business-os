@@ -58,17 +58,16 @@ NO EXCEPTIONS. Do NOT include older stories as "context", "background", "essenti
 
 SOURCING RULE: Every story MUST include the source URL and the publication date you found. Do NOT invent sources or make up URLs. Do NOT use vague attributions like "a report circulating this week" or "analysis from March 2026." Name the specific publication, author if available, and provide the actual URL. If you cannot find a specific, dated source for a story, do not include that story. It is better to have 3 well-sourced stories than 7 poorly sourced ones.
 
-RELEVANCE RULE: The bar for inclusion is simple: could a small business owner use this knowledge? If yes, include it. The story does not need to be a massive headline. A small product update, a new AI feature in a tool businesses already use, a study about productivity, a regulatory change, a hiring trend, a case study of someone using AI in their shop, a new integration, a pricing change, a partnership announcement. All of these count. Will's value is taking ANY piece of news and giving his spin on it, connecting it to what matters for someone running a small team. The story provides the jumping-off point. Will provides the insight. Do not be precious about what counts as "big enough" news. If it is fresh and Will can say something useful about it, include it.
+RELEVANCE RULE: AI is the core topic. Every story should connect to AI, automation, or how technology is changing how businesses operate. But the bar for inclusion is lower than you think. It does not need to be a massive headline. A small product update, a new AI feature in a tool businesses already use, a study about AI productivity, a regulatory change affecting AI, a hiring trend driven by AI, a case study of someone using AI in their shop, a new AI integration, a pricing change on an AI tool, a partnership announcement involving AI. All of these count. Will's value is taking any AI-related piece of news, however small, and giving his spin on it. The story provides the jumping-off point. Will provides the insight. Do not be precious about what counts as "big enough" news. If it touches AI and is fresh, include it.
 
-Search for stories across these categories (cast a WIDE net):
-- Big tech / industry moves (OpenAI, Google, Nvidia, Microsoft, Apple, Meta announcements)
-- Small business adoption (Real people/businesses using AI in practice)
-- Practical tools / savings (AI tools, software updates, new features, pricing changes)
-- Jobs / workforce impact (Hiring, layoffs, new roles, skills shifts, studies)
-- Trend / future signal (Agentic AI, new capabilities, regulation, what's coming)
-- World events touching AI (Government policy, geopolitics, regulation)
-- Business operations / productivity (Studies, reports, surveys about how businesses work)
-- Technology more broadly (Cloud, SaaS, automation, digital tools, cybersecurity, anything a business owner should know about)
+Search for stories across these categories (cast a WIDE net within AI):
+- Big tech / industry moves (OpenAI, Google, Nvidia, Microsoft, Apple, Meta, Anthropic announcements)
+- Small business AI adoption (Real people/businesses using AI in practice)
+- AI tools and updates (New features, product launches, pricing changes, integrations)
+- AI and jobs (Hiring, layoffs, new roles, skills shifts, studies on AI and employment)
+- Trend / future signal (Agentic AI, new capabilities, AI regulation, what's coming)
+- AI policy and world events (Government policy, geopolitics, regulation, safety)
+- AI productivity and research (Studies, reports, surveys about AI impact on work)
 
 Aim for a mix. Bias towards UK and US stories. Will's audience is primarily UK-based small business owners, with a secondary US audience. Prioritise stories from UK and US sources, about UK and US companies, and with UK and US relevance. International stories are fine if they are genuinely significant, but default to UK/US.
 
@@ -224,18 +223,20 @@ SEARCH STRATEGY - use as many searches as you need. Start with these, then impro
 - "AI UK business news"
 - "AI enterprise news today"
 
-If those are not enough, go wider. The story does NOT have to be about AI specifically. Any business, technology, productivity, or leadership news that a small business owner would find useful counts. Try:
-- "business news today UK"
-- "small business news today"
-- "SaaS tools news today"
-- "business productivity news"
-- "remote work news today"
-- "cybersecurity small business news"
-- "business automation news"
-- "freelance gig economy news today"
-- "entrepreneurship news today"
-- Search specific sites: "site:techcrunch.com", "site:theverge.com", "site:bbc.co.uk business", "site:reuters.com technology"
-- Search by company: "Nvidia news today", "Meta AI news", "Apple news today", "Shopify news", "Slack news", "Zoom news"
+If those are not enough, go wider but stay AI-focused. Try different angles on AI:
+- "AI tools for small business"
+- "AI customer service chatbot news"
+- "AI marketing tools news"
+- "AI accounting bookkeeping news"
+- "AI voice assistant business"
+- "AI image generation news"
+- "AI coding tools news"
+- "AI agents workflow automation"
+- "Copilot AI news today"
+- "Gemini AI news today"
+- "Claude AI news today"
+- Search specific AI-focused sites: "site:techcrunch.com AI", "site:theverge.com AI", "site:arstechnica.com AI", "site:wired.com AI", "site:bbc.co.uk artificial intelligence"
+- Search by AI company: "Nvidia AI news today", "Meta AI news", "Apple AI news", "Anthropic news", "Mistral AI news", "Perplexity news"
 
 DO NOT STOP SEARCHING until you have found at least 5 stories published on ${today} or ${yesterday}. If after exhausting all the above you genuinely only have 3-4, that is acceptable. But "zero stories found" is never an acceptable outcome. The news exists. Search harder, search wider, search differently.
 
