@@ -200,31 +200,37 @@ export const POST: APIRoute = async ({ request }) => {
 
 IMPORTANT: Only include stories published on ${today} or ${yesterday}. Check every source date. If the article is from any other date, do not use it.
 
-Compile today's daily briefing. You MUST search broadly and persistently. Do NOT give up after a few searches. Run ALL of these searches:
+Compile today's daily briefing. Your job is to KEEP SEARCHING UNTIL YOU HAVE AT LEAST 5 STORIES from today or yesterday. There is always AI and business news being published. If a search does not return fresh results, try a different query. Do not stop and do not declare failure.
 
-Round 1 (general AI news):
-- "AI news today ${today}"
+SEARCH STRATEGY - use as many searches as you need. Start with these, then improvise:
+- "AI news today"
+- "AI news ${today}"
 - "artificial intelligence news March 2026"
-- "OpenAI Google Microsoft AI news today"
-
-Round 2 (business and tools):
+- "OpenAI news today"
+- "Google AI news today"
+- "Microsoft AI news today"
 - "AI business news today"
-- "AI tools small business 2026"
-- "ChatGPT enterprise business update"
-
-Round 3 (jobs, regulation, adoption):
-- "AI jobs layoffs hiring news today"
+- "AI tools business 2026"
+- "ChatGPT news today"
+- "AI jobs hiring layoffs news today"
 - "AI regulation policy news today"
 - "AI startup funding news today"
-
-Round 4 (broader net if needed):
 - "technology business news today"
 - "AI productivity automation news"
-- "small business technology news today"
+- "small business technology news"
+- "Anthropic Claude news today"
+- "AI UK business news"
+- "AI enterprise news today"
 
-If early searches return mostly older articles, keep searching with different queries. The news exists, you just need to find it. Try variations, different publications, different angles. Do not stop at 5 searches and declare there is nothing.
+If those are not enough, try these angles:
+- Search for specific publication sites: "site:techcrunch.com AI", "site:theverge.com AI", "site:reuters.com artificial intelligence", "site:bbc.co.uk AI business"
+- Search by company: "Nvidia news today", "Meta AI news", "Apple AI news"
+- Search broader: "technology news today", "business technology news today", "digital transformation news"
+- Search by topic: "automation news today", "machine learning news", "robotics news today", "AI healthcare news", "AI finance news"
 
-Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. It is better to have 3 excellent stories than 7 with stale ones mixed in. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story. Remember: AI is the hook, but every angle must connect to building a business that runs without the owner in the middle of everything.`;
+DO NOT STOP SEARCHING until you have found at least 5 stories published on ${today} or ${yesterday}. If after exhausting all the above you genuinely only have 3-4, that is acceptable. But "zero stories found" is never an acceptable outcome. The news exists. Search harder, search wider, search differently.
+
+Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story. Remember: AI is the hook, but every angle must connect to building a business that runs without the owner in the middle of everything.`;
   }
 
   const encoder = new TextEncoder();
@@ -256,7 +262,7 @@ Select 5-7 stories. Every story MUST be published on ${today} or ${yesterday}. C
               tools: [{
                 type: 'web_search_20250305' as any,
                 name: 'web_search',
-                max_uses: 15,
+                max_uses: 25,
               }],
               messages: [{ role: 'user', content: userPrompt }],
             });
