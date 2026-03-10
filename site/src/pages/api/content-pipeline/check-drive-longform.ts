@@ -186,9 +186,9 @@ Tags: 10-15 relevant tags for YouTube search discovery.`,
             `DESCRIPTION:\n${seoData.description}\n\n` +
             `TAGS:\n${tagsFormatted}\n\n` +
             `---\n\n` +
+            `Upload here: https://studio.youtube.com/channel/upload\n\n` +
             `Video: https://drive.google.com/file/d/${video.id}/view\n` +
-            `Thumbnail: https://drive.google.com/file/d/${thumbnail.id}/view\n\n` +
-            `Open YouTube Studio, upload the video, paste the title/description/tags above, and set the thumbnail.`,
+            `Thumbnail: https://drive.google.com/file/d/${thumbnail.id}/view`,
         });
       } catch {}
 
