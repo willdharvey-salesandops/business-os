@@ -104,7 +104,7 @@ const handler: APIRoute = async () => {
         .insert({
           drive_file_id: video.id,
           filename: video.name,
-          content_type: 'long-form',
+          content_type: 'longform',
           status: 'detected',
           hook_text: hookText,
         })
