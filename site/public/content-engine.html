@@ -974,7 +974,7 @@
       </div>
 
       <!-- STAGE 2: RECORD & TRANSCRIBE -->
-      <div class="stage locked animate-in delay-2" id="stage2" data-stage="2">
+      <div class="stage animate-in delay-2" id="stage2" data-stage="2">
         <div class="stage-header" onclick="toggleStage(2)">
           <div class="stage-number">2</div>
           <div class="stage-title">Record & Transcribe</div>
@@ -1026,7 +1026,7 @@
       </div>
 
       <!-- STAGE 3: NEWSLETTER -->
-      <div class="stage locked animate-in delay-3" id="stage3" data-stage="3">
+      <div class="stage animate-in delay-3" id="stage3" data-stage="3">
         <div class="stage-header" onclick="toggleStage(3)">
           <div class="stage-number">3</div>
           <div class="stage-title">Newsletter</div>
@@ -1054,7 +1054,7 @@
       </div>
 
       <!-- STAGE 4: SHORT-FORM SCRIPTS -->
-      <div class="stage locked animate-in delay-4" id="stage4" data-stage="4">
+      <div class="stage animate-in delay-4" id="stage4" data-stage="4">
         <div class="stage-header" onclick="toggleStage(4)">
           <div class="stage-number">4</div>
           <div class="stage-title">Short-Form Scripts</div>
@@ -1090,7 +1090,7 @@
       </div>
 
       <!-- STAGE 5: BLOG -->
-      <div class="stage locked" id="stage5" data-stage="5">
+      <div class="stage" id="stage5" data-stage="5">
         <div class="stage-header" onclick="toggleStage(5)">
           <div class="stage-number">5</div>
           <div class="stage-title">Blog Article + SEO</div>
@@ -1118,7 +1118,7 @@
       </div>
 
       <!-- STAGE 6: DISTRIBUTION SNIPPETS -->
-      <div class="stage locked" id="stage6" data-stage="6">
+      <div class="stage" id="stage6" data-stage="6">
         <div class="stage-header" onclick="toggleStage(6)">
           <div class="stage-number">6</div>
           <div class="stage-title">Distribution Snippets</div>
@@ -1146,7 +1146,7 @@
       </div>
 
       <!-- STAGE 7: DISTRIBUTION CHECKLIST -->
-      <div class="stage locked" id="stage7" data-stage="7">
+      <div class="stage" id="stage7" data-stage="7">
         <div class="stage-header" onclick="toggleStage(7)">
           <div class="stage-number">7</div>
           <div class="stage-title">Distribution Checklist</div>
@@ -1200,7 +1200,7 @@
       </div>
 
       <!-- STAGE 8: YOUTUBE THUMBNAIL -->
-      <div class="stage locked" id="stage8" data-stage="8">
+      <div class="stage" id="stage8" data-stage="8">
         <div class="stage-header" onclick="toggleStage(8)">
           <div class="stage-number">8</div>
           <div class="stage-title">YouTube Thumbnail</div>
@@ -1512,15 +1512,11 @@
     // ---- STAGE MANAGEMENT ----
     function toggleStage(n) {
       const el = document.getElementById(`stage${n}`);
-      if (el.classList.contains('locked')) return;
       el.classList.toggle('expanded');
     }
 
     function activateStage(n) {
-      // Collapse previous active
-      document.querySelectorAll('.stage.expanded').forEach(s => s.classList.remove('expanded'));
       const el = document.getElementById(`stage${n}`);
-      el.classList.remove('locked');
       el.classList.add('expanded', 'active');
       updateStageStates();
       // Scroll to stage
@@ -1538,23 +1534,11 @@
     function updateStageStates() {
       for (let i = 1; i <= 8; i++) {
         const el = document.getElementById(`stage${i}`);
+        el.classList.remove('locked');
         if (i < session.stage) {
-          el.classList.remove('locked');
           el.classList.add('completed');
         } else if (i === session.stage) {
-          el.classList.remove('locked');
           el.classList.add('active');
-        } else {
-          // Unlock stages 3-7 once transcript exists (stage >= 3)
-          if (i >= 3 && i <= 7 && session.stage >= 3) {
-            el.classList.remove('locked');
-          // Stage 8 (Thumbnail) unlocks when research exists (stage >= 2)
-          } else if (i === 8 && session.stage >= 2) {
-            el.classList.remove('locked');
-          } else {
-            el.classList.add('locked');
-          }
-          el.classList.remove('active');
         }
       }
     }
