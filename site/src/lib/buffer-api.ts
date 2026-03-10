@@ -67,13 +67,14 @@ export async function scheduleVideoPost(
   const result = await bufferGraphQL(`
     mutation CreatePost($input: CreatePostInput!) {
       createPost(input: $input) {
-        success {
-          postId
-          createdAt
+        ... on PostActionSuccess {
+          post { id status }
         }
-        errors {
-          message
-        }
+        ... on NotFoundError { message }
+        ... on UnauthorizedError { message }
+        ... on UnexpectedError { message }
+        ... on InvalidInputError { message }
+        ... on LimitReachedError { message }
       }
     }
   `, {
@@ -90,11 +91,11 @@ export async function scheduleVideoPost(
   });
 
   const createPost = result.data?.createPost;
-  if (createPost?.success) {
-    return { success: true, postId: createPost.success.postId };
+  if (createPost?.post) {
+    return { success: true, postId: createPost.post.id };
   }
 
-  const errorMsg = createPost?.errors?.[0]?.message || 'Unknown Buffer error';
+  const errorMsg = createPost?.message || JSON.stringify(result.errors || result.data) || 'Unknown Buffer error';
   return { success: false, error: errorMsg };
 }
 
