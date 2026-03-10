@@ -1949,7 +1949,7 @@
           })
         });
         const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+        if (!res.ok || !data.success) throw new Error(data.detail || data.error || 'Generation failed');
 
         session.newsletter = data.newsletter;
         renderNewsletter(data.newsletter);

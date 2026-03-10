@@ -74,14 +74,29 @@ ${topic ? `\nTopic context: ${topic}` : ''}
 TRANSCRIPT:
 ${transcript.slice(0, 8000)}`;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 3000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
-    });
+    let message: Anthropic.Message | undefined;
+    const maxRetries = 3;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        message = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 3000,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: userPrompt }],
+        });
+        break;
+      } catch (apiErr: any) {
+        const status = apiErr?.status || apiErr?.error?.status;
+        if (status === 429 && attempt < maxRetries) {
+          const wait = Math.pow(2, attempt + 1) * 3000;
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+        throw apiErr;
+      }
+    }
 
-    const rawText = (message.content[0] as any).text || '';
+    const rawText = (message!.content[0] as any).text || '';
     const start = rawText.indexOf('{');
     const end = rawText.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error('No JSON found in response');
@@ -92,7 +107,9 @@ ${transcript.slice(0, 8000)}`;
     });
   } catch (err: any) {
     console.error('Newsletter generation error:', err);
-    return new Response(JSON.stringify({ error: 'Newsletter generation failed', detail: err?.message }), {
+    const detail = err?.message || err?.error?.message || String(err);
+    const status = err?.status || err?.error?.status || 500;
+    return new Response(JSON.stringify({ error: 'Newsletter generation failed', detail, status: status }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
     });
   }
