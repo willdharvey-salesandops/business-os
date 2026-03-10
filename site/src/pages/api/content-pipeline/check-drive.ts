@@ -34,8 +34,16 @@ const handler: APIRoute = async () => {
   const creatomateKey = getEnv('CREATOMATE_API_KEY');
   const siteUrl = getEnv('SITE_URL') || 'https://leadershipgrowthconsulting.com';
 
-  if (!inboxFolderId || !processingFolderId || !creatomateKey) {
-    return new Response(JSON.stringify({ error: 'Missing required env vars' }), {
+  const hasServiceAccount = !!getEnv('GOOGLE_SERVICE_ACCOUNT_JSON');
+
+  if (!inboxFolderId || !processingFolderId || !creatomateKey || !hasServiceAccount) {
+    return new Response(JSON.stringify({
+      error: 'Missing required env vars',
+      has_inbox: !!inboxFolderId,
+      has_processing: !!processingFolderId,
+      has_creatomate: !!creatomateKey,
+      has_service_account: hasServiceAccount,
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
