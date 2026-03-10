@@ -11,14 +11,16 @@ function getAuth() {
   let credentialsJson = raw;
   // Handle base64-encoded credentials
   if (!raw.startsWith('{')) {
-    try {
-      credentialsJson = Buffer.from(raw, 'base64').toString('utf-8');
-    } catch {
-      throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON or base64');
-    }
+    credentialsJson = Buffer.from(raw, 'base64').toString('utf-8');
   }
 
   const credentials = JSON.parse(credentialsJson);
+
+  // Fix private_key: Vercel env vars may store literal "\n" instead of actual newlines
+  if (credentials.private_key && !credentials.private_key.includes('\n')) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+  }
+
   return new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/drive'],
