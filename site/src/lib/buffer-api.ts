@@ -82,7 +82,7 @@ export async function scheduleVideoPost(
       channelId,
       text: caption,
       schedulingType: 'automatic',
-      mode: 'customSchedule',
+      mode: 'customScheduled',
       dueAt: scheduledAt,
       assets: {
         videos: [{ url: videoUrl }],
