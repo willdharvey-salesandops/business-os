@@ -188,7 +188,7 @@ Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "..."
 
     let bufferResults: any[] = [];
     try {
-      bufferResults = await scheduleShortToAllPlatforms(captions, videoUrl, scheduledAt);
+      bufferResults = await scheduleShortToAllPlatforms(captions, videoUrl, scheduledAt, row.hook_text);
     } catch (bufferErr: any) {
       console.error('Buffer scheduling failed:', bufferErr.message);
       await supabase

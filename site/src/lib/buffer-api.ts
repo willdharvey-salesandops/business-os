@@ -63,7 +63,36 @@ export async function scheduleVideoPost(
   caption: string,
   videoUrl: string,
   scheduledAt: string, // ISO 8601
+  platform: 'youtube' | 'instagram' | 'tiktok',
+  hookText?: string,
 ): Promise<BufferPostResult> {
+  const input: any = {
+    channelId,
+    text: caption,
+    schedulingType: 'automatic',
+    mode: 'customScheduled',
+    dueAt: scheduledAt,
+    assets: {
+      videos: [{ url: videoUrl }],
+    },
+  };
+
+  // Platform-specific metadata
+  if (platform === 'youtube') {
+    input.metadata = {
+      youtube: {
+        title: hookText || caption.slice(0, 100),
+        categoryId: '22', // People & Blogs
+      },
+    };
+  } else if (platform === 'instagram') {
+    input.metadata = {
+      instagram: {
+        type: 'reel',
+      },
+    };
+  }
+
   const result = await bufferGraphQL(`
     mutation CreatePost($input: CreatePostInput!) {
       createPost(input: $input) {
@@ -77,18 +106,7 @@ export async function scheduleVideoPost(
         ... on LimitReachedError { message }
       }
     }
-  `, {
-    input: {
-      channelId,
-      text: caption,
-      schedulingType: 'automatic',
-      mode: 'customScheduled',
-      dueAt: scheduledAt,
-      assets: {
-        videos: [{ url: videoUrl }],
-      },
-    },
-  });
+  `, { input });
 
   const createPost = result.data?.createPost;
   if (createPost?.post) {
@@ -107,6 +125,7 @@ export async function scheduleShortToAllPlatforms(
   captions: { youtube: string; instagram: string; tiktok: string },
   videoUrl: string,
   scheduledAt: string,
+  hookText?: string,
 ): Promise<{ platform: string; result: BufferPostResult }[]> {
   const ytChannelId = getEnv('BUFFER_YOUTUBE_CHANNEL_ID');
   const igChannelId = getEnv('BUFFER_INSTAGRAM_CHANNEL_ID');
@@ -115,17 +134,17 @@ export async function scheduleShortToAllPlatforms(
   const results: { platform: string; result: BufferPostResult }[] = [];
 
   if (ytChannelId) {
-    const r = await scheduleVideoPost(ytChannelId, captions.youtube, videoUrl, scheduledAt);
+    const r = await scheduleVideoPost(ytChannelId, captions.youtube, videoUrl, scheduledAt, 'youtube', hookText);
     results.push({ platform: 'youtube_shorts', result: r });
   }
 
   if (igChannelId) {
-    const r = await scheduleVideoPost(igChannelId, captions.instagram, videoUrl, scheduledAt);
+    const r = await scheduleVideoPost(igChannelId, captions.instagram, videoUrl, scheduledAt, 'instagram');
     results.push({ platform: 'instagram_reels', result: r });
   }
 
   if (tkChannelId) {
-    const r = await scheduleVideoPost(tkChannelId, captions.tiktok, videoUrl, scheduledAt);
+    const r = await scheduleVideoPost(tkChannelId, captions.tiktok, videoUrl, scheduledAt, 'tiktok');
     results.push({ platform: 'tiktok', result: r });
   }
 
