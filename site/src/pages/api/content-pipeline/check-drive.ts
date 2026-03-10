@@ -146,7 +146,10 @@ const handler: APIRoute = async () => {
     });
   } catch (err: any) {
     console.error('check-drive error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({
+      error: err.message,
+      inbox_folder_id: inboxFolderId,
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
