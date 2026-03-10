@@ -75,25 +75,35 @@ TRANSCRIPT:
 ${transcript.slice(0, 8000)}`;
 
     let message: Anthropic.Message | undefined;
-    const maxRetries = 3;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        message = await anthropic.messages.create({
-          model: 'claude-opus-4-6',
-          max_tokens: 3000,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: userPrompt }],
-        });
-        break;
-      } catch (apiErr: any) {
-        const status = apiErr?.status || apiErr?.error?.status;
-        if (status === 429 && attempt < maxRetries) {
-          const wait = Math.pow(2, attempt + 1) * 3000;
-          await new Promise(r => setTimeout(r, wait));
-          continue;
+    const models = ['claude-opus-4-6', 'claude-sonnet-4-6'];
+    for (const model of models) {
+      const maxRetries = 3;
+      let succeeded = false;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          message = await anthropic.messages.create({
+            model,
+            max_tokens: 3000,
+            system: SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: userPrompt }],
+          });
+          succeeded = true;
+          break;
+        } catch (apiErr: any) {
+          const status = apiErr?.status || apiErr?.error?.status;
+          if (status === 429 && attempt < maxRetries) {
+            const wait = Math.pow(2, attempt + 1) * 3000;
+            await new Promise(r => setTimeout(r, wait));
+            continue;
+          }
+          // On billing/auth errors, try next model
+          if ((status === 400 || status === 403 || status === 402) && model !== models[models.length - 1]) {
+            break;
+          }
+          throw apiErr;
         }
-        throw apiErr;
       }
+      if (succeeded) break;
     }
 
     const rawText = (message!.content[0] as any).text || '';
