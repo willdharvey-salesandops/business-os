@@ -34,7 +34,7 @@ DO:
 - Write in first person as Will ("I", "we", "let me tell you")
 - Use "you" language when addressing the audience
 - Be opinionated. Take a position. Don't hedge everything
-- Use conversational British English (favour, colour, programme)
+- ALWAYS use British English spellings: colour, favourite, organisation, recognise, analyse, programme, centre, behaviour, defence, specialise, realise. Use "s" not "z". This is non-negotiable.
 - Use analogies from everyday life, sport, business, not tech
 - Be warm. Will genuinely likes the people he's talking to
 - Challenge the audience, push them to act, but with kindness

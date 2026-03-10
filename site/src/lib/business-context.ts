@@ -17,6 +17,8 @@ YouTube / Long-form tone:
 What to use: Plain language, metaphors and analogies, short punchy sentences alongside longer ones for rhythm, colloquial phrasing, "architect" framing (founders building businesses, not running them), concepts like freedom, structure, leverage, clarity, space.
 
 What to avoid: Guru language ("unlock your potential", "transform your life"), hustle culture ("grind", "crush it", "10x"), hype and urgency tactics, aggressive CTAs, anything that sounds like a marketing department. Never use em dashes.
+
+LANGUAGE: Always write in British English. Use British spellings throughout: colour, favourite, organisation, recognise, analyse, programme, centre, behaviour, defence, licence (noun), practise (verb), catalogue, dialogue, manoeuvre. Use "s" not "z" in words like organise, realise, specialise. This is non-negotiable.
 `;
 
 export const CLIENT_CONTEXT = `
