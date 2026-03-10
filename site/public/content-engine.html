@@ -2106,7 +2106,25 @@
 
     // ---- STAGE 5: BLOG ----
     async function generateBlog() {
-      if (!session.transcript.text) { showToast('No transcript available'); return; }
+      const hasTranscript = !!session.transcript.text;
+      const hasBriefing = session.research.output && session.research.output.stories && session.research.output.stories.length > 0;
+      if (!hasTranscript && !hasBriefing) { showToast('Generate a briefing or add a transcript first'); return; }
+
+      let content = '';
+      if (hasTranscript) {
+        content = session.transcript.text;
+      } else {
+        const b = session.research.output;
+        if (b.hook) content += b.hook + '\n\n';
+        if (b.stories) {
+          b.stories.forEach((s, i) => {
+            content += `## ${i + 1}. ${s.title || 'Story'}\n${s.what_happened || ''}\n\nYour angle: ${s.your_angle || ''}\n\nCoaching moment: ${s.coaching_moment || ''}\n\n`;
+          });
+        }
+        if (b.closing_thought) content += `## Closing Thought\n${b.closing_thought}\n`;
+      }
+
+      if (!content.trim()) { showToast('No content to generate blog from'); return; }
 
       document.getElementById('btnBlog').disabled = true;
       document.getElementById('blogLoading').style.display = 'block';
@@ -2117,7 +2135,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            transcript: session.transcript.text,
+            transcript: content,
             topic: session.research.topic,
             publish_draft: true
           })
@@ -2164,9 +2182,34 @@
         <div class="blog-preview">${markdownToHtml(blog.content)}</div>
         <div class="actions-row">
           <button class="btn btn-sm" onclick="copyText(session.blog.content)">Copy Markdown</button>
-          ${blog.blog_post_id ? '<span style="font-size:0.72rem;color:var(--green);font-weight:600;">Saved as draft in blog</span>' : ''}
+          ${blog.published_slug
+            ? `<a href="/blog/${esc(blog.published_slug)}" target="_blank" style="font-size:0.72rem;color:var(--green);font-weight:600;">Published &rarr; View</a>`
+            : blog.blog_post_id
+              ? `<button class="btn btn-sm btn-primary" onclick="publishBlog()">Publish to Site</button><span style="font-size:0.72rem;color:var(--grey-600);margin-left:0.5rem;">Draft saved</span>`
+              : ''}
         </div>`;
       el.style.display = 'block';
+    }
+
+    async function publishBlog() {
+      if (!session.blog?.blog_post_id) { showToast('No blog draft to publish'); return; }
+
+      try {
+        const res = await fetch('/api/content-engine/publish-blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ blog_post_id: session.blog.blog_post_id })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.detail || data.error || 'Publish failed');
+
+        session.blog.published_slug = data.slug;
+        renderBlog(session.blog);
+        saveSession();
+        showToast('Blog published');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
     }
 
     // ---- STAGE 6: DISTRIBUTION ----
