@@ -140,6 +140,11 @@ const handler: APIRoute = async () => {
       results.push({ file: file.name, status: 'sent_to_creatomate', render_id: renderId });
     }
 
+    // Also trigger long-form check (separate function invocation)
+    try {
+      await fetch(`${siteUrl}/api/content-pipeline/check-drive-longform`, { method: 'POST' });
+    } catch {}
+
     return new Response(JSON.stringify({ processed: results.length, results }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
