@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/content-pipeline/check-drive",
-      "schedule": "*/5 8-18 * * 1-5"
+      "schedule": "0 8 * * *"
     }
   ]
 }
