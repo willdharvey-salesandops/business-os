@@ -1,10 +1,10 @@
-import { google } from 'googleapis';
-
 function getEnv(key: string): string {
   return (import.meta.env[key] || process.env[key] || '') as string;
 }
 
-function getAuth() {
+async function getDrive() {
+  const { google } = await import('googleapis');
+
   const raw = getEnv('GOOGLE_SERVICE_ACCOUNT_JSON');
   if (!raw) throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_JSON env var');
 
@@ -21,14 +21,12 @@ function getAuth() {
     credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
   }
 
-  return new google.auth.GoogleAuth({
+  const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/drive'],
   });
-}
 
-function getDrive() {
-  return google.drive({ version: 'v3', auth: getAuth() });
+  return google.drive({ version: 'v3', auth });
 }
 
 export interface DriveFile {
@@ -42,7 +40,7 @@ export interface DriveFile {
  * List .mp4 files in a Google Drive folder
  */
 export async function listFiles(folderId: string): Promise<DriveFile[]> {
-  const drive = getDrive();
+  const drive = await getDrive();
   const res = await drive.files.list({
     q: `'${folderId}' in parents and mimeType='video/mp4' and trashed=false`,
     fields: 'files(id, name, mimeType, createdTime)',
@@ -57,7 +55,7 @@ export async function listFiles(folderId: string): Promise<DriveFile[]> {
  * List image files in a folder (for thumbnails)
  */
 export async function listImageFiles(folderId: string): Promise<DriveFile[]> {
-  const drive = getDrive();
+  const drive = await getDrive();
   const res = await drive.files.list({
     q: `'${folderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png') and trashed=false`,
     fields: 'files(id, name, mimeType, createdTime)',
@@ -71,7 +69,7 @@ export async function listImageFiles(folderId: string): Promise<DriveFile[]> {
  * Move a file from one folder to another
  */
 export async function moveFile(fileId: string, fromFolderId: string, toFolderId: string): Promise<void> {
-  const drive = getDrive();
+  const drive = await getDrive();
   await drive.files.update({
     fileId,
     addParents: toFolderId,
@@ -86,7 +84,7 @@ export async function moveFile(fileId: string, fromFolderId: string, toFolderId:
  * accessible via a sharing link.
  */
 export async function getDownloadUrl(fileId: string): Promise<string> {
-  const drive = getDrive();
+  const drive = await getDrive();
 
   // Create a temporary anyone-with-link permission
   await drive.permissions.create({
@@ -107,7 +105,7 @@ export async function getDownloadUrl(fileId: string): Promise<string> {
  * Alternative: use webContentLink after sharing
  */
 export async function getWebContentLink(fileId: string): Promise<string> {
-  const drive = getDrive();
+  const drive = await getDrive();
 
   // Make file accessible via link
   try {
@@ -136,7 +134,7 @@ export async function getWebContentLink(fileId: string): Promise<string> {
  * Remove public sharing permission after Creatomate has fetched the file
  */
 export async function revokePublicAccess(fileId: string): Promise<void> {
-  const drive = getDrive();
+  const drive = await getDrive();
   try {
     const permissions = await drive.permissions.list({
       fileId,
