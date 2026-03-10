@@ -14,6 +14,7 @@ export const GET: APIRoute = async () => {
   let parseResult = 'not attempted';
   let clientEmail = '';
   let hasPrivateKey = false;
+  let driveTestResult = 'not attempted';
 
   if (raw) {
     try {
@@ -25,6 +26,24 @@ export const GET: APIRoute = async () => {
       parseResult = 'success';
       clientEmail = parsed.client_email || 'missing';
       hasPrivateKey = !!parsed.private_key;
+
+      // Test actual Google Drive connection
+      try {
+        const { google } = await import('googleapis');
+        const auth = new google.auth.GoogleAuth({
+          credentials: parsed,
+          scopes: ['https://www.googleapis.com/auth/drive'],
+        });
+        const drive = google.drive({ version: 'v3', auth });
+        const res = await drive.files.list({
+          q: `'${inbox}' in parents and trashed=false`,
+          fields: 'files(id, name)',
+          pageSize: 5,
+        });
+        driveTestResult = `success: ${res.data.files?.length || 0} files found`;
+      } catch (driveErr: any) {
+        driveTestResult = `drive error: ${driveErr.message}`;
+      }
     } catch (e: any) {
       parseResult = `parse error: ${e.message}`;
     }
@@ -39,6 +58,7 @@ export const GET: APIRoute = async () => {
     has_private_key: hasPrivateKey,
     has_inbox: !!inbox,
     has_creatomate: !!creatomate,
+    drive_test: driveTestResult,
   }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
