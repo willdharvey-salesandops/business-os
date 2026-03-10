@@ -5,8 +5,18 @@ function getEnv(key: string): string {
 }
 
 function getAuth() {
-  const credentialsJson = getEnv('GOOGLE_SERVICE_ACCOUNT_JSON');
-  if (!credentialsJson) throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_JSON');
+  const raw = getEnv('GOOGLE_SERVICE_ACCOUNT_JSON');
+  if (!raw) throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_JSON env var');
+
+  let credentialsJson = raw;
+  // Handle base64-encoded credentials
+  if (!raw.startsWith('{')) {
+    try {
+      credentialsJson = Buffer.from(raw, 'base64').toString('utf-8');
+    } catch {
+      throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON or base64');
+    }
+  }
 
   const credentials = JSON.parse(credentialsJson);
   return new google.auth.GoogleAuth({

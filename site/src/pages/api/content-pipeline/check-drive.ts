@@ -26,7 +26,8 @@ const CREATOMATE_TEMPLATE_ID = 'c7567384-9bb2-4ccd-9f56-322e87abca8e';
  * - CREATOMATE_API_KEY
  * - SITE_URL: base URL for webhook callback (e.g. https://leadershipgrowthconsulting.com)
  */
-export const POST: APIRoute = async () => {
+// Vercel crons call GET, manual triggers use POST
+const handler: APIRoute = async () => {
   const supabase = getSupabase();
   const inboxFolderId = getEnv('DRIVE_SHORTS_INBOX_ID');
   const processingFolderId = getEnv('DRIVE_SHORTS_PROCESSING_ID');
@@ -151,3 +152,6 @@ export const POST: APIRoute = async () => {
     });
   }
 };
+
+export const GET = handler;
+export const POST = handler;
