@@ -89,6 +89,7 @@ export async function scheduleVideoPost(
     input.metadata = {
       instagram: {
         type: 'reel',
+        shouldShareToFeed: true,
       },
     };
   }
