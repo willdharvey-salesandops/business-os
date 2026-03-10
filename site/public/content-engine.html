@@ -1913,19 +1913,39 @@
 
     // ---- STAGE 3: NEWSLETTER ----
     async function generateNewsletter() {
-      if (!session.transcript.text) { showToast('No transcript available'); return; }
+      const hasTranscript = !!session.transcript.text;
+      const hasBriefing = !!session.research.output;
+      if (!hasTranscript && !hasBriefing) { showToast('Generate a briefing or add a transcript first'); return; }
 
       document.getElementById('btnNewsletter').disabled = true;
       document.getElementById('newsletterLoading').style.display = 'block';
       document.getElementById('newsletterOutput').style.display = 'none';
+
+      // Build content from transcript or briefing
+      let content = '';
+      if (hasTranscript) {
+        content = session.transcript.text;
+      } else {
+        // Build text from briefing stories
+        const b = session.research.output;
+        if (b.hook) content += b.hook + '\n\n';
+        if (b.credibility_intro) content += b.credibility_intro + '\n\n';
+        if (b.stories) {
+          b.stories.forEach((s, i) => {
+            content += `## ${i + 1}. ${s.title}\n${s.what_happened}\n\nYour angle: ${s.your_angle}\n\nCoaching moment: ${s.coaching_moment}\n\n`;
+          });
+        }
+        if (b.closing_thought) content += `## Closing Thought\n${b.closing_thought}\n`;
+      }
 
       try {
         const res = await fetch('/api/content-engine/newsletter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            transcript: session.transcript.text,
-            topic: session.research.topic
+            transcript: content,
+            topic: session.research.topic,
+            source: hasTranscript ? 'transcript' : 'briefing'
           })
         });
         const data = await res.json();

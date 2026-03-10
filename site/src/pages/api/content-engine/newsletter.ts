@@ -51,9 +51,9 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const { transcript, topic } = await request.json();
+  const { transcript, topic, source } = await request.json();
   if (!transcript) {
-    return new Response(JSON.stringify({ error: 'transcript is required' }), {
+    return new Response(JSON.stringify({ error: 'transcript or briefing content is required' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -61,7 +61,14 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const anthropic = new Anthropic({ apiKey: anthropicKey });
 
-    const userPrompt = `Turn this transcript into a newsletter email.
+    const isBriefing = source === 'briefing';
+    const userPrompt = isBriefing
+      ? `Turn this daily briefing into a newsletter email. The briefing contains today's AI and small business stories with Will's angles and coaching moments. Distill the best 2-4 stories into a tight, conversational newsletter.
+${topic ? `\nTopic context: ${topic}` : ''}
+
+BRIEFING:
+${transcript.slice(0, 8000)}`
+      : `Turn this transcript into a newsletter email.
 ${topic ? `\nTopic context: ${topic}` : ''}
 
 TRANSCRIPT:
