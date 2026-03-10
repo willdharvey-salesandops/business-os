@@ -52,8 +52,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const { transcript, topic, source } = await request.json();
-  if (!transcript) {
-    return new Response(JSON.stringify({ error: 'transcript or briefing content is required' }), {
+  if (!transcript || !transcript.trim()) {
+    return new Response(JSON.stringify({ success: false, error: 'No content provided', detail: 'Generate a briefing or add a transcript first' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
     });
   }

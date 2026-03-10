@@ -1914,7 +1914,7 @@
     // ---- STAGE 3: NEWSLETTER ----
     async function generateNewsletter() {
       const hasTranscript = !!session.transcript.text;
-      const hasBriefing = !!session.research.output;
+      const hasBriefing = session.research.output && session.research.output.stories && session.research.output.stories.length > 0;
       if (!hasTranscript && !hasBriefing) { showToast('Generate a briefing or add a transcript first'); return; }
 
       document.getElementById('btnNewsletter').disabled = true;
@@ -1932,11 +1932,13 @@
         if (b.credibility_intro) content += b.credibility_intro + '\n\n';
         if (b.stories) {
           b.stories.forEach((s, i) => {
-            content += `## ${i + 1}. ${s.title}\n${s.what_happened}\n\nYour angle: ${s.your_angle}\n\nCoaching moment: ${s.coaching_moment}\n\n`;
+            content += `## ${i + 1}. ${s.title || 'Story'}\n${s.what_happened || ''}\n\nYour angle: ${s.your_angle || ''}\n\nCoaching moment: ${s.coaching_moment || ''}\n\n`;
           });
         }
         if (b.closing_thought) content += `## Closing Thought\n${b.closing_thought}\n`;
       }
+
+      if (!content.trim()) { showToast('No content to generate newsletter from'); return; }
 
       try {
         const res = await fetch('/api/content-engine/newsletter', {
