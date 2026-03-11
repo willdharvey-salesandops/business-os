@@ -130,7 +130,7 @@ export async function moveFile(fileId: string, fromFolderId: string, toFolderId:
 }
 
 /**
- * Make file publicly accessible and return a direct download link for Creatomate
+ * Make file publicly accessible and return a direct download link
  */
 export async function getWebContentLink(fileId: string): Promise<string> {
   // Create a temporary anyone-with-link permission
@@ -145,6 +145,23 @@ export async function getWebContentLink(fileId: string): Promise<string> {
 
   const file = await driveRequest(`/files/${fileId}?fields=webContentLink&supportsAllDrives=true`);
   return file.webContentLink || `https://drive.google.com/uc?export=download&id=${fileId}`;
+}
+
+/**
+ * Download a file's binary content using service account auth.
+ * Returns the raw Response (use .arrayBuffer() or .blob() to consume).
+ */
+export async function downloadFile(fileId: string): Promise<Response> {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${DRIVE_API}/files/${fileId}?alt=media&supportsAllDrives=true`,
+    { headers: { 'Authorization': `Bearer ${token}` } },
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Drive download failed: ${res.status} ${text}`);
+  }
+  return res;
 }
 
 /**
