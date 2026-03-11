@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { listFiles, moveFile, getWebContentLink } from '../../../lib/google-drive';
+import Anthropic from '@anthropic-ai/sdk';
+import { listFiles, moveFile, getWebContentLink, revokePublicAccess } from '../../../lib/google-drive';
+import { scheduleShortToAllPlatforms } from '../../../lib/buffer-api';
 
 export const prerender = false;
 
@@ -12,29 +14,28 @@ function getSupabase() {
   return createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'));
 }
 
-const CREATOMATE_API_URL = 'https://api.creatomate.com/v1/renders';
-const CREATOMATE_TEMPLATE_ID = 'c7567384-9bb2-4ccd-9f56-322e87abca8e';
-
 /**
- * Cron endpoint: checks Google Drive for new shorts, sends them to Creatomate.
+ * Cron endpoint: checks Google Drive for new shorts, generates captions,
+ * and schedules directly to Buffer. No Creatomate step.
  *
- * POST /api/content-pipeline/check-drive
+ * Shorts should already have captions/hooks baked in (e.g. from Riverside).
  *
- * Requires env vars:
- * - DRIVE_SHORTS_INBOX_ID: Google Drive folder ID for /LGC-Content/Shorts/Inbox/
- * - DRIVE_SHORTS_PROCESSING_ID: folder ID for /LGC-Content/Shorts/Processing/
- * - CREATOMATE_API_KEY
- * - SITE_URL: base URL for webhook callback (e.g. https://leadershipgrowthconsulting.com)
+ * Flow per short:
+ * 1. Detect .mp4 in Shorts/Inbox
+ * 2. Extract hook text from filename
+ * 3. Make file publicly accessible for Buffer
+ * 4. Generate platform captions via Claude
+ * 5. Schedule to Buffer (YouTube Shorts + Instagram Reels)
+ * 6. Move to Processed, revoke public access
+ * 7. Email notification
  */
-// Vercel crons call GET, manual triggers use POST
 const handler: APIRoute = async () => {
   const supabase = getSupabase();
   const inboxFolderId = getEnv('DRIVE_SHORTS_INBOX_ID');
-  const processingFolderId = getEnv('DRIVE_SHORTS_PROCESSING_ID');
-  const creatomateKey = getEnv('CREATOMATE_API_KEY');
+  const processedFolderId = getEnv('DRIVE_SHORTS_PROCESSED_ID');
   const siteUrl = getEnv('SITE_URL') || 'https://leadershipgrowthconsulting.com';
 
-  if (!inboxFolderId || !processingFolderId || !creatomateKey) {
+  if (!inboxFolderId || !processedFolderId) {
     return new Response(JSON.stringify({ error: 'Missing required env vars' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -42,10 +43,14 @@ const handler: APIRoute = async () => {
   }
 
   try {
-    // 1. List .mp4 files in Shorts/Inbox
     const files = await listFiles(inboxFolderId);
 
     if (files.length === 0) {
+      // Still trigger long-form check even if no shorts
+      try {
+        await fetch(`${siteUrl}/api/content-pipeline/check-drive-longform`, { method: 'POST' });
+      } catch {}
+
       return new Response(JSON.stringify({ message: 'No new shorts found', processed: 0 }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -55,7 +60,7 @@ const handler: APIRoute = async () => {
     const results: any[] = [];
 
     for (const file of files) {
-      // 2. Check if already tracked (avoid re-processing)
+      // Check if already tracked
       const { data: existing } = await supabase
         .from('content_pipeline')
         .select('id')
@@ -67,10 +72,10 @@ const handler: APIRoute = async () => {
         continue;
       }
 
-      // 3. Extract hook text from filename (strip .mp4 extension)
+      // Extract hook text from filename
       const hookText = file.name.replace(/\.mp4$/i, '').replace(/_/g, ' ');
 
-      // 4. Insert into Supabase as 'detected'
+      // Insert into Supabase
       const { data: row, error: insertErr } = await supabase
         .from('content_pipeline')
         .insert({
@@ -88,59 +93,140 @@ const handler: APIRoute = async () => {
         continue;
       }
 
-      // 5. Move file to Processing folder
-      await moveFile(file.id, inboxFolderId, processingFolderId);
+      // Get a public download URL for Buffer
+      const videoUrl = await getWebContentLink(file.id);
 
-      // 6. Get a download URL for Creatomate
-      const downloadUrl = await getWebContentLink(file.id);
+      // Generate captions via Claude
+      const anthropicKey = getEnv('ANTHROPIC_API_KEY');
+      let captions = { youtube: '', instagram: '', tiktok: '' };
 
-      // 7. Send to Creatomate with webhook
-      const webhookUrl = `${siteUrl}/api/content-pipeline/creatomate-webhook`;
+      if (anthropicKey) {
+        try {
+          const anthropic = new Anthropic({ apiKey: anthropicKey });
+          const captionPrompt = `Here is the hook/topic of a short-form video: "${hookText}"
 
-      const renderRes = await fetch(CREATOMATE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${creatomateKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          template_id: CREATOMATE_TEMPLATE_ID,
-          webhook_url: webhookUrl,
-          metadata: row.id, // Pass our DB row ID so webhook can match it
-          modifications: {
-            'Video-1': downloadUrl,
-            'Visual-Hook': hookText,
-          },
-        }),
-      });
+Write three captions:
+1. YouTube Shorts: 1-2 punchy sentences + 3-5 relevant hashtags
+2. Instagram Reels: Hook sentence + 2-3 lines of value + call to action + 10-15 hashtags
+3. TikTok: Conversational, 1-3 sentences, 3-5 hashtags, feel native to TikTok
 
-      if (!renderRes.ok) {
-        const errText = await renderRes.text();
-        await supabase
-          .from('content_pipeline')
-          .update({ status: 'failed', error: `Creatomate error: ${errText}` })
-          .eq('id', row.id);
-        results.push({ file: file.name, error: `Creatomate: ${errText}` });
-        continue;
+Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "...", "tiktok": "..." }`;
+
+          const msg = await anthropic.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            system: 'You are a social media copywriter for Leadership Growth Consulting, a fractional growth partner business helping founders and business owners of 2-20 person companies. Tone: direct, punchy, no corporate fluff. Never use em dashes. Always use British English spellings.',
+            messages: [{ role: 'user', content: captionPrompt }],
+          });
+
+          const rawText = (msg.content[0] as any).text || '';
+          const jsonStart = rawText.indexOf('{');
+          const jsonEnd = rawText.lastIndexOf('}');
+          if (jsonStart !== -1 && jsonEnd !== -1) {
+            captions = JSON.parse(rawText.slice(jsonStart, jsonEnd + 1));
+          }
+        } catch (captionErr: any) {
+          console.error('Caption generation failed:', captionErr.message);
+          const fallback = hookText || 'New video';
+          captions = {
+            youtube: `${fallback} #business #leadership #growth`,
+            instagram: `${fallback}\n\nWatch the full video for more.\n\n#business #leadership #growth #smallbusiness #entrepreneur`,
+            tiktok: `${fallback} #business #leadership #growth`,
+          };
+        }
       }
 
-      const renderData = await renderRes.json();
-      const renderId = Array.isArray(renderData) ? renderData[0]?.id : renderData?.id;
-
-      // 8. Update status to 'processing'
       await supabase
         .from('content_pipeline')
         .update({
-          status: 'processing',
-          creatomate_render_id: renderId,
+          status: 'captioned',
+          captions,
+          rendered_video_url: videoUrl,
           updated_at: new Date().toISOString(),
         })
         .eq('id', row.id);
 
-      results.push({ file: file.name, status: 'sent_to_creatomate', render_id: renderId });
+      // Schedule to Buffer
+      const today = new Date().toISOString().slice(0, 10);
+      const { count } = await supabase
+        .from('content_pipeline')
+        .select('*', { count: 'exact', head: true })
+        .eq('content_type', 'short')
+        .gte('created_at', `${today}T00:00:00Z`)
+        .in('status', ['publishing', 'published']);
+
+      const shortIndex = count || 0;
+      const publishAt = new Date();
+      publishAt.setHours(publishAt.getHours() + 1 + (shortIndex * 2));
+      const scheduledAt = publishAt.toISOString();
+
+      let bufferResults: any[] = [];
+      try {
+        bufferResults = await scheduleShortToAllPlatforms(captions, videoUrl, scheduledAt, hookText);
+      } catch (bufferErr: any) {
+        console.error('Buffer scheduling failed:', bufferErr.message);
+        await supabase
+          .from('content_pipeline')
+          .update({
+            status: 'failed',
+            error: `Buffer error: ${bufferErr.message}`,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', row.id);
+        results.push({ file: file.name, error: `Buffer: ${bufferErr.message}` });
+        continue;
+      }
+
+      const postIds = bufferResults
+        .filter(r => r.result.success)
+        .map(r => ({ platform: r.platform, postId: r.result.postId }));
+
+      // Move to Processed
+      await moveFile(file.id, inboxFolderId, processedFolderId);
+
+      // Revoke public access
+      try {
+        await revokePublicAccess(file.id);
+      } catch {}
+
+      // Update final status
+      await supabase
+        .from('content_pipeline')
+        .update({
+          status: 'published',
+          buffer_post_ids: postIds,
+          scheduled_publish_at: scheduledAt,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', row.id);
+
+      // Email notification
+      try {
+        const nodemailer = await import('nodemailer');
+        const transporter = nodemailer.default.createTransport({
+          service: 'gmail',
+          auth: {
+            user: getEnv('GMAIL_ADDRESS'),
+            pass: getEnv('GMAIL_APP_PASSWORD'),
+          },
+        });
+
+        const platformSummary = bufferResults
+          .map(r => `${r.platform}: ${r.result.success ? 'Scheduled' : `Failed - ${r.result.error}`}`)
+          .join('\n');
+
+        await transporter.sendMail({
+          from: getEnv('GMAIL_ADDRESS'),
+          to: getEnv('GMAIL_ADDRESS'),
+          subject: `Short published: ${hookText}`,
+          text: `Short "${file.name}" has been scheduled.\n\nHook: ${hookText}\nScheduled for: ${scheduledAt}\nVideo: ${videoUrl}\n\nPlatform results:\n${platformSummary}`,
+        });
+      } catch {}
+
+      results.push({ file: file.name, status: 'published', scheduled_at: scheduledAt });
     }
 
-    // Also trigger long-form check (separate function invocation)
+    // Trigger long-form check
     try {
       await fetch(`${siteUrl}/api/content-pipeline/check-drive-longform`, { method: 'POST' });
     } catch {}
