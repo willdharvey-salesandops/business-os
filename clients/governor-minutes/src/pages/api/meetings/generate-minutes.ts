@@ -10,8 +10,6 @@ function getAnthropicApiKey(): string {
 
 const SYSTEM_PROMPT = `You are a professional clerk who writes formal minutes for school governing body meetings in England. You convert raw meeting transcripts into clean, structured minutes that match the standard format used by school governors.
 
-## YOUR TASK
-
 Read the transcript carefully and produce formal meeting minutes. Identify:
 - The school name and meeting type (IEB, TLC Committee, FGB, etc.)
 - Date, time, and location
@@ -22,99 +20,6 @@ Read the transcript carefully and produce formal meeting minutes. Identify:
 - Decisions made and policies ratified
 - Action items: who needs to do what, and by when if mentioned
 - Date of next meeting
-
-## OUTPUT FORMAT
-
-Return valid JSON with this exact structure:
-
-{
-  "title": "School Name",
-  "meeting_type": "Minutes of the Interim Executive Board (IEB)" or "Minutes (Part A) of a Meeting of the Teaching, Learning & Community Committee" etc.,
-  "date_line": "Thursday 12th February, 2026, 2pm-4pm in School",
-  "quorum": "Meeting is Quorate" or "In Quorum",
-  "attendees": [
-    { "name": "Ian Hutchings (HT)", "role": "Headteacher" },
-    { "name": "Angela Patel (Chair)", "role": "Vice Chair of Governors/TLC Chair" }
-  ],
-  "in_attendance": [
-    { "name": "Jess Russ", "role": "Deputy Headteacher (DHT)" },
-    { "name": "Alison Harvey", "role": "Clerk" }
-  ],
-  "apologies": ["Rosemary Hafeez - stepping down for now due to workload"],
-  "items": [
-    {
-      "number": "1.",
-      "title": "Welcome, Apologies for Absence and advance notice of AOB",
-      "sub_items": [
-        {
-          "ref": "",
-          "description": "Rosemary Hafeez stepping down for now due to workload.",
-          "action": ""
-        }
-      ]
-    },
-    {
-      "number": "2.",
-      "title": "Declarations of business interests",
-      "sub_items": [
-        {
-          "ref": "",
-          "description": "None.",
-          "action": ""
-        }
-      ]
-    },
-    {
-      "number": "3.",
-      "title": "Feedback: Updating Action Plan and next steps",
-      "sub_sections": [
-        {
-          "ref": "3.1",
-          "title": "Leadership & Governance",
-          "sub_items": [
-            {
-              "ref": "a)",
-              "description": "The columns on the action plan were discussed, whether these were all necessary.",
-              "action": ""
-            },
-            {
-              "ref": "b)",
-              "description": "IEB Action Plan to be updated and moved to Governor Hub.",
-              "action": "Rosemary"
-            }
-          ]
-        },
-        {
-          "ref": "3.2",
-          "title": "Curriculum & Standards",
-          "sub_items": [
-            {
-              "ref": "a)",
-              "description": "Cathy reported to the board about the school Monitoring Schedule.",
-              "action": ""
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "next_meeting": "13th March 2026 at School Premises 9:30am to 12:30pm",
-  "standing_items": ["Action plan review including budget monitoring", "HT report including SDP and data", "Safeguarding report including H&S"],
-  "actions_summary": [
-    {
-      "ref": "2c",
-      "description": "Add SDP to Governor Hub.",
-      "by_whom": "Clerk",
-      "by_when": ""
-    },
-    {
-      "ref": "3.1b",
-      "description": "IEB Action Plan to be updated and moved to Governor Hub.",
-      "by_whom": "Rosemary",
-      "by_when": ""
-    }
-  ]
-}
 
 ## RULES
 
@@ -130,9 +35,95 @@ Return valid JSON with this exact structure:
 10. Preserve exact names of documents, reports, policies, and organisations referenced.
 11. If votes are taken, record the outcome: "Approved unanimously" or "Approved (X for, Y against, Z abstentions)".
 12. Record policy ratifications explicitly: "The [Policy Name] was approved by Governors."
-13. The output JSON must be valid. Escape special characters properly. Do not wrap in markdown code fences.
-14. If attendee roles cannot be determined from the transcript, use "Governor" as the default role.
-15. Capture financial figures, dates, and statistics precisely as stated.`;
+13. If attendee roles cannot be determined from the transcript, use "Governor" as the default role.
+14. Capture financial figures, dates, and statistics precisely as stated.
+
+Call the submit_minutes tool with the structured minutes data.`;
+
+const MINUTES_TOOL: Anthropic.Tool = {
+  name: 'submit_minutes',
+  description: 'Submit the structured meeting minutes extracted from the transcript.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      title: { type: 'string', description: 'School name' },
+      meeting_type: { type: 'string', description: 'e.g. "Minutes of the Interim Executive Board (IEB)"' },
+      date_line: { type: 'string', description: 'e.g. "Thursday 12th February, 2026, 2pm-4pm in School"' },
+      quorum: { type: 'string', description: 'e.g. "Meeting is Quorate"' },
+      attendees: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: { name: { type: 'string' }, role: { type: 'string' } },
+          required: ['name', 'role'],
+        },
+      },
+      in_attendance: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: { name: { type: 'string' }, role: { type: 'string' } },
+          required: ['name', 'role'],
+        },
+      },
+      apologies: { type: 'array', items: { type: 'string' } },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            number: { type: 'string' },
+            title: { type: 'string' },
+            sub_items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: { ref: { type: 'string' }, description: { type: 'string' }, action: { type: 'string' } },
+                required: ['ref', 'description'],
+              },
+            },
+            sub_sections: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  ref: { type: 'string' },
+                  title: { type: 'string' },
+                  sub_items: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: { ref: { type: 'string' }, description: { type: 'string' }, action: { type: 'string' } },
+                      required: ['ref', 'description'],
+                    },
+                  },
+                },
+                required: ['ref', 'title'],
+              },
+            },
+          },
+          required: ['number', 'title'],
+        },
+      },
+      next_meeting: { type: 'string' },
+      standing_items: { type: 'array', items: { type: 'string' } },
+      actions_summary: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            ref: { type: 'string' },
+            description: { type: 'string' },
+            by_whom: { type: 'string' },
+            by_when: { type: 'string' },
+          },
+          required: ['ref', 'description', 'by_whom'],
+        },
+      },
+    },
+    required: ['title', 'meeting_type', 'date_line', 'attendees', 'items', 'actions_summary'],
+  },
+};
 
 export const POST: APIRoute = async ({ request }) => {
   const anthropicKey = getAnthropicApiKey();
@@ -186,39 +177,19 @@ export const POST: APIRoute = async ({ request }) => {
       max_tokens: 16384,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
+      tools: [MINUTES_TOOL],
+      tool_choice: { type: 'tool', name: 'submit_minutes' },
     });
 
-    const rawText = (message.content[0] as any).text || '';
-    const stopReason = message.stop_reason;
-
-    // If output was truncated, the JSON will be incomplete
-    if (stopReason === 'max_tokens') {
-      return new Response(JSON.stringify({ error: 'The transcript produced minutes that were too long. Try a shorter transcript or split it into parts.' }), {
+    // Find the tool_use block - guaranteed by tool_choice
+    const toolBlock = message.content.find((b: any) => b.type === 'tool_use') as any;
+    if (!toolBlock || !toolBlock.input) {
+      return new Response(JSON.stringify({ error: 'AI did not return structured minutes. Please try again.' }), {
         status: 500, headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Strip markdown fences, then extract the JSON object between first { and last }
-    let cleaned = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    const firstBrace = cleaned.indexOf('{');
-    const lastBrace = cleaned.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-    }
-
-    let minutesData;
-    try {
-      minutesData = JSON.parse(cleaned);
-    } catch (parseErr: any) {
-      // Return debug info so we can see what Claude actually returned
-      const preview = rawText.substring(0, 500);
-      return new Response(JSON.stringify({
-        error: 'Failed to parse AI response',
-        debug: { stop_reason: stopReason, raw_length: rawText.length, preview },
-      }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const minutesData = toolBlock.input;
 
     return new Response(JSON.stringify({
       success: true,
