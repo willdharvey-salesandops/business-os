@@ -183,12 +183,22 @@ export const POST: APIRoute = async ({ request }) => {
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
+      max_tokens: 16384,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
     });
 
     const rawText = (message.content[0] as any).text || '';
+    const stopReason = message.stop_reason;
+
+    // If output was truncated, the JSON will be incomplete
+    if (stopReason === 'max_tokens') {
+      console.error('Claude hit max_tokens limit. Output truncated.');
+      return new Response(JSON.stringify({ error: 'The transcript produced minutes that were too long. Try a shorter transcript or split it into parts.' }), {
+        status: 500, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Strip markdown fences, then extract the JSON object between first { and last }
     let cleaned = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
     const firstBrace = cleaned.indexOf('{');
