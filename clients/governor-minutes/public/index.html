@@ -325,7 +325,11 @@ async function api(method, path, body) {
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(path, opts);
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.detail || 'Request failed');
+  if (!res.ok) {
+    const msg = data.error || data.detail || 'Request failed';
+    if (data.debug) console.error('API debug:', JSON.stringify(data.debug, null, 2));
+    throw new Error(data.debug ? msg + ' (check browser console for details)' : msg);
+  }
   return data;
 }
 

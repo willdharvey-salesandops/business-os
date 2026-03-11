@@ -193,7 +193,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // If output was truncated, the JSON will be incomplete
     if (stopReason === 'max_tokens') {
-      console.error('Claude hit max_tokens limit. Output truncated.');
       return new Response(JSON.stringify({ error: 'The transcript produced minutes that were too long. Try a shorter transcript or split it into parts.' }), {
         status: 500, headers: { 'Content-Type': 'application/json' },
       });
@@ -206,7 +205,20 @@ export const POST: APIRoute = async ({ request }) => {
     if (firstBrace !== -1 && lastBrace > firstBrace) {
       cleaned = cleaned.substring(firstBrace, lastBrace + 1);
     }
-    const minutesData = JSON.parse(cleaned);
+
+    let minutesData;
+    try {
+      minutesData = JSON.parse(cleaned);
+    } catch (parseErr: any) {
+      // Return debug info so we can see what Claude actually returned
+      const preview = rawText.substring(0, 500);
+      return new Response(JSON.stringify({
+        error: 'Failed to parse AI response',
+        debug: { stop_reason: stopReason, raw_length: rawText.length, preview },
+      }), {
+        status: 500, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({
       success: true,
@@ -218,12 +230,6 @@ export const POST: APIRoute = async ({ request }) => {
 
   } catch (err: any) {
     console.error('Minutes generation error:', err);
-
-    if (err instanceof SyntaxError) {
-      return new Response(JSON.stringify({ error: 'Failed to parse AI response. Please try again.' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
-    }
 
     return new Response(JSON.stringify({
       error: 'Minutes generation failed',
