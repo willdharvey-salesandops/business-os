@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
-import { listFiles, moveFile, downloadFile } from '../../../lib/google-drive';
+import { listFiles, moveFile, getWebContentLink } from '../../../lib/google-drive';
 import { scheduleShortToAllPlatforms } from '../../../lib/buffer-api';
 
 export const prerender = false;
@@ -93,28 +93,9 @@ const handler: APIRoute = async () => {
         continue;
       }
 
-      // Download from Drive and upload to Supabase Storage for a direct URL
-      const driveRes = await downloadFile(file.id);
-      const videoBuffer = await driveRes.arrayBuffer();
-      const storagePath = `shorts/${Date.now()}-${file.name}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from('content-videos')
-        .upload(storagePath, videoBuffer, {
-          contentType: 'video/mp4',
-          upsert: true,
-        });
-
-      if (uploadErr) {
-        await supabase.from('content_pipeline').update({ status: 'failed', error: `Storage upload: ${uploadErr.message}` }).eq('id', row.id);
-        results.push({ file: file.name, error: `Storage: ${uploadErr.message}` });
-        continue;
-      }
-
-      const { data: publicUrl } = supabase.storage
-        .from('content-videos')
-        .getPublicUrl(storagePath);
-      const videoUrl = publicUrl.publicUrl;
+      // Make file publicly accessible and get download URL
+      // File stays public so Buffer can fetch it at publish time
+      const videoUrl = await getWebContentLink(file.id);
 
       // Generate captions via Claude
       const anthropicKey = getEnv('ANTHROPIC_API_KEY');
