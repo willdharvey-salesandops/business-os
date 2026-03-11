@@ -919,10 +919,6 @@
         <span class="nav-tooltip">Thumbnails</span>
       </a>
       <div class="nav-spacer"></div>
-      <a class="nav-link" onclick="doLogout()" title="Sign out">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span class="nav-tooltip">Sign Out</span>
-      </a>
     </nav>
 
     <!-- MAIN -->
@@ -1312,34 +1308,7 @@
       distribution: { snippets: null, checklist: {} }
     };
 
-    // ---- AUTH ----
-    async function doLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const pass = document.getElementById('loginPass').value;
-      const errEl = document.getElementById('loginError');
-      errEl.style.display = 'none';
-      if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
-      try {
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-          body: JSON.stringify({ email, password: pass })
-        });
-        if (!res.ok) { errEl.textContent = 'Invalid credentials'; errEl.style.display = 'block'; return; }
-        const data = await res.json();
-        authToken = data.access_token;
-        localStorage.setItem('control_token', authToken);
-        showApp();
-      } catch (e) { errEl.textContent = 'Connection error'; errEl.style.display = 'block'; }
-    }
-
-    function doLogout() {
-      authToken = null;
-      localStorage.removeItem('control_token');
-      document.getElementById('loginOverlay').classList.remove('hidden');
-      document.getElementById('app').classList.remove('visible');
-    }
-
+    // ---- AUTH (bypassed) ----
     function showApp() {
       document.getElementById('loginOverlay').classList.add('hidden');
       document.getElementById('app').classList.add('visible');
@@ -1358,11 +1327,6 @@
 
     async function sbGet(path) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
-      if (res.status === 401 || res.status === 403) {
-        showToast('Session expired. Please log in again.');
-        doLogout();
-        throw new Error('Session expired');
-      }
       if (!res.ok) throw new Error(`Supabase ${res.status}`);
       return res.json();
     }
@@ -2667,11 +2631,7 @@
 
     // ---- INIT ----
     (function init() {
-      const saved = localStorage.getItem('control_token');
-      if (saved) {
-        authToken = saved;
-        showApp();
-      }
+      showApp();
     })();
   </script>
 </body>
