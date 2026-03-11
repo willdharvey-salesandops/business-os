@@ -73,7 +73,14 @@ const handler: APIRoute = async () => {
       }
 
       // Extract hook text from filename
-      const hookText = file.name.replace(/\.mp4$/i, '').replace(/_/g, ' ');
+      // Strip Riverside prefix, uploader name suffix, duplicate markers, and clean up
+      const hookText = file.name
+        .replace(/\.mp4$/i, '')
+        .replace(/^riverside_/i, '')
+        .replace(/_william[_ ]harvey.*$/i, '')
+        .replace(/\s*\(\d+\)\s*$/, '')
+        .replace(/_/g, ' ')
+        .trim();
 
       // Insert into Supabase
       const { data: row, error: insertErr } = await supabase
@@ -106,17 +113,17 @@ const handler: APIRoute = async () => {
           const anthropic = new Anthropic({ apiKey: anthropicKey });
           const captionPrompt = `Here is the hook/topic of a short-form video: "${hookText}"
 
-Write three captions:
-1. YouTube Shorts: 1-2 punchy sentences + 3-5 relevant hashtags
-2. Instagram Reels: Hook sentence + 2-3 lines of value + call to action + 10-15 hashtags
-3. TikTok: Conversational, 1-3 sentences, 3-5 hashtags, feel native to TikTok
+Write three captions. No hashtags. No emojis. Keep it punchy and direct.
+1. YouTube Shorts: 1-2 sentences that make people stop scrolling
+2. Instagram Reels: Hook sentence + 2-3 lines of value + call to action
+3. TikTok: Conversational, 1-3 sentences, feel native to TikTok
 
 Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "...", "tiktok": "..." }`;
 
           const msg = await anthropic.messages.create({
             model: 'claude-sonnet-4-6',
             max_tokens: 1000,
-            system: 'You are a social media copywriter for Leadership Growth Consulting, a fractional growth partner business helping founders and business owners of 2-20 person companies. Tone: direct, punchy, no corporate fluff. Never use em dashes. Always use British English spellings.',
+            system: 'You are a social media copywriter for Leadership Growth Consulting, a fractional growth partner helping founders of 3-20 person companies build systems and step back from day-to-day. Tone: direct, punchy, no corporate fluff. Never use em dashes. Never use emojis. Always use British English spellings. Do not reference any apps, tools, or software by name.',
             messages: [{ role: 'user', content: captionPrompt }],
           });
 
@@ -130,9 +137,9 @@ Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "..."
           console.error('Caption generation failed:', captionErr.message);
           const fallback = hookText || 'New video';
           captions = {
-            youtube: `${fallback} #business #leadership #growth`,
-            instagram: `${fallback}\n\nWatch the full video for more.\n\n#business #leadership #growth #smallbusiness #entrepreneur`,
-            tiktok: `${fallback} #business #leadership #growth`,
+            youtube: fallback,
+            instagram: `${fallback}\n\nWatch the full video for more.`,
+            tiktok: fallback,
           };
         }
       }
@@ -158,7 +165,8 @@ Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "..."
 
       const shortIndex = count || 0;
       const publishAt = new Date();
-      publishAt.setHours(publishAt.getHours() + 1 + (shortIndex * 2));
+      // First short: 15 min from now, then 2hr stagger for each subsequent
+      publishAt.setMinutes(publishAt.getMinutes() + 15 + (shortIndex * 120));
       const scheduledAt = publishAt.toISOString();
 
       let bufferResults: any[] = [];
