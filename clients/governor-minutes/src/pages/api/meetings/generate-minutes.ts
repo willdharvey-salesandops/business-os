@@ -189,7 +189,13 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const rawText = (message.content[0] as any).text || '';
-    const cleaned = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
+    // Strip markdown fences, then extract the JSON object between first { and last }
+    let cleaned = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
     const minutesData = JSON.parse(cleaned);
 
     return new Response(JSON.stringify({
