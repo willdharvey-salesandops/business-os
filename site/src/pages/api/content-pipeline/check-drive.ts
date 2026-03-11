@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
-import { listFiles, moveFile, getWebContentLink, revokePublicAccess } from '../../../lib/google-drive';
+import { listFiles, moveFile, getWebContentLink } from '../../../lib/google-drive';
 import { scheduleShortToAllPlatforms } from '../../../lib/buffer-api';
 
 export const prerender = false;
@@ -184,10 +184,8 @@ Return as JSON only (no markdown fences): { "youtube": "...", "instagram": "..."
       // Move to Processed
       await moveFile(file.id, inboxFolderId, processedFolderId);
 
-      // Revoke public access
-      try {
-        await revokePublicAccess(file.id);
-      } catch {}
+      // Note: keeping file public so Buffer can fetch it when publishing
+      // Public access is on files in the Processed folder only
 
       // Update final status
       await supabase
