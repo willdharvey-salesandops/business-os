@@ -130,7 +130,9 @@ export async function moveFile(fileId: string, fromFolderId: string, toFolderId:
 }
 
 /**
- * Make file publicly accessible and return a direct download link
+ * Make file publicly accessible and return a direct download link.
+ * Uses drive.usercontent.google.com which serves the file directly
+ * without the redirects that break third-party fetchers like Buffer.
  */
 export async function getWebContentLink(fileId: string): Promise<string> {
   // Create a temporary anyone-with-link permission
@@ -143,8 +145,8 @@ export async function getWebContentLink(fileId: string): Promise<string> {
     // Permission may already exist
   }
 
-  const file = await driveRequest(`/files/${fileId}?fields=webContentLink&supportsAllDrives=true`);
-  return file.webContentLink || `https://drive.google.com/uc?export=download&id=${fileId}`;
+  // Use the direct content URL that doesn't redirect
+  return `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
 }
 
 /**
