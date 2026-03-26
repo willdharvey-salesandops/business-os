@@ -36,8 +36,9 @@ Never hardcode the key. If `PROSPEO_API_KEY` is not set, halt and report to the 
 These no longer work and return `DEPRECATED` errors:
 - `domain-search`
 - `email-finder`
-- `mobile-finder`
 - `social-url-search`
+
+Note: `mobile-finder` is NOT deprecated. Mobile numbers are returned via `enrich-person` and filterable in `search-person` under Contact Details filters.
 
 ---
 
@@ -180,10 +181,14 @@ Key fields to extract from each result:
 | `person.linkedin_url` | LinkedIn profile |
 | `person.location` | Location |
 | `person.job_history[0].seniority` | Seniority level |
+| `person.mobile.mobile` | Mobile number (null if unavailable) |
+| `person.mobile.status` | `"AVAILABLE"` or `"UNAVAILABLE"` |
+| `person.email.email` | Work email (when `status == "VERIFIED"`) |
 | `company.name` | Company name |
 | `company.domain` | Company domain (may differ from searched domain) |
 | `company.industry` | Industry |
 | `company.headcount_range` | Company size |
+| `company.phone_hq.phone_hq` | Company HQ phone number |
 
 ---
 

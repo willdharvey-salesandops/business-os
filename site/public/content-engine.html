@@ -950,7 +950,12 @@
         <div class="stage-body">
           <div class="stage-inner">
             <div class="stage-divider"></div>
-            <label class="field-label">Topic <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Leave blank for the daily AI & Small Business briefing</span></label>
+            <label class="field-label">Briefing Mode</label>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+              <button type="button" class="btn" id="btnModeGeneral" onclick="setBriefingMode('general')" style="flex:1;font-size:0.78rem;padding:0.5rem 0.75rem;border:1px solid var(--grey-200);background:var(--grey-900);color:#fff;">General (AI + Business)</button>
+              <button type="button" class="btn" id="btnModeSales" onclick="setBriefingMode('sales')" style="flex:1;font-size:0.78rem;padding:0.5rem 0.75rem;border:1px solid var(--grey-200);background:var(--grey-50);color:var(--grey-500);">AI + Sales</button>
+            </div>
+            <label class="field-label">Topic <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Leave blank for the daily briefing</span></label>
             <input type="text" class="field-input" id="researchTopic" placeholder="Leave blank for daily briefing, or enter a custom topic">
             <div class="actions-row">
               <button class="btn btn-primary" id="btnResearch" onclick="generateResearch()">
@@ -1576,9 +1581,28 @@
     }
 
     // ---- STAGE 1: RESEARCH ----
+    let briefingMode = 'general';
+
+    function setBriefingMode(mode) {
+      briefingMode = mode;
+      const btnGeneral = document.getElementById('btnModeGeneral');
+      const btnSales = document.getElementById('btnModeSales');
+      if (mode === 'sales') {
+        btnSales.style.background = 'var(--grey-900)';
+        btnSales.style.color = '#fff';
+        btnGeneral.style.background = 'var(--grey-50)';
+        btnGeneral.style.color = 'var(--grey-500)';
+      } else {
+        btnGeneral.style.background = 'var(--grey-900)';
+        btnGeneral.style.color = '#fff';
+        btnSales.style.background = 'var(--grey-50)';
+        btnSales.style.color = 'var(--grey-500)';
+      }
+    }
+
     async function generateResearch() {
       const topic = document.getElementById('researchTopic').value.trim();
-      session.research.topic = topic || 'AI & Small Business';
+      session.research.topic = topic || (briefingMode === 'sales' ? 'AI + Sales' : 'AI & Small Business');
       document.getElementById('btnResearch').disabled = true;
       document.getElementById('researchLoading').style.display = 'block';
       document.getElementById('researchOutput').style.display = 'none';
@@ -1587,7 +1611,7 @@
         const res = await fetch('/api/content-engine/research', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic: topic || '' })
+          body: JSON.stringify({ topic: topic || '', mode: briefingMode })
         });
 
         // Read SSE stream

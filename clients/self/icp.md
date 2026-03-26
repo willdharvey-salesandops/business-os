@@ -101,3 +101,26 @@ Campaign angle varies: some campaigns lead with the sales system angle, others w
 | Date | Campaign Slug | Volume | Reply Rate | Notes |
 |------|---------------|--------|------------|-------|
 |      |               |        |            |       |
+
+---
+
+## Planned A/B Test: 3 Ideas vs Direct Ask
+
+Two campaign variants to test against each other:
+
+**Variant A: "3 Ideas" (personalized)**
+- Analyze prospect's website, generate 3 specific AI/efficiency ideas
+- Longer email, high-effort, high-relevance
+- Angle: "I looked at your business and here's what I'd do"
+
+**Variant B: "10 Conversations" (direct ask)**
+- Short, simple, human
+- 3-email sequence:
+  1. **Open:** "Hi [Name], I'm hoping to speak to 10 business owners and leaders over the next couple of weeks who have heard about AI in their business and think it sounds like a good idea but don't know where to start. Would that describe you? If so, would you be open to a short chat so I can learn a bit more about any questions or reservations?"
+  2. **Follow-up:** Case study (relevant to their sector, anonymised if needed)
+  3. **Breakup:** Final nudge, no pressure, close the loop
+- Angle: scarcity + relatability + low-friction CTA, then proof, then clean exit
+
+**Hypothesis:** Variant B may outperform on reply rate due to brevity and the "10 people" framing creating natural scarcity. Variant A may generate higher-quality conversations due to demonstrated effort.
+
+**Test plan:** Same ICP, same list split, same sending schedule. Compare reply rate, positive reply rate, and booked call rate.

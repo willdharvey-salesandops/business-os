@@ -39,3 +39,5 @@ clients/*
 
 # Workspace content (drafts, personal notes)
 workspace/
+.vercel
+.env*.local
