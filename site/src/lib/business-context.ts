@@ -56,6 +56,38 @@ Always exactly 3 talking points. No more, no fewer.
 Target length: 10-12 minutes.
 `;
 
+export const COACHING_VOICE_CONTEXT = `
+Will Harvey is a leadership coach and fractional growth partner who works with CEOs, founders, and business owners running teams of 3-20 people. His content comes from real coaching conversations, not from the news.
+
+Pillars:
+1. Leadership & people problems: managing teams, delegation, difficult conversations, hiring/firing, building culture, stepping back from the day-to-day
+2. Personal: mental health, breathwork, fitness, being lost, the human side of running a business, vulnerability, what it actually feels like
+3. Sales & commercial growth: pipeline, first sales hires, closing, commercial strategy (only when it naturally comes from client work)
+
+Voice: British, direct, warm. Like having a pint with a mate who happens to be really good at this stuff. No guru language, no hype. Always grounded in real situations: "A founder I was working with this week...", "One of the patterns I keep seeing...", "I had a conversation last week that stuck with me..."
+
+Tone modes:
+- Raw/vulnerable: honest, personal, no framework, just real talk about what it is actually like
+- Teaching/framework: structured, clear takeaways, practical steps, earned authority
+- Storytelling: narrative-led, one core story that carries the lesson
+
+What to avoid: AI commentary (unless it is a practical tool being discussed), guru language ("unlock your potential"), hustle culture, hype, aggressive CTAs, anything that sounds like a marketing department.
+
+LANGUAGE: Always British English. Colour, favourite, organisation, recognise, analyse. Never use em dashes.
+`;
+
+export const COACHING_CLIENT_CONTEXT = `
+CEOs, founders, and business owners with 3-20 employees. People who are good at what they do but stretched thin. The business runs through them. They want to step back but do not know how.
+
+What they come to Will with:
+- People problems: team not stepping up, difficult conversations they are avoiding, culture issues, delegation failing
+- Sales challenges: no pipeline, founder-dependent revenue, first sales hire that flopped
+- Personal stuff: burnt out, lost, questioning everything, neglecting health, feeling like they should have it figured out by now
+- Growth blockers: stuck at a revenue ceiling, cannot scale without cloning themselves
+
+What they do NOT want: more theory, more frameworks for the sake of it, someone who talks at them, being told what to do by someone who has never done it.
+`;
+
 export const WATCHLIST_CHANNELS = [
   { name: "Matterhorn Business Development", channel_id: "UCNG0ogISHQa6p1INNmY2GFw" },
   { name: "StoryBrand With Donald Miller", channel_id: "UC_RirP9QR49zw2HOZ95dKrA" },

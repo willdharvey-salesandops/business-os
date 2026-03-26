@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coaching Engine | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .app.visible { opacity: 1; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 4rem;
+      scroll-behavior: smooth;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SESSION SELECTOR ---- */
+    .session-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .session-select {
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: var(--grey-600);
+      outline: none;
+      cursor: pointer;
+      max-width: 200px;
+    }
+    .session-select:focus { border-color: var(--teal); }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { background: var(--grey-100); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--grey-400); }
+    .btn-ghost:hover { color: var(--grey-600); background: var(--grey-100); }
+    .btn-success { background: var(--green); color: var(--white); border-color: var(--green); }
+    .btn-success:hover { background: #15803d; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ---- STAGE CARD ---- */
+    .stage {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      transition: all 0.3s;
+      overflow: hidden;
+    }
+    .stage.active { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal), var(--shadow-md); }
+    .stage.completed { border-color: rgba(22, 163, 74, 0.2); }
+    .stage.locked { opacity: 0.5; pointer-events: none; }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .stage-header:hover { background: var(--grey-100); }
+    .stage.active .stage-header:hover { background: var(--teal-glow); }
+    .stage-number {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
+      background: var(--grey-100); color: var(--grey-400);
+      border: 1.5px solid var(--grey-200);
+      transition: all 0.3s;
+    }
+    .stage.active .stage-number { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .stage.completed .stage-number { background: var(--green); color: var(--white); border-color: var(--green); }
+    .stage-title {
+      font-family: var(--font-heading);
+      font-size: 0.92rem; font-weight: 600; color: var(--ink); flex: 1;
+    }
+    .stage-summary {
+      font-size: 0.7rem; color: var(--grey-400);
+      max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .stage.completed .stage-summary { color: var(--green); }
+    .stage-chevron {
+      width: 16px; height: 16px; color: var(--grey-300);
+      transition: transform 0.2s; flex-shrink: 0;
+    }
+    .stage.expanded .stage-chevron { transform: rotate(180deg); }
+    .stage-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .stage.expanded .stage-body { max-height: 20000px; }
+    .stage-inner { padding: 0 1.25rem 1.25rem; }
+    .stage-divider { height: 1px; background: var(--grey-200); margin-bottom: 1rem; }
+
+    /* ---- FORM ELEMENTS ---- */
+    .field-label {
+      display: block; font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--grey-400); margin-bottom: 0.3rem;
+    }
+    .field-input {
+      width: 100%; padding: 0.6rem 0.75rem;
+      border: 1px solid var(--grey-200); border-radius: var(--radius-md);
+      font-family: var(--font-body); font-size: 0.85rem; color: var(--ink);
+      outline: none; transition: border-color 0.2s; background: var(--white);
+    }
+    .field-input:focus { border-color: var(--teal); }
+    .field-input::placeholder { color: var(--grey-300); }
+    textarea.field-input { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+    /* ---- PILLAR BADGES ---- */
+    .pillar-badge {
+      display: inline-flex; align-items: center;
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 0.15rem 0.45rem;
+      border-radius: 100px; margin-left: 0.3rem;
+    }
+    .pillar-badge.leadership { background: rgba(17, 94, 89, 0.08); color: var(--teal); }
+    .pillar-badge.personal { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .pillar-badge.sales { background: rgba(234, 88, 12, 0.08); color: var(--orange); }
+
+    .mood-badge {
+      display: inline-flex; align-items: center;
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 0.15rem 0.45rem;
+      border-radius: 100px; margin-left: 0.3rem;
+    }
+    .mood-badge.raw { background: rgba(220, 38, 38, 0.08); color: var(--red); }
+    .mood-badge.teaching { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+    .mood-badge.story { background: rgba(217, 119, 6, 0.08); color: var(--amber); }
+
+    .type-badge {
+      display: inline-flex; align-items: center;
+      font-size: 0.55rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 0.1rem 0.35rem;
+      border-radius: 100px; margin-left: 0.2rem;
+      background: var(--grey-100); color: var(--grey-400);
+    }
+
+    /* ---- THEME CARD ---- */
+    .theme-card {
+      background: var(--grey-100);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .theme-card-content { flex: 1; }
+    .theme-card-label {
+      font-size: 0.82rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+    .theme-card-context {
+      font-size: 0.75rem; color: var(--grey-500); line-height: 1.5;
+    }
+
+    /* ---- ANGLE CARD ---- */
+    .angle-cards { display: flex; flex-direction: column; gap: 0.65rem; }
+    .angle-card {
+      background: var(--grey-100);
+      border: 2px solid transparent;
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .angle-card:hover { border-color: var(--grey-200); }
+    .angle-card.selected { border-color: var(--teal); background: var(--teal-glow); }
+    .angle-card-headline {
+      font-family: var(--font-heading);
+      font-size: 1rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+    .angle-card-context {
+      font-size: 0.78rem; color: var(--grey-500); line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+    .angle-card-points {
+      list-style: none; padding: 0;
+    }
+    .angle-card-points li {
+      font-size: 0.75rem; color: var(--grey-600);
+      padding: 0.15rem 0 0.15rem 1rem;
+      position: relative;
+    }
+    .angle-card-points li::before {
+      content: ''; position: absolute; left: 0; top: 0.55rem;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--teal);
+    }
+
+    /* ---- SCRIPT OUTLINE ---- */
+    .script-outline {
+      background: var(--grey-100);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .script-outline-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 0.75rem;
+    }
+    .script-section {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .script-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .script-section-heading {
+      font-size: 0.82rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+    .script-section-content {
+      font-size: 0.78rem; color: var(--grey-600); line-height: 1.6;
+    }
+    .script-marker {
+      display: inline-block; font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.1rem 0.4rem; border-radius: 3px; margin-right: 0.3rem;
+    }
+    .script-marker.story { background: rgba(217, 119, 6, 0.08); color: var(--amber); }
+    .script-marker.beat { background: rgba(124, 58, 237, 0.08); color: var(--purple); }
+    .script-editable {
+      width: 100%; padding: 0.5rem 0.65rem;
+      border: 1px solid var(--grey-200); border-radius: var(--radius-sm);
+      font-family: var(--font-body); font-size: 0.78rem; color: var(--grey-600);
+      line-height: 1.6; background: var(--white); resize: vertical;
+      min-height: 60px; outline: none;
+    }
+    .script-editable:focus { border-color: var(--teal); }
+
+    /* ---- INPUT TABS ---- */
+    .input-tabs {
+      display: flex; gap: 0; margin-bottom: 1rem;
+      border: 1px solid var(--grey-200); border-radius: var(--radius-md); overflow: hidden;
+    }
+    .input-tab {
+      flex: 1; padding: 0.5rem; text-align: center;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--grey-400); background: var(--grey-100);
+      border: none; cursor: pointer; transition: all 0.2s;
+      border-right: 1px solid var(--grey-200);
+    }
+    .input-tab:last-child { border-right: none; }
+    .input-tab:hover { color: var(--grey-600); }
+    .input-tab.active { background: var(--white); color: var(--teal); }
+    .input-panel { display: none; }
+    .input-panel.active { display: block; }
+
+    /* ---- DROP ZONE ---- */
+    .drop-zone {
+      border: 2px dashed var(--grey-200); border-radius: var(--radius-md);
+      padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--teal-bright); background: var(--teal-glow);
+    }
+    .drop-zone-text { font-size: 0.82rem; color: var(--grey-400); }
+    .drop-zone-hint { font-size: 0.7rem; color: var(--grey-300); margin-top: 0.25rem; }
+
+    .word-count { font-size: 0.68rem; color: var(--grey-300); text-align: right; margin-top: 0.25rem; }
+
+    /* ---- SCRIPT CARDS (Shorts) ---- */
+    .script-cards { display: flex; flex-direction: column; gap: 0.65rem; }
+    .script-card { background: var(--grey-100); border-radius: var(--radius-md); overflow: hidden; }
+    .script-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.65rem 0.85rem; cursor: pointer; transition: background 0.15s;
+    }
+    .script-card-header:hover { background: var(--grey-200); }
+    .script-card-title { font-size: 0.82rem; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 0.4rem; }
+    .script-card-duration { font-size: 0.65rem; color: var(--grey-400); font-weight: 500; }
+    .script-card-body { display: none; padding: 0 0.85rem 0.85rem; }
+    .script-card.expanded .script-card-body { display: block; }
+    .script-section-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--teal); margin: 0.65rem 0 0.25rem;
+    }
+    .script-section-label:first-child { margin-top: 0; }
+    .script-text { font-size: 0.82rem; color: var(--grey-600); line-height: 1.6; }
+    .on-screen-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+    .on-screen-tag {
+      font-size: 0.65rem; font-weight: 600;
+      background: rgba(37, 99, 235, 0.06); color: var(--blue);
+      padding: 0.2rem 0.5rem; border-radius: 100px;
+    }
+
+    /* ---- BLOG PREVIEW ---- */
+    .blog-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-bottom: 1rem; }
+    .blog-meta-grid .full { grid-column: 1 / -1; }
+    .blog-preview {
+      background: var(--grey-100); border-radius: var(--radius-md); padding: 1.25rem;
+      font-size: 0.85rem; color: var(--grey-600); line-height: 1.7;
+      max-height: 400px; overflow-y: auto;
+    }
+    .blog-preview::-webkit-scrollbar { width: 4px; }
+    .blog-preview::-webkit-scrollbar-track { background: transparent; }
+    .blog-preview::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+    .blog-preview h1, .blog-preview h2, .blog-preview h3 {
+      font-family: var(--font-heading); color: var(--ink); margin: 1rem 0 0.4rem;
+    }
+    .blog-preview h1 { font-size: 1.2rem; }
+    .blog-preview h2 { font-size: 1rem; }
+    .blog-preview h3 { font-size: 0.9rem; }
+    .blog-preview p { margin-bottom: 0.6rem; }
+    .blog-preview ul, .blog-preview ol { padding-left: 1.25rem; margin-bottom: 0.6rem; }
+    .blog-preview strong { color: var(--ink); }
+
+    /* ---- NEWSLETTER ---- */
+    .newsletter-preview { background: var(--grey-100); border-radius: var(--radius-md); padding: 1.25rem; }
+    .newsletter-subject { font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 0.15rem; }
+    .newsletter-preview-text { font-size: 0.75rem; color: var(--grey-400); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--grey-200); }
+    .newsletter-body { font-size: 0.85rem; color: var(--grey-600); line-height: 1.7; }
+    .newsletter-body h1, .newsletter-body h2, .newsletter-body h3 { font-family: var(--font-heading); color: var(--ink); margin: 1rem 0 0.4rem; }
+    .newsletter-body h2 { font-size: 1rem; }
+    .newsletter-body h3 { font-size: 0.9rem; }
+    .newsletter-body p { margin-bottom: 0.6rem; }
+    .newsletter-body ul, .newsletter-body ol { padding-left: 1.25rem; margin-bottom: 0.6rem; }
+    .newsletter-body strong { color: var(--ink); }
+
+    /* ---- DISTRIBUTION ---- */
+    .dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .dist-card { background: var(--grey-100); border-radius: var(--radius-md); padding: 0.85rem; }
+    .dist-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .dist-card-name { font-size: 0.75rem; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 0.35rem; }
+    .dist-card-content {
+      font-size: 0.78rem; color: var(--grey-500); line-height: 1.5;
+      max-height: 140px; overflow-y: auto; white-space: pre-wrap;
+    }
+    .dist-card-content::-webkit-scrollbar { width: 3px; }
+    .dist-card-content::-webkit-scrollbar-track { background: transparent; }
+    .dist-card-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+
+    /* ---- CHECKLIST ---- */
+    .checklist { list-style: none; }
+    .checklist-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0; border-bottom: 1px solid var(--grey-100); }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; flex-shrink: 0; }
+    .checklist-item label { font-size: 0.82rem; color: var(--ink); cursor: pointer; flex: 1; }
+    .checklist-item.checked label { text-decoration: line-through; color: var(--grey-300); }
+    .checklist-progress { font-size: 0.72rem; font-weight: 600; color: var(--grey-400); margin-top: 0.75rem; }
+    .checklist-progress-bar { height: 4px; background: var(--grey-100); border-radius: 2px; margin-top: 0.35rem; overflow: hidden; }
+    .checklist-progress-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width 0.3s; }
+
+    /* ---- ACTIONS ROW ---- */
+    .actions-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
+    .actions-row-right { margin-left: auto; display: flex; gap: 0.5rem; }
+
+    /* ---- LOADING ---- */
+    .generating-indicator { display: flex; align-items: center; gap: 0.5rem; padding: 1rem 0; color: var(--grey-400); font-size: 0.82rem; }
+    .spinner-dots { display: flex; gap: 3px; }
+    .spinner-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: dot-pulse 1.2s ease-in-out infinite; }
+    .spinner-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dot-pulse { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: var(--white);
+      font-size: 0.78rem; font-weight: 500;
+      padding: 0.6rem 1.2rem; border-radius: var(--radius-md);
+      opacity: 0; transition: all 0.3s; z-index: 500;
+      pointer-events: none; max-width: 500px; text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+  <!-- APP -->
+  <div class="app visible" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link" href="control.html" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link" href="content-engine.html" title="Content Engine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="nav-tooltip">Content Engine</span>
+      </a>
+      <a class="nav-link active" title="Coaching Engine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="nav-tooltip">Coaching Engine</span>
+      </a>
+      <div class="nav-spacer"></div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title">Coaching Engine</div>
+          <div class="page-subtitle">Real conversations. Real content. Three times a week.</div>
+        </div>
+        <div class="session-controls">
+          <select class="session-select" id="sessionSelect" onchange="loadSession(this.value)">
+            <option value="">New Session</option>
+          </select>
+          <button class="btn btn-sm" onclick="newSession()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 1: FEED THE ENGINE -->
+      <div class="stage active expanded animate-in delay-1" id="stage1" data-stage="1">
+        <div class="stage-header" onclick="toggleStage(1)">
+          <div class="stage-number">1</div>
+          <div class="stage-title">Feed the Engine</div>
+          <div class="stage-summary" id="stage1Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Paste a transcript from a coaching session (Google Meet, notes, whatever you have). The engine will extract themes and add them to your content bank.</p>
+            <label class="field-label">Client Session Transcript</label>
+            <textarea class="field-input" id="themeTranscript" placeholder="Paste your coaching session transcript here..." style="min-height:180px;" oninput="updateThemeWordCount()"></textarea>
+            <div class="word-count" id="themeWordCount">0 words</div>
+            <div class="actions-row">
+              <button class="btn btn-primary" id="btnExtractThemes" onclick="extractThemes()">
+                Extract Themes
+              </button>
+            </div>
+            <div id="themeLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Extracting themes from your session...</span>
+              </div>
+            </div>
+            <div id="themeOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2: PICK YOUR ANGLE -->
+      <div class="stage animate-in delay-2" id="stage2" data-stage="2">
+        <div class="stage-header" onclick="toggleStage(2)">
+          <div class="stage-number">2</div>
+          <div class="stage-title">Pick Your Angle</div>
+          <div class="stage-summary" id="stage2Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Based on your theme bank, here are 2-3 content angles. Pick the one that resonates today.</p>
+            <label class="field-label">Additional context <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Optional, anything on your mind</span></label>
+            <input type="text" class="field-input" id="angleContext" placeholder="e.g. 'Had a tough conversation about letting someone go this week'" style="margin-bottom:0.75rem;">
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnGenerateAngles" onclick="generateAngles()">
+                Generate Angles
+              </button>
+            </div>
+            <div id="angleLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Pulling angles from your theme bank...</span>
+              </div>
+            </div>
+            <div id="angleOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 3: ROUGH RUN-THROUGH -->
+      <div class="stage animate-in delay-3" id="stage3" data-stage="3">
+        <div class="stage-header" onclick="toggleStage(3)">
+          <div class="stage-number">3</div>
+          <div class="stage-title">Rough Run-Through</div>
+          <div class="stage-summary" id="stage3Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Talk through your thoughts for 5-10 minutes. Just riff. This is raw material, not the final video.</p>
+            <div class="input-tabs" id="roughTabs">
+              <button class="input-tab active" onclick="switchRoughTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchRoughTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchRoughTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="roughPanelPaste">
+              <textarea class="field-input" id="roughTranscript" placeholder="Paste your rough run-through transcript here..." style="min-height:180px;" oninput="updateRoughWordCount()"></textarea>
+              <div class="word-count" id="roughWordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="roughPanelFile">
+              <div class="drop-zone" id="roughFileDropZone"
+                ondrop="handleRoughFileDrop(event)" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="drop-zone-text">Drop a .txt file or click to browse</div>
+                <div class="drop-zone-hint">Plain text files only</div>
+              </div>
+              <input type="file" id="roughFileInput" accept=".txt" style="display:none" onchange="handleRoughFileSelect(event)">
+            </div>
+            <div class="input-panel" id="roughPanelAudio">
+              <div class="drop-zone" id="roughAudioDropZone"
+                ondrop="handleRoughAudioDrop(event)" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="drop-zone-text">Drop an audio file or click to browse</div>
+                <div class="drop-zone-hint">MP3, WAV, M4A, WebM</div>
+              </div>
+              <input type="file" id="roughAudioInput" accept="audio/*" style="display:none" onchange="handleRoughAudioSelect(event)">
+              <div id="roughTranscribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Transcribing audio...</span>
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" onclick="confirmRoughTranscript()">Use This Recording</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 4: SCRIPT & STRUCTURE -->
+      <div class="stage animate-in delay-4" id="stage4" data-stage="4">
+        <div class="stage-header" onclick="toggleStage(4)">
+          <div class="stage-number">4</div>
+          <div class="stage-title">Script & Structure</div>
+          <div class="stage-summary" id="stage4Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">The engine will turn your rough thoughts into a structured script. Edit anything before you record.</p>
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnCreateScript" onclick="createScript()">
+                Create Script
+              </button>
+            </div>
+            <div id="scriptLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Building your script from the rough recording...</span>
+              </div>
+            </div>
+            <div id="scriptOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 5: RECORD & TRANSCRIBE FINAL -->
+      <div class="stage" id="stage5" data-stage="5">
+        <div class="stage-header" onclick="toggleStage(5)">
+          <div class="stage-number">5</div>
+          <div class="stage-title">Record & Transcribe Final</div>
+          <div class="stage-summary" id="stage5Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Record the final video using your script. Then bring the transcript here.</p>
+            <div class="input-tabs" id="finalTabs">
+              <button class="input-tab active" onclick="switchFinalTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchFinalTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchFinalTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="finalPanelPaste">
+              <textarea class="field-input" id="finalTranscript" placeholder="Paste the final transcript here..." style="min-height:180px;" oninput="updateFinalWordCount()"></textarea>
+              <div class="word-count" id="finalWordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="finalPanelFile">
+              <div class="drop-zone" id="finalFileDropZone"
+                ondrop="handleFinalFileDrop(event)" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="drop-zone-text">Drop a .txt file or click to browse</div>
+                <div class="drop-zone-hint">Plain text files only</div>
+              </div>
+              <input type="file" id="finalFileInput" accept=".txt" style="display:none" onchange="handleFinalFileSelect(event)">
+            </div>
+            <div class="input-panel" id="finalPanelAudio">
+              <div class="drop-zone" id="finalAudioDropZone"
+                ondrop="handleFinalAudioDrop(event)" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                <div class="drop-zone-text">Drop an audio file or click to browse</div>
+                <div class="drop-zone-hint">MP3, WAV, M4A, WebM</div>
+              </div>
+              <input type="file" id="finalAudioInput" accept="audio/*" style="display:none" onchange="handleFinalAudioSelect(event)">
+              <div id="finalTranscribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Transcribing audio...</span>
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" onclick="confirmFinalTranscript()">Use This Recording</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 6: SHORT-FORM SCRIPTS -->
+      <div class="stage" id="stage6" data-stage="6">
+        <div class="stage-header" onclick="toggleStage(6)">
+          <div class="stage-number">6</div>
+          <div class="stage-title">Short-Form Scripts</div>
+          <div class="stage-summary" id="stage6Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnShortScripts" onclick="generateShortScripts()">
+                Generate Short Scripts
+              </button>
+              <select id="shortScriptCount" style="padding:0.35rem 0.5rem;border:1px solid var(--grey-200);border-radius:var(--radius-md);font-size:0.75rem;font-family:var(--font-body);">
+                <option value="6">6 scripts</option>
+                <option value="9" selected>9 scripts</option>
+                <option value="12">12 scripts</option>
+              </select>
+            </div>
+            <div id="shortsLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Extracting short-form scripts...</span>
+              </div>
+            </div>
+            <div id="shortsOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 7: BLOG & NEWSLETTER -->
+      <div class="stage" id="stage7" data-stage="7">
+        <div class="stage-header" onclick="toggleStage(7)">
+          <div class="stage-number">7</div>
+          <div class="stage-title">Blog & Newsletter</div>
+          <div class="stage-summary" id="stage7Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+
+            <!-- Blog -->
+            <div style="margin-bottom:1.5rem;">
+              <label class="field-label" style="margin-bottom:0.5rem;">Blog Article</label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnBlog" onclick="generateBlog()">Generate Blog</button>
+              </div>
+              <div id="blogLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Writing blog article...</span>
+                </div>
+              </div>
+              <div id="blogOutput" style="display:none"></div>
+            </div>
+
+            <!-- Newsletter -->
+            <div>
+              <label class="field-label" style="margin-bottom:0.5rem;">Newsletter</label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnNewsletter" onclick="generateNewsletter()">Generate Newsletter</button>
+              </div>
+              <div id="newsletterLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Writing newsletter...</span>
+                </div>
+              </div>
+              <div id="newsletterOutput" style="display:none"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 8: DISTRIBUTE -->
+      <div class="stage" id="stage8" data-stage="8">
+        <div class="stage-header" onclick="toggleStage(8)">
+          <div class="stage-number">8</div>
+          <div class="stage-title">Distribute</div>
+          <div class="stage-summary" id="stage8Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnDistribution" onclick="generateDistribution()">Generate Distribution Snippets</button>
+            </div>
+            <div id="distLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Creating platform snippets...</span>
+              </div>
+            </div>
+            <div id="distOutput" style="display:none"></div>
+
+            <div style="margin-top:1.5rem;">
+              <label class="field-label">Distribution Checklist</label>
+              <ul class="checklist" id="distChecklist">
+                <li class="checklist-item"><input type="checkbox" id="chkYoutube" onchange="updateChecklist()"><label for="chkYoutube">Upload long-form to YouTube</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkLinkedin" onchange="updateChecklist()"><label for="chkLinkedin">Post to LinkedIn</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkTwitter" onchange="updateChecklist()"><label for="chkTwitter">Post thread to Twitter/X</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkInstagram" onchange="updateChecklist()"><label for="chkInstagram">Post to Instagram</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkShorts" onchange="updateChecklist()"><label for="chkShorts">Upload shorts to YouTube/Reels</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkBlog" onchange="updateChecklist()"><label for="chkBlog">Publish blog article</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkNewsletter" onchange="updateChecklist()"><label for="chkNewsletter">Send newsletter</label></li>
+              </ul>
+              <div class="checklist-progress" id="checklistProgress">0 / 7 complete</div>
+              <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistBar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+
+    // ---- SESSION STATE ----
+    let session = {
+      id: null,
+      stage: 1,
+      extractedThemes: null,
+      sessionSummary: '',
+      selectedAngle: null,
+      roughTranscript: '',
+      finalScript: null,
+      finalTranscript: '',
+      shortScripts: null,
+      blog: null,
+      blogPostId: null,
+      newsletter: null,
+      newsletterSlug: null,
+      distribution: { snippets: null, checklist: {} }
+    };
+
+    // ---- SUPABASE HELPERS ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPost(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase POST ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPatch(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'PATCH',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase PATCH ${res.status}`);
+      return res.json();
+    }
+
+    // ---- TOAST ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ---- SESSIONS ----
+    async function loadSessions() {
+      try {
+        const sessions = await sbGet('coaching_sessions?order=updated_at.desc&limit=20');
+        const sel = document.getElementById('sessionSelect');
+        sel.innerHTML = '<option value="">New Session</option>';
+        sessions.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.title || 'Untitled'} (${new Date(s.updated_at).toLocaleDateString()})`;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Failed to load sessions:', e);
+      }
+    }
+
+    async function loadSession(id) {
+      if (!id) { newSession(); return; }
+      try {
+        const rows = await sbGet(`coaching_sessions?id=eq.${id}`);
+        if (!rows.length) return;
+        const s = rows[0];
+        session.id = s.id;
+        session.stage = s.stage || 1;
+        session.extractedThemes = s.extracted_themes;
+        session.sessionSummary = s.title || '';
+        session.selectedAngle = s.selected_angle;
+        session.roughTranscript = s.rough_transcript || '';
+        session.finalScript = s.final_script;
+        session.finalTranscript = s.final_transcript || '';
+        session.shortScripts = s.shorts_scripts;
+        session.blog = s.blog_data;
+        session.blogPostId = s.blog_post_id;
+        session.newsletter = s.newsletter_data;
+        session.newsletterSlug = s.newsletter_slug;
+        session.distribution = {
+          snippets: s.distribution_data,
+          checklist: s.distribution_checklist || {}
+        };
+        restoreUI();
+        showToast('Session loaded');
+      } catch (e) {
+        console.error('Failed to load session:', e);
+        showToast('Failed to load session');
+      }
+    }
+
+    function newSession() {
+      session = {
+        id: null, stage: 1,
+        extractedThemes: null, sessionSummary: '',
+        selectedAngle: null, roughTranscript: '',
+        finalScript: null, finalTranscript: '',
+        shortScripts: null, blog: null, blogPostId: null,
+        newsletter: null, newsletterSlug: null,
+        distribution: { snippets: null, checklist: {} }
+      };
+      document.getElementById('sessionSelect').value = '';
+      document.getElementById('themeTranscript').value = '';
+      document.getElementById('angleContext').value = '';
+      document.getElementById('roughTranscript').value = '';
+      document.getElementById('finalTranscript').value = '';
+      document.getElementById('themeOutput').style.display = 'none';
+      document.getElementById('angleOutput').style.display = 'none';
+      document.getElementById('scriptOutput').style.display = 'none';
+      document.getElementById('shortsOutput').style.display = 'none';
+      document.getElementById('blogOutput').style.display = 'none';
+      document.getElementById('newsletterOutput').style.display = 'none';
+      document.getElementById('distOutput').style.display = 'none';
+      document.getElementById('themeWordCount').textContent = '0 words';
+      document.getElementById('roughWordCount').textContent = '0 words';
+      document.getElementById('finalWordCount').textContent = '0 words';
+      for (let i = 1; i <= 8; i++) {
+        document.getElementById(`stage${i}Summary`).textContent = '';
+        const el = document.getElementById(`stage${i}`);
+        el.classList.remove('completed', 'active', 'expanded');
+      }
+      document.getElementById('stage1').classList.add('active', 'expanded');
+    }
+
+    async function saveSession() {
+      const data = {
+        title: session.selectedAngle?.headline || session.sessionSummary || 'Untitled Session',
+        stage: session.stage,
+        extracted_themes: session.extractedThemes,
+        selected_angle: session.selectedAngle,
+        rough_transcript: session.roughTranscript,
+        final_script: session.finalScript,
+        final_transcript: session.finalTranscript,
+        shorts_scripts: session.shortScripts,
+        blog_data: session.blog,
+        blog_post_id: session.blogPostId,
+        newsletter_data: session.newsletter,
+        newsletter_slug: session.newsletterSlug,
+        distribution_data: session.distribution.snippets,
+        distribution_checklist: session.distribution.checklist,
+        updated_at: new Date().toISOString(),
+        status: 'in_progress'
+      };
+
+      try {
+        if (session.id) {
+          await sbPatch(`coaching_sessions?id=eq.${session.id}`, data);
+        } else {
+          const rows = await sbPost('coaching_sessions', data);
+          if (rows && rows[0]) {
+            session.id = rows[0].id;
+            await loadSessions();
+            document.getElementById('sessionSelect').value = session.id;
+          }
+        }
+      } catch (e) {
+        console.error('Auto-save failed:', e);
+      }
+    }
+
+    // ---- STAGE MANAGEMENT ----
+    function toggleStage(n) {
+      document.getElementById(`stage${n}`).classList.toggle('expanded');
+    }
+
+    function activateStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      el.classList.add('expanded', 'active');
+      updateStageStates();
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    function completeStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      el.classList.add('completed');
+      el.classList.remove('active');
+      session.stage = Math.max(session.stage, n + 1);
+      updateStageStates();
+    }
+
+    function updateStageStates() {
+      for (let i = 1; i <= 8; i++) {
+        const el = document.getElementById(`stage${i}`);
+        el.classList.remove('locked');
+        if (i < session.stage) {
+          el.classList.add('completed');
+        } else if (i === session.stage) {
+          el.classList.add('active');
+        }
+      }
+    }
+
+    function restoreUI() {
+      // Themes
+      if (session.extractedThemes) {
+        renderThemes(session.extractedThemes, session.sessionSummary);
+        document.getElementById('stage1Summary').textContent = `${session.extractedThemes.length} themes`;
+      }
+      // Angle
+      if (session.selectedAngle) {
+        document.getElementById('stage2Summary').textContent = session.selectedAngle.headline;
+      }
+      // Rough transcript
+      if (session.roughTranscript) {
+        document.getElementById('roughTranscript').value = session.roughTranscript;
+        updateRoughWordCount();
+        document.getElementById('stage3Summary').textContent = `${wordCountOf(session.roughTranscript)} words`;
+      }
+      // Script
+      if (session.finalScript) {
+        renderScript(session.finalScript);
+        document.getElementById('stage4Summary').textContent = session.finalScript.title || 'Generated';
+      }
+      // Final transcript
+      if (session.finalTranscript) {
+        document.getElementById('finalTranscript').value = session.finalTranscript;
+        updateFinalWordCount();
+        document.getElementById('stage5Summary').textContent = `${wordCountOf(session.finalTranscript)} words`;
+      }
+      // Shorts
+      if (session.shortScripts) {
+        renderShortScripts(session.shortScripts);
+        document.getElementById('stage6Summary').textContent = `${session.shortScripts.length} scripts`;
+      }
+      // Blog
+      if (session.blog) {
+        renderBlog(session.blog);
+      }
+      // Newsletter
+      if (session.newsletter) {
+        renderNewsletter(session.newsletter);
+      }
+      if (session.blog || session.newsletter) {
+        document.getElementById('stage7Summary').textContent = 'Generated';
+      }
+      // Distribution
+      if (session.distribution.snippets) {
+        renderDistribution(session.distribution.snippets);
+        document.getElementById('stage8Summary').textContent = 'Generated';
+      }
+      // Checklist
+      if (session.distribution.checklist) {
+        Object.entries(session.distribution.checklist).forEach(([key, done]) => {
+          const chk = document.getElementById(`chk${key.charAt(0).toUpperCase() + key.slice(1)}`);
+          if (chk) {
+            chk.checked = done;
+            chk.closest('.checklist-item').classList.toggle('checked', done);
+          }
+        });
+        updateChecklist();
+      }
+      updateStageStates();
+      const currentStage = document.getElementById(`stage${Math.min(session.stage, 8)}`);
+      if (currentStage) currentStage.classList.add('expanded');
+    }
+
+    // ---- UTILITIES ----
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard')).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      });
+    }
+
+    function markdownToHtml(md) {
+      if (!md) return '';
+      return md
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(?!<[hulo])(.+)$/gm, '<p>$1</p>')
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p>(<h[123]>)/g, '$1')
+        .replace(/(<\/h[123]>)<\/p>/g, '$1')
+        .replace(/<p>(<ul>)/g, '$1')
+        .replace(/(<\/ul>)<\/p>/g, '$1')
+        .replace(/<p>(<li>)/g, '$1')
+        .replace(/(<\/li>)<\/p>/g, '$1');
+    }
+
+    function wordCountOf(text) {
+      return text && text.trim() ? text.trim().split(/\s+/).length : 0;
+    }
+
+    function updateThemeWordCount() {
+      const count = wordCountOf(document.getElementById('themeTranscript').value);
+      document.getElementById('themeWordCount').textContent = `${count} words`;
+    }
+
+    function updateRoughWordCount() {
+      const count = wordCountOf(document.getElementById('roughTranscript').value);
+      document.getElementById('roughWordCount').textContent = `${count} words`;
+    }
+
+    function updateFinalWordCount() {
+      const count = wordCountOf(document.getElementById('finalTranscript').value);
+      document.getElementById('finalWordCount').textContent = `${count} words`;
+    }
+
+    // ---- TAB SWITCHING ----
+    function switchRoughTab(tab) {
+      document.querySelectorAll('#roughTabs .input-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`roughPanel${p}`).classList.remove('active'));
+      document.getElementById(`roughPanel${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    }
+
+    function switchFinalTab(tab) {
+      document.querySelectorAll('#finalTabs .input-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`finalPanel${p}`).classList.remove('active'));
+      document.getElementById(`finalPanel${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    }
+
+    // ---- FILE/AUDIO HANDLERS ----
+    function setupDropZone(dropId, inputId) {
+      document.getElementById(dropId).addEventListener('click', () => document.getElementById(inputId).click());
+    }
+
+    setupDropZone('roughFileDropZone', 'roughFileInput');
+    setupDropZone('roughAudioDropZone', 'roughAudioInput');
+    setupDropZone('finalFileDropZone', 'finalFileInput');
+    setupDropZone('finalAudioDropZone', 'finalAudioInput');
+
+    function handleRoughFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); readTextFileInto(e.dataTransfer?.files?.[0], 'roughTranscript', 'roughWordCount', 'roughTabs'); }
+    function handleRoughFileSelect(e) { readTextFileInto(e.target.files?.[0], 'roughTranscript', 'roughWordCount', 'roughTabs'); }
+    function handleFinalFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); readTextFileInto(e.dataTransfer?.files?.[0], 'finalTranscript', 'finalWordCount', 'finalTabs'); }
+    function handleFinalFileSelect(e) { readTextFileInto(e.target.files?.[0], 'finalTranscript', 'finalWordCount', 'finalTabs'); }
+
+    function readTextFileInto(file, textareaId, wordCountId, tabGroupId) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById(textareaId).value = e.target.result;
+        document.getElementById(wordCountId).textContent = `${wordCountOf(e.target.result)} words`;
+        // Switch to paste tab
+        document.querySelectorAll(`#${tabGroupId} .input-tab`).forEach(t => t.classList.remove('active'));
+        document.querySelector(`#${tabGroupId} .input-tab:first-child`).classList.add('active');
+        const prefix = tabGroupId === 'roughTabs' ? 'rough' : 'final';
+        ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`${prefix}Panel${p}`).classList.remove('active'));
+        document.getElementById(`${prefix}PanelPaste`).classList.add('active');
+        showToast(`Loaded ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
+
+    function handleRoughAudioDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); transcribeAudio(e.dataTransfer?.files?.[0], 'rough'); }
+    function handleRoughAudioSelect(e) { transcribeAudio(e.target.files?.[0], 'rough'); }
+    function handleFinalAudioDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); transcribeAudio(e.dataTransfer?.files?.[0], 'final'); }
+    function handleFinalAudioSelect(e) { transcribeAudio(e.target.files?.[0], 'final'); }
+
+    async function transcribeAudio(file, prefix) {
+      if (!file) return;
+      const loadingEl = document.getElementById(`${prefix}TranscribeLoading`);
+      loadingEl.style.display = 'block';
+      try {
+        // Get FAL key
+        const keyRes = await fetch('/api/thumbnails/get-upload-url', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+        });
+        const keyData = await keyRes.json();
+        if (!keyData.fal_key) throw new Error('Could not get upload key');
+
+        // Upload to fal.ai storage
+        const initRes = await fetch('https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3', {
+          method: 'POST',
+          headers: { 'Authorization': `Key ${keyData.fal_key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_name: file.name, content_type: file.type || 'audio/mpeg' })
+        });
+        const initData = await initRes.json();
+        if (!initData.upload_url) throw new Error('No upload URL returned');
+
+        await fetch(initData.upload_url, {
+          method: 'PUT', headers: { 'Content-Type': file.type || 'audio/mpeg' }, body: file
+        });
+
+        // Transcribe
+        const transRes = await fetch('/api/content-engine/transcribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio_url: initData.file_url })
+        });
+        const transData = await transRes.json();
+        if (!transRes.ok || !transData.success) throw new Error(transData.error || 'Transcription failed');
+
+        const textareaId = prefix === 'rough' ? 'roughTranscript' : 'finalTranscript';
+        const wordCountId = prefix === 'rough' ? 'roughWordCount' : 'finalWordCount';
+        const tabGroupId = prefix === 'rough' ? 'roughTabs' : 'finalTabs';
+        document.getElementById(textareaId).value = transData.text;
+        document.getElementById(wordCountId).textContent = `${wordCountOf(transData.text)} words`;
+        // Switch to paste tab
+        document.querySelectorAll(`#${tabGroupId} .input-tab`).forEach(t => t.classList.remove('active'));
+        document.querySelector(`#${tabGroupId} .input-tab:first-child`).classList.add('active');
+        ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`${prefix}Panel${p}`).classList.remove('active'));
+        document.getElementById(`${prefix}PanelPaste`).classList.add('active');
+        showToast(`Transcribed ${Math.round(transData.duration_seconds / 60)} minutes of audio`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // ---- STAGE 1: EXTRACT THEMES ----
+    async function extractThemes() {
+      const transcript = document.getElementById('themeTranscript').value.trim();
+      if (!transcript) { showToast('Paste a transcript first'); return; }
+      if (wordCountOf(transcript) < 30) { showToast('Transcript seems too short'); return; }
+
+      document.getElementById('btnExtractThemes').disabled = true;
+      document.getElementById('themeLoading').style.display = 'block';
+      document.getElementById('themeOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/extract-themes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Theme extraction failed');
+
+        session.extractedThemes = data.themes;
+        session.sessionSummary = data.session_summary || '';
+        session.stage = Math.max(session.stage, 2);
+        renderThemes(data.themes, data.session_summary, data.total_themes);
+        document.getElementById('stage1Summary').textContent = `${data.themes.length} themes extracted`;
+        completeStage(1);
+        activateStage(2);
+        saveSession();
+        showToast(`${data.saved_count} themes saved to your bank (${data.total_themes} total)`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnExtractThemes').disabled = false;
+        document.getElementById('themeLoading').style.display = 'none';
+      }
+    }
+
+    function renderThemes(themes, summary, totalCount) {
+      let html = '';
+      if (summary) {
+        html += `<div style="margin-bottom:1rem;padding:0.75rem 1rem;background:linear-gradient(135deg, var(--teal-muted), rgba(45,212,191,0.06));border-radius:var(--radius-lg);border-left:3px solid var(--teal-bright);">
+          <div style="font-size:0.82rem;color:var(--grey-600);line-height:1.55;">${esc(summary)}</div>
+        </div>`;
+      }
+      if (totalCount) {
+        html += `<div style="font-size:0.72rem;font-weight:600;color:var(--grey-400);margin-bottom:0.75rem;">${totalCount} themes in your bank</div>`;
+      }
+      themes.forEach(t => {
+        html += `<div class="theme-card">
+          <div class="theme-card-content">
+            <div class="theme-card-label">${esc(t.theme)}
+              <span class="pillar-badge ${esc(t.pillar)}">${esc(t.pillar)}</span>
+              <span class="type-badge">${esc(t.type?.replace('_', ' '))}</span>
+            </div>
+            <div class="theme-card-context">${esc(t.context)}</div>
+          </div>
+        </div>`;
+      });
+      const el = document.getElementById('themeOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 2: GENERATE ANGLES ----
+    async function generateAngles() {
+      document.getElementById('btnGenerateAngles').disabled = true;
+      document.getElementById('angleLoading').style.display = 'block';
+      document.getElementById('angleOutput').style.display = 'none';
+
+      try {
+        const context = document.getElementById('angleContext').value.trim();
+        const res = await fetch('/api/coaching-engine/generate-angles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ context })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Angle generation failed');
+
+        renderAngles(data.angles);
+        showToast(`${data.angles.length} angles generated`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnGenerateAngles').disabled = false;
+        document.getElementById('angleLoading').style.display = 'none';
+      }
+    }
+
+    function renderAngles(angles) {
+      let html = '<div class="angle-cards">';
+      angles.forEach((a, i) => {
+        html += `<div class="angle-card" onclick="selectAngle(${i})" data-index="${i}">
+          <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;">
+            <span class="pillar-badge ${esc(a.pillar)}">${esc(a.pillar)}</span>
+            <span class="mood-badge ${esc(a.mood)}">${esc(a.mood)}</span>
+          </div>
+          <div class="angle-card-headline">${esc(a.headline)}</div>
+          <div class="angle-card-context">${esc(a.context)}</div>
+          <ul class="angle-card-points">
+            ${(a.talking_points || []).map(p => `<li>${esc(p)}</li>`).join('')}
+          </ul>
+        </div>`;
+      });
+      html += '</div>';
+
+      window._generatedAngles = angles;
+      const el = document.getElementById('angleOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    function selectAngle(idx) {
+      const angles = window._generatedAngles;
+      if (!angles || !angles[idx]) return;
+
+      session.selectedAngle = angles[idx];
+      session.stage = Math.max(session.stage, 3);
+
+      document.querySelectorAll('.angle-card').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+      document.getElementById('stage2Summary').textContent = angles[idx].headline;
+      completeStage(2);
+      activateStage(3);
+      saveSession();
+      showToast(`Selected: "${angles[idx].headline}"`);
+    }
+
+    // ---- STAGE 3: ROUGH TRANSCRIPT ----
+    function confirmRoughTranscript() {
+      const text = document.getElementById('roughTranscript').value.trim();
+      if (!text) { showToast('Enter or upload your rough recording first'); return; }
+      if (wordCountOf(text) < 30) { showToast('Recording seems too short'); return; }
+
+      session.roughTranscript = text;
+      session.stage = Math.max(session.stage, 4);
+      document.getElementById('stage3Summary').textContent = `${wordCountOf(text)} words`;
+      completeStage(3);
+      activateStage(4);
+      saveSession();
+      showToast('Rough recording confirmed');
+    }
+
+    // ---- STAGE 4: CREATE SCRIPT ----
+    async function createScript() {
+      if (!session.roughTranscript) { showToast('Complete the rough run-through first'); return; }
+
+      document.getElementById('btnCreateScript').disabled = true;
+      document.getElementById('scriptLoading').style.display = 'block';
+      document.getElementById('scriptOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/create-script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rough_transcript: session.roughTranscript,
+            angle: session.selectedAngle,
+            mood: session.selectedAngle?.mood || 'teaching'
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Script creation failed');
+
+        session.finalScript = data.script;
+        session.stage = Math.max(session.stage, 5);
+        renderScript(data.script);
+        document.getElementById('stage4Summary').textContent = data.script.title || 'Script ready';
+        completeStage(4);
+        activateStage(5);
+        saveSession();
+        showToast('Script created');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnCreateScript').disabled = false;
+        document.getElementById('scriptLoading').style.display = 'none';
+      }
+    }
+
+    function renderScript(script) {
+      let html = `<div class="script-outline" style="margin-top:1rem;">`;
+      html += `<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+        <span class="mood-badge ${esc(script.mood)}">${esc(script.mood)}</span>
+        <span style="font-size:0.72rem;color:var(--grey-400);">${esc(script.estimated_duration || '')}</span>
+      </div>`;
+      html += `<div class="script-outline-title">${esc(script.title)}</div>`;
+
+      // Hook
+      if (script.hook) {
+        html += `<div class="script-section">
+          <div class="script-section-heading">Hook</div>
+          <div class="script-section-content">${esc(script.hook)}</div>
+        </div>`;
+      }
+
+      // Sections
+      if (script.sections) {
+        script.sections.forEach((s, i) => {
+          html += `<div class="script-section">
+            <div class="script-section-heading">${esc(s.heading)}</div>`;
+          if (s.key_points && s.key_points.length) {
+            html += `<ul style="padding-left:1rem;margin:0.35rem 0;">`;
+            s.key_points.forEach(p => { html += `<li style="font-size:0.78rem;color:var(--grey-600);margin-bottom:0.2rem;">${esc(p)}</li>`; });
+            html += `</ul>`;
+          }
+          if (s.story_prompt) {
+            html += `<div style="margin-top:0.35rem;"><span class="script-marker story">Story</span><span style="font-size:0.78rem;color:var(--grey-500);">${esc(s.story_prompt.replace('[STORY:]', '').trim())}</span></div>`;
+          }
+          if (s.emotional_beat) {
+            html += `<div style="margin-top:0.25rem;"><span class="script-marker beat">Beat</span><span style="font-size:0.78rem;color:var(--grey-500);font-style:italic;">${esc(s.emotional_beat.replace('[BEAT:]', '').trim())}</span></div>`;
+          }
+          if (s.transition) {
+            html += `<div style="margin-top:0.35rem;font-size:0.72rem;color:var(--grey-400);">Transition: ${esc(s.transition)}</div>`;
+          }
+          html += `</div>`;
+        });
+      }
+
+      // Closing
+      if (script.closing) {
+        html += `<div class="script-section">
+          <div class="script-section-heading">Closing</div>
+          <div class="script-section-content">${esc(script.closing)}</div>
+        </div>`;
+      }
+
+      // Notes
+      if (script.notes) {
+        html += `<div style="margin-top:0.75rem;padding:0.65rem 0.85rem;background:rgba(217,119,6,0.06);border-radius:var(--radius-md);border-left:3px solid var(--amber);">
+          <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--amber);margin-bottom:0.15rem;">Notes</div>
+          <div style="font-size:0.78rem;color:var(--grey-600);">${esc(script.notes)}</div>
+        </div>`;
+      }
+
+      html += `</div>`;
+
+      const el = document.getElementById('scriptOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 5: FINAL TRANSCRIPT ----
+    function confirmFinalTranscript() {
+      const text = document.getElementById('finalTranscript').value.trim();
+      if (!text) { showToast('Enter or upload the final transcript first'); return; }
+      if (wordCountOf(text) < 50) { showToast('Transcript seems too short'); return; }
+
+      session.finalTranscript = text;
+      session.stage = Math.max(session.stage, 6);
+      document.getElementById('stage5Summary').textContent = `${wordCountOf(text)} words`;
+      completeStage(5);
+      activateStage(6);
+      saveSession();
+      showToast('Final transcript confirmed');
+    }
+
+    // ---- STAGE 6: SHORT SCRIPTS ----
+    async function generateShortScripts() {
+      if (!session.finalTranscript) { showToast('Complete the final recording first'); return; }
+
+      const count = parseInt(document.getElementById('shortScriptCount').value);
+      document.getElementById('btnShortScripts').disabled = true;
+      document.getElementById('shortsLoading').style.display = 'block';
+      document.getElementById('shortsOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/short-scripts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: session.finalTranscript, count })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Script generation failed');
+
+        session.shortScripts = data.scripts;
+        session.stage = Math.max(session.stage, 7);
+        renderShortScripts(data.scripts);
+        document.getElementById('stage6Summary').textContent = `${data.scripts.length} scripts`;
+        completeStage(6);
+        activateStage(7);
+        saveSession();
+        showToast(`${data.scripts.length} short-form scripts generated`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnShortScripts').disabled = false;
+        document.getElementById('shortsLoading').style.display = 'none';
+      }
+    }
+
+    function renderShortScripts(scripts) {
+      let html = '<div class="script-cards" style="margin-top:1rem;">';
+      scripts.forEach((s, i) => {
+        html += `<div class="script-card" onclick="this.classList.toggle('expanded')">
+          <div class="script-card-header">
+            <div class="script-card-title">
+              <span style="color:var(--teal);font-weight:700;">${i + 1}.</span>
+              ${esc(s.title)}
+              ${s.topic_group ? `<span style="font-size:0.6rem;font-weight:600;background:var(--teal-muted);color:var(--teal);padding:0.1rem 0.35rem;border-radius:3px;">${esc(s.topic_group)}</span>` : ''}
+            </div>
+            <div class="script-card-duration">${esc(s.estimated_duration || '')}</div>
+          </div>
+          <div class="script-card-body">
+            <div class="script-section-label">Hook</div>
+            <div class="script-text">${esc(s.hook)}</div>
+            <div class="script-section-label">Body</div>
+            <div class="script-text">${esc(s.body)}</div>
+            <div class="script-section-label">CTA</div>
+            <div class="script-text">${esc(s.cta)}</div>
+            ${s.on_screen_text ? `<div class="on-screen-tags">${s.on_screen_text.map(t => `<span class="on-screen-tag">${esc(t)}</span>`).join('')}</div>` : ''}
+            <div style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();copyText(\`${esc(s.hook)}\\n\\n${esc(s.body)}\\n\\n${esc(s.cta)}\`)">Copy Script</button>
+            </div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+      const el = document.getElementById('shortsOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 7: BLOG & NEWSLETTER ----
+    async function generateBlog() {
+      if (!session.finalTranscript) { showToast('Complete the final recording first'); return; }
+
+      document.getElementById('btnBlog').disabled = true;
+      document.getElementById('blogLoading').style.display = 'block';
+      document.getElementById('blogOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.finalTranscript,
+            angle: session.selectedAngle,
+            publish_draft: true
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Blog generation failed');
+
+        session.blog = data.blog;
+        session.blogPostId = data.blog_post_id;
+        renderBlog(data.blog);
+        document.getElementById('stage7Summary').textContent = 'Generated';
+        saveSession();
+        showToast('Blog article generated' + (data.blog_post_id ? ' (draft saved)' : ''));
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnBlog').disabled = false;
+        document.getElementById('blogLoading').style.display = 'none';
+      }
+    }
+
+    function renderBlog(blog) {
+      let html = `<div style="margin-top:1rem;">`;
+      html += `<div class="blog-meta-grid">
+        <div><label class="field-label">Title</label><div style="font-size:0.85rem;color:var(--ink);font-weight:600;">${esc(blog.title)}</div></div>
+        <div><label class="field-label">Category</label><div style="font-size:0.85rem;color:var(--ink);">${esc(blog.category)}</div></div>
+        <div class="full"><label class="field-label">Excerpt</label><div style="font-size:0.82rem;color:var(--grey-500);">${esc(blog.excerpt)}</div></div>
+        <div class="full"><label class="field-label">Meta Description</label><div style="font-size:0.75rem;color:var(--grey-400);">${esc(blog.meta_description)}</div></div>
+      </div>`;
+      html += `<div class="blog-preview">${markdownToHtml(blog.content)}</div>`;
+      html += `<div class="actions-row">
+        <button class="btn btn-sm btn-ghost" onclick="copyText(\`${esc(blog.content?.replace(/`/g, '\\`'))}\`)">Copy Markdown</button>
+        ${session.blogPostId ? `<button class="btn btn-sm btn-success" onclick="publishBlog()">Publish Blog</button>` : ''}
+      </div>`;
+      html += `</div>`;
+      const el = document.getElementById('blogOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    async function publishBlog() {
+      if (!session.blogPostId) { showToast('No blog draft to publish'); return; }
+      try {
+        const res = await fetch('/api/content-engine/publish-blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ blog_post_id: session.blogPostId })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Publish failed');
+        showToast(`Blog published at /blog/${data.slug}`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
+    async function generateNewsletter() {
+      if (!session.finalTranscript) { showToast('Complete the final recording first'); return; }
+
+      document.getElementById('btnNewsletter').disabled = true;
+      document.getElementById('newsletterLoading').style.display = 'block';
+      document.getElementById('newsletterOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.finalTranscript,
+            angle: session.selectedAngle
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Newsletter generation failed');
+
+        session.newsletter = data.newsletter;
+        renderNewsletter(data.newsletter);
+        document.getElementById('stage7Summary').textContent = 'Generated';
+        saveSession();
+        showToast('Newsletter generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnNewsletter').disabled = false;
+        document.getElementById('newsletterLoading').style.display = 'none';
+      }
+    }
+
+    function renderNewsletter(nl) {
+      let html = `<div class="newsletter-preview" style="margin-top:1rem;">
+        <div class="newsletter-subject">${esc(nl.subject)}</div>
+        <div class="newsletter-preview-text">${esc(nl.preview_text)}</div>
+        <div class="newsletter-body">${markdownToHtml(nl.body_markdown)}</div>
+        ${nl.cta_text ? `<div style="margin-top:1rem;padding:0.75rem 1rem;background:var(--teal-muted);border-radius:var(--radius-md);font-size:0.82rem;color:var(--grey-600);line-height:1.6;">${esc(nl.cta_text)}</div>` : ''}
+      </div>`;
+      html += `<div class="actions-row">
+        <button class="btn btn-sm btn-ghost" onclick="copyText(\`${esc(nl.body_markdown?.replace(/`/g, '\\`'))}\`)">Copy Body</button>
+        <button class="btn btn-sm btn-success" onclick="publishNewsletter()">Save Newsletter</button>
+      </div>`;
+      const el = document.getElementById('newsletterOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    async function publishNewsletter() {
+      if (!session.newsletter) { showToast('No newsletter to save'); return; }
+      try {
+        const slug = (session.selectedAngle?.headline || session.newsletter.subject || 'untitled')
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+        const res = await fetch('/api/content-engine/publish-newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug,
+            subject: session.newsletter.subject,
+            preview_text: session.newsletter.preview_text,
+            body_markdown: session.newsletter.body_markdown,
+            cta_text: session.newsletter.cta_text,
+            publish: false
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        session.newsletterSlug = slug;
+        saveSession();
+        showToast('Newsletter saved as draft');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
+    // ---- STAGE 8: DISTRIBUTION ----
+    async function generateDistribution() {
+      if (!session.finalTranscript) { showToast('Complete the final recording first'); return; }
+
+      document.getElementById('btnDistribution').disabled = true;
+      document.getElementById('distLoading').style.display = 'block';
+      document.getElementById('distOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/distribution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: session.finalTranscript,
+            blog_title: session.blog?.title,
+            blog_excerpt: session.blog?.excerpt,
+            newsletter_subject: session.newsletter?.subject
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Distribution generation failed');
+
+        session.distribution.snippets = data.snippets;
+        session.stage = Math.max(session.stage, 8);
+        renderDistribution(data.snippets);
+        document.getElementById('stage8Summary').textContent = 'Generated';
+        completeStage(7);
+        activateStage(8);
+        saveSession();
+        showToast('Distribution snippets generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnDistribution').disabled = false;
+        document.getElementById('distLoading').style.display = 'none';
+      }
+    }
+
+    function renderDistribution(snippets) {
+      let html = `<div class="dist-grid" style="margin-top:1rem;">`;
+
+      const platforms = [
+        { key: 'linkedin_post', name: 'LinkedIn', icon: 'LI' },
+        { key: 'youtube_description', name: 'YouTube', icon: 'YT' },
+        { key: 'instagram_caption', name: 'Instagram', icon: 'IG' }
+      ];
+
+      platforms.forEach(p => {
+        const content = snippets[p.key] || '';
+        html += `<div class="dist-card">
+          <div class="dist-card-header">
+            <div class="dist-card-name">${p.name}</div>
+            <button class="btn btn-sm btn-ghost" onclick="copyText(\`${esc(content.replace(/`/g, '\\`'))}\`)">Copy</button>
+          </div>
+          <div class="dist-card-content">${esc(content)}</div>
+        </div>`;
+      });
+
+      // Twitter thread
+      const tweets = snippets.twitter_thread || [];
+      html += `<div class="dist-card">
+        <div class="dist-card-header">
+          <div class="dist-card-name">Twitter/X</div>
+          <button class="btn btn-sm btn-ghost" onclick="copyText(\`${esc(tweets.join('\\n\\n').replace(/`/g, '\\`'))}\`)">Copy</button>
+        </div>
+        <div class="dist-card-content">${tweets.map(t => esc(t)).join('<br><br>')}</div>
+      </div>`;
+
+      html += `</div>`;
+      const el = document.getElementById('distOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- CHECKLIST ----
+    function updateChecklist() {
+      const items = document.querySelectorAll('#distChecklist input[type="checkbox"]');
+      let done = 0;
+      items.forEach(chk => {
+        const key = chk.id.replace('chk', '').toLowerCase();
+        session.distribution.checklist[key] = chk.checked;
+        chk.closest('.checklist-item').classList.toggle('checked', chk.checked);
+        if (chk.checked) done++;
+      });
+      document.getElementById('checklistProgress').textContent = `${done} / ${items.length} complete`;
+      document.getElementById('checklistBar').style.width = `${(done / items.length) * 100}%`;
+      saveSession();
+    }
+
+    // ---- INIT ----
+    (function init() {
+      loadSessions();
+    })();
+  </script>
+</body>
+</html>
