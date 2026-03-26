@@ -167,6 +167,34 @@ export async function downloadFile(fileId: string): Promise<Response> {
 }
 
 /**
+ * List files in a folder matching any of the given MIME types.
+ * Results ordered by createdTime descending (newest first).
+ */
+export async function listFilesByType(folderId: string, mimeTypes: string[]): Promise<DriveFile[]> {
+  const mimeFilter = mimeTypes.map(m => `mimeType='${m}'`).join(' or ');
+  const q = encodeURIComponent(`'${folderId}' in parents and (${mimeFilter}) and trashed=false`);
+  const fields = encodeURIComponent('files(id, name, mimeType, createdTime)');
+  const data = await driveRequest(`/files?q=${q}&fields=${fields}&orderBy=createdTime desc&pageSize=30&supportsAllDrives=true&includeItemsFromAllDrives=true`);
+  return (data.files || []) as DriveFile[];
+}
+
+/**
+ * Export a Google Docs file as plain text.
+ */
+export async function exportAsText(fileId: string): Promise<string> {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${DRIVE_API}/files/${fileId}/export?mimeType=text/plain&supportsAllDrives=true`,
+    { headers: { 'Authorization': `Bearer ${token}` } },
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Drive export failed: ${res.status} ${text}`);
+  }
+  return res.text();
+}
+
+/**
  * Remove public sharing permission after Creatomate has fetched the file
  */
 export async function revokePublicAccess(fileId: string): Promise<void> {

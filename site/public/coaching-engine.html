@@ -396,6 +396,28 @@
     }
     .script-editable:focus { border-color: var(--teal); }
 
+    /* ---- DRIVE RECORDING LIST ---- */
+    .drive-item {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.55rem 0.75rem; border-radius: var(--radius-md);
+      cursor: pointer; transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .drive-item:hover { background: var(--grey-100); }
+    .drive-item.selected { background: var(--teal-glow); border-color: var(--teal); }
+    .drive-item-icon {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: var(--teal-muted); color: var(--teal);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .drive-item-icon svg { width: 14px; height: 14px; }
+    .drive-item-name { font-size: 0.78rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+    .drive-item-date { font-size: 0.65rem; color: var(--grey-400); }
+    .drive-empty {
+      font-size: 0.78rem; color: var(--grey-400); text-align: center;
+      padding: 1.5rem; background: var(--grey-100); border-radius: var(--radius-md);
+    }
+
     /* ---- INPUT TABS ---- */
     .input-tabs {
       display: flex; gap: 0; margin-bottom: 1rem;
@@ -595,9 +617,34 @@
         <div class="stage-body">
           <div class="stage-inner">
             <div class="stage-divider"></div>
-            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Paste a transcript from a coaching session (Google Meet, notes, whatever you have). The engine will extract themes and add them to your content bank.</p>
-            <label class="field-label">Client Session Transcript</label>
-            <textarea class="field-input" id="themeTranscript" placeholder="Paste your coaching session transcript here..." style="min-height:180px;" oninput="updateThemeWordCount()"></textarea>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Pull a transcript from Google Meet or paste one manually. The engine will extract themes and add them to your content bank.</p>
+
+            <!-- Drive recordings list -->
+            <div style="margin-bottom:1rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+                <label class="field-label" style="margin-bottom:0;">Google Meet Recordings</label>
+                <button class="btn btn-sm" id="btnRefreshDrive" onclick="loadDriveRecordings()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:12px;height:12px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  Refresh
+                </button>
+              </div>
+              <div id="driveLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Loading recordings from Google Drive...</span>
+                </div>
+              </div>
+              <div id="driveList" style="max-height:200px;overflow-y:auto;"></div>
+              <div id="driveLoadingTranscript" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Fetching transcript from Drive...</span>
+                </div>
+              </div>
+            </div>
+
+            <label class="field-label">Transcript <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Or paste manually</span></label>
+            <textarea class="field-input" id="themeTranscript" placeholder="Select a recording above or paste your transcript here..." style="min-height:180px;" oninput="updateThemeWordCount()"></textarea>
             <div class="word-count" id="themeWordCount">0 words</div>
             <div class="actions-row">
               <button class="btn btn-primary" id="btnExtractThemes" onclick="extractThemes()">
@@ -1892,9 +1939,79 @@
       saveSession();
     }
 
+    // ---- GOOGLE DRIVE RECORDINGS ----
+    let driveRecordings = [];
+
+    async function loadDriveRecordings() {
+      document.getElementById('driveLoading').style.display = 'block';
+      document.getElementById('driveList').innerHTML = '';
+      try {
+        const res = await fetch('/api/coaching-engine/list-recordings');
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to load recordings');
+
+        driveRecordings = data.transcripts || [];
+        renderDriveList(driveRecordings);
+      } catch (e) {
+        document.getElementById('driveList').innerHTML = `<div class="drive-empty">Could not load recordings: ${esc(e.message)}</div>`;
+      } finally {
+        document.getElementById('driveLoading').style.display = 'none';
+      }
+    }
+
+    function renderDriveList(recordings) {
+      const el = document.getElementById('driveList');
+      if (!recordings.length) {
+        el.innerHTML = '<div class="drive-empty">No transcripts found in Meet Recordings folder</div>';
+        return;
+      }
+      el.innerHTML = recordings.map((r, i) => {
+        const date = new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return `<div class="drive-item" onclick="selectDriveRecording(${i})" data-index="${i}">
+          <div class="drive-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div class="drive-item-name">${esc(r.name)}</div>
+            <div class="drive-item-date">${date}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function selectDriveRecording(idx) {
+      const recording = driveRecordings[idx];
+      if (!recording) return;
+
+      // Highlight selected
+      document.querySelectorAll('.drive-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+
+      document.getElementById('driveLoadingTranscript').style.display = 'block';
+      try {
+        const res = await fetch('/api/coaching-engine/list-recordings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_id: recording.id, file_type: recording.type })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch transcript');
+
+        document.getElementById('themeTranscript').value = data.text;
+        updateThemeWordCount();
+        showToast(`Loaded: ${recording.name}`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('driveLoadingTranscript').style.display = 'none';
+      }
+    }
+
     // ---- INIT ----
     (function init() {
       loadSessions();
+      loadDriveRecordings();
     })();
   </script>
 </body>
