@@ -11,8 +11,26 @@ const TRANSCRIPT_MIME_TYPES = [
   'text/plain',                            // Plain text transcript
 ];
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ url }) => {
   try {
+    const debug = url.searchParams.get('debug') === '1';
+
+    // If debug, list ALL files to see what MIME types exist
+    if (debug) {
+      const allTypes = await listFilesByType(MEET_RECORDINGS_FOLDER, [
+        'application/vnd.google-apps.document',
+        'text/plain',
+        'video/mp4',
+        'application/vnd.google-apps.folder',
+        'application/vnd.google-apps.shortcut',
+        'text/vtt',
+        'application/x-subrip',
+      ]);
+      return new Response(JSON.stringify({ success: true, debug: true, files: allTypes }), {
+        status: 200, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const files = await listFilesByType(MEET_RECORDINGS_FOLDER, TRANSCRIPT_MIME_TYPES);
 
     const transcripts = files.map(f => ({
