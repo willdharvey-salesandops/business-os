@@ -333,6 +333,48 @@ Return valid JSON only (no markdown fences):
   }
 }`;
 
+// ============================================================
+// EMAIL TECH BRIEFING PROMPT (Email marketing, MarTech, SaaS)
+// ============================================================
+const DAILY_BRIEFING_PROMPT_EMAIL_TECH = `You are an AI research assistant and ghostwriter for Will Harvey. Every morning, you compile a daily briefing that Will reads aloud on camera. The recording becomes YouTube long-form content and gets cut into short clips for Instagram and TikTok.
+
+## NICHE: EMAIL MARKETING TECHNOLOGY, MARTECH, AND SMALL BUSINESS SAAS
+This briefing focuses on email marketing technology, MarTech, small business SaaS, AI applied to email and sales and marketing, business growth for companies doing £500k-£5m, and cold email trends. Will builds Email Shepherd, a SaaS email platform, and works with business owners who are trying to grow without hiring a big marketing team.
+
+## NEUTRALISATION RULES (non-negotiable)
+1. Never include a call to action, service pitch, free offer, or link to book/buy/enquire
+2. Never use first-person client relationship language. Always use "owners who..." instead of "owners I work with" etc.
+3. Never position Will as someone the reader should hire, engage, or buy from
+4. The closing thought must end with a reflective question or observation. Full stop.
+5. Never use em dashes
+6. ALWAYS use British English spellings
+
+## WHO IS WILL HARVEY
+- He builds Email Shepherd, a SaaS email platform for small businesses
+- He works with business owners doing £500k-£5m who are trying to grow without a big marketing team
+- His background: building sales teams, designing commercial systems, running a global L&D function, executive coaching of founders and senior leaders
+- Direct, conversational, British, warm but straight-talking
+
+## OUTPUT FORMAT
+Return valid JSON only (no markdown fences):
+{
+  "date": "Full day name DD Month YYYY",
+  "coaching_theme": "One-line coaching theme for today",
+  "items": [
+    {
+      "headline": "Story headline, punchy and clear",
+      "summary": "2-4 sentences of factual detail",
+      "hook": "2-4 sentences translating for small business owners and marketers",
+      "source": "Publication name and URL",
+      "relevance": "Why this matters for email marketing or small business SaaS"
+    }
+  ],
+  "closing": {
+    "title": "Today's Closing Thought",
+    "text": "2-3 sentences with a reflective question or observation. Never a CTA."
+  }
+}`;
+
 const CUSTOM_TOPIC_PROMPT = `You are a research agent for Will Harvey. Will is a sales and business guy who gets AI, not just an AI guy. His primary background: building and leading sales teams, designing sales processes and pipeline systems, client acquisition and retention, commercial strategy for small and scaling businesses, recruiting sales talent, managing client success. Secondary: running a global L&D function, executive coaching. He shares lived experience and insight, not advice as a service.
 
 NEUTRALISATION RULES (non-negotiable): Never include calls to action, links to services, offers of help, or invitations to work together. Never position Will as someone selling a service or available for hire. NEVER use first-person client relationship language: "owners I work with", "owners I speak to", "owners tell me", "I hear from owners", "what we do." Always use "owners who..." instead. Frame coaching moments from past experience: "In my experience building sales teams...", "The pattern I saw running commercial teams...", "When I was building pipeline systems..." The closing thought must end with a reflective question or observation. NEVER a CTA, offer, invitation, or Free Build mention.
@@ -379,6 +421,7 @@ export const POST: APIRoute = async ({ request }) => {
   const { topic, mode } = await request.json();
   const isCustom = topic && topic.trim().length > 0;
   const isSalesMode = mode === 'sales';
+  const isEmailTechMode = mode === 'email_tech';
 
   const anthropic = new Anthropic({ apiKey: anthropicKey });
 
@@ -393,7 +436,7 @@ export const POST: APIRoute = async ({ request }) => {
     systemPrompt = CUSTOM_TOPIC_PROMPT;
     userPrompt = `Today is ${today}. Search for the most important news from the last 24-48 hours about: "${topic}". Find 5-7 real, current stories relevant to small business owners. Include specific names, numbers, and facts.`;
   } else {
-    systemPrompt = isSalesMode ? DAILY_BRIEFING_PROMPT_SALES : DAILY_BRIEFING_PROMPT_GENERAL;
+    systemPrompt = isSalesMode ? DAILY_BRIEFING_PROMPT_SALES : isEmailTechMode ? DAILY_BRIEFING_PROMPT_EMAIL_TECH : DAILY_BRIEFING_PROMPT_GENERAL;
     const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-GB', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
       });
@@ -482,7 +525,36 @@ DO NOT STOP SEARCHING until you have found at least 5 stories published on ${tod
 
 Every story MUST be published on ${today} or ${yesterday}. Check the date on every article. If you cannot verify the publication date is today or yesterday, do not include it. Every story must be real, verifiable, and include the source URL. Lead with the most impactful story. Remember: AI is the hook, but every "Your angle" must answer: "What does this mean for a small business owner trying to sell more with fewer resources?" If a story cannot answer that, it does not belong.`;
 
-    userPrompt = searchPreamble + (isSalesMode ? salesSearchStrategy : generalSearchStrategy);
+    const emailTechSearchStrategy = `
+SEARCH STRATEGY - focus on email marketing technology, MarTech, small business SaaS, and cold email trends:
+- "email marketing technology news today"
+- "MarTech news ${today}"
+- "email marketing AI news today"
+- "cold email trends news today"
+- "email deliverability news today"
+- "Mailchimp Klaviyo Brevo news today"
+- "email automation tools news"
+- "small business SaaS news today"
+- "AI marketing automation news today"
+- "B2B email marketing news"
+- "email marketing statistics report ${today}"
+- "email marketing platform update news"
+- "AI email personalization news"
+- "marketing technology funding news today"
+- "email sender reputation news"
+- "Google Yahoo email requirements news"
+- "GDPR email marketing news"
+
+Then broaden to general AI news if needed:
+- "AI news today"
+- "AI business tools news today"
+- "AI marketing news today"
+- "SaaS product news today"
+- site:emailgeeks.com, site:litmus.com/blog, site:reallygoodemails.com
+
+DO NOT STOP SEARCHING until you have found at least 5 stories published on ${today} or ${yesterday}. Every story must be real, verifiable, and connect to email marketing technology, MarTech, or small business SaaS.`;
+
+    userPrompt = searchPreamble + (isSalesMode ? salesSearchStrategy : isEmailTechMode ? emailTechSearchStrategy : generalSearchStrategy);
   }
 
   const encoder = new TextEncoder();
@@ -500,7 +572,8 @@ Every story MUST be published on ${today} or ${yesterday}. Check the date on eve
 
       try {
         // Send initial status
-        controller.enqueue(encoder.encode(`data: {"type":"status","message":"Searching for today's news..."}\n\n`));
+        const statusMessage = isEmailTechMode ? 'Scanning email & tech news...' : 'Searching for today\'s news...';
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'status', message: statusMessage })}\n\n`));
 
         // Retry with exponential backoff on 429 rate limit errors
         let message: Anthropic.Message;

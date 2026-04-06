@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Engine v2 | Business OS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --white: #ffffff;
+      --ink: #111111;
+      --ink-soft: #1a1a1a;
+      --teal: #115e59;
+      --teal-hover: #0d4a46;
+      --teal-bright: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.12);
+      --teal-muted: rgba(17, 94, 89, 0.08);
+      --grey-600: #555555;
+      --grey-500: #6b6b6b;
+      --grey-400: #888888;
+      --grey-300: #b0b0b0;
+      --grey-200: #e5e5e3;
+      --grey-100: #f3f3f1;
+      --red: #dc2626;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --nav-width: 62px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grey-600);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- LAYOUT ---- */
+    .app { display: flex; height: 100vh; }
+
+    /* ---- LEFT NAV ---- */
+    .left-nav {
+      width: var(--nav-width);
+      min-width: var(--nav-width);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-link {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+    .nav-link.active {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -9px;
+      width: 3px;
+      height: 20px;
+      background: var(--teal-bright);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+    .nav-tooltip {
+      position: absolute;
+      left: 52px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.6rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .nav-link:hover .nav-tooltip { opacity: 1; }
+    .nav-spacer { flex: 1; }
+
+    /* ---- MAIN ---- */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem 2rem 4rem;
+      scroll-behavior: smooth;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 3px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--grey-400);
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SESSION CONTROLS ---- */
+    .session-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .session-select {
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: var(--grey-600);
+      outline: none;
+      cursor: pointer;
+      max-width: 200px;
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      background: var(--white);
+      color: var(--grey-600);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn:hover { background: var(--grey-100); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--teal); color: var(--white); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-hover); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--grey-400); }
+    .btn-ghost:hover { color: var(--grey-600); background: var(--grey-100); }
+    .btn-success { background: var(--green); color: var(--white); border-color: var(--green); }
+    .btn-success:hover { background: #15803d; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .cost-badge {
+      font-size: 0.6rem;
+      font-weight: 400;
+      opacity: 0.7;
+      margin-left: 0.25rem;
+    }
+
+    /* ---- STAGES ---- */
+    .stage {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.5rem;
+      transition: all 0.2s;
+      opacity: 0.5;
+    }
+    .stage.active, .stage.completed { opacity: 1; }
+    .stage.completed { border-left: 3px solid var(--teal-bright); }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      gap: 0.75rem;
+      user-select: none;
+    }
+    .stage-number {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--grey-100);
+      color: var(--grey-400);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .stage.active .stage-number { background: var(--teal); color: var(--white); }
+    .stage.completed .stage-number { background: var(--teal-bright); color: var(--ink); }
+    .stage-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      flex: 1;
+    }
+    .stage-summary {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stage-chevron {
+      width: 16px; height: 16px;
+      color: var(--grey-300);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .stage.expanded .stage-chevron { transform: rotate(180deg); }
+    .stage-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .stage.expanded .stage-body { max-height: 3000px; }
+    .stage-inner {
+      padding: 0 1rem 1rem;
+    }
+    .stage-divider {
+      height: 1px;
+      background: var(--grey-200);
+      margin-bottom: 1rem;
+    }
+
+    /* ---- FORM FIELDS ---- */
+    .field-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--grey-400);
+      margin-bottom: 0.35rem;
+    }
+    .field-input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: var(--ink);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .field-input:focus { border-color: var(--teal); }
+    .field-input::placeholder { color: var(--grey-300); }
+    .word-count {
+      font-size: 0.68rem;
+      color: var(--grey-300);
+      text-align: right;
+      margin-top: 0.25rem;
+    }
+
+    /* ---- INPUT TABS ---- */
+    .input-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .input-tab {
+      padding: 0.35rem 0.75rem;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--grey-400);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .input-tab:hover { color: var(--grey-600); }
+    .input-tab.active {
+      color: var(--teal);
+      background: var(--teal-muted);
+      border-color: rgba(17, 94, 89, 0.12);
+    }
+    .input-panel { display: none; }
+    .input-panel.active { display: block; }
+
+    /* ---- DROP ZONE ---- */
+    .drop-zone {
+      border: 2px dashed var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--teal);
+      background: var(--teal-muted);
+    }
+    .drop-zone-text {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--grey-400);
+      margin-bottom: 0.25rem;
+    }
+    .drop-zone-hint {
+      font-size: 0.68rem;
+      color: var(--grey-300);
+    }
+
+    /* ---- ANGLE CARDS ---- */
+    .angle-card {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .angle-card:hover { border-color: var(--teal); background: var(--teal-muted); }
+    .angle-card.selected { border-color: var(--teal-bright); background: var(--teal-glow); }
+    .angle-card-headline {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+    .angle-card-desc {
+      font-size: 0.78rem;
+      color: var(--grey-500);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+    .angle-card-crossover {
+      font-size: 0.68rem;
+      color: var(--teal);
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    /* ---- BUCKET BADGES ---- */
+    .bucket-badge {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      margin-right: 0.25rem;
+    }
+    .bucket-badge.leadership { background: #dbeafe; color: #1e40af; }
+    .bucket-badge.systems { background: #d1fae5; color: #065f46; }
+    .bucket-badge.founder { background: #fef3c7; color: #92400e; }
+
+    /* ---- THEME CARDS ---- */
+    .theme-card {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .theme-card-content { flex: 1; }
+    .theme-card-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+    .theme-card-context {
+      font-size: 0.72rem;
+      color: var(--grey-500);
+      line-height: 1.45;
+    }
+    .pillar-badge {
+      display: inline-block;
+      font-size: 0.55rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      margin-left: 0.35rem;
+      background: var(--teal-muted);
+      color: var(--teal);
+    }
+
+    /* ---- BRIEFING OUTPUT ---- */
+    .briefing-card {
+      background: var(--grey-100);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .briefing-date {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 0.75rem;
+    }
+    .briefing-item {
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .briefing-item:last-child { border-bottom: none; }
+    .briefing-item-headline {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+    .briefing-item-summary {
+      font-size: 0.75rem;
+      color: var(--grey-500);
+      line-height: 1.5;
+      margin-bottom: 0.25rem;
+    }
+    .briefing-item-hook {
+      font-size: 0.72rem;
+      color: var(--teal);
+      font-style: italic;
+      font-weight: 500;
+    }
+    .briefing-coaching-theme {
+      margin-top: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      background: linear-gradient(135deg, var(--teal-muted), rgba(45,212,191,0.06));
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--teal-bright);
+      font-size: 0.78rem;
+      color: var(--grey-600);
+      line-height: 1.55;
+    }
+
+    /* ---- SCRIPT OUTPUT ---- */
+    .script-output {
+      background: var(--grey-100);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .script-output h3 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .script-section {
+      margin-bottom: 1rem;
+    }
+    .script-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--teal);
+      margin-bottom: 0.25rem;
+    }
+    .script-section-text {
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      line-height: 1.65;
+    }
+
+    /* ---- CONTENT OUTPUT CARDS ---- */
+    .content-card {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+    .content-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: var(--grey-100);
+      cursor: pointer;
+    }
+    .content-card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .content-card-body {
+      padding: 1rem;
+      display: none;
+      font-size: 0.82rem;
+      color: var(--grey-600);
+      line-height: 1.65;
+    }
+    .content-card.open .content-card-body { display: block; }
+
+    /* ---- DISTRIBUTION CARDS ---- */
+    .dist-card {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .dist-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .dist-card-platform {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--grey-400);
+    }
+    .dist-card-content {
+      font-size: 0.78rem;
+      color: var(--grey-600);
+      line-height: 1.55;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .dist-card-content::-webkit-scrollbar { width: 3px; }
+    .dist-card-content::-webkit-scrollbar-track { background: transparent; }
+    .dist-card-content::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+
+    /* ---- CHECKLIST ---- */
+    .checklist { list-style: none; }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--grey-100);
+      font-size: 0.82rem;
+    }
+    .checklist-item.checked label { text-decoration: line-through; color: var(--grey-300); }
+    .checklist-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--teal);
+      cursor: pointer;
+    }
+    .checklist-item label { cursor: pointer; flex: 1; }
+    .checklist-progress {
+      font-size: 0.72rem;
+      color: var(--grey-400);
+      margin-top: 0.75rem;
+    }
+    .checklist-progress-bar {
+      height: 4px;
+      background: var(--grey-100);
+      border-radius: 2px;
+      margin-top: 0.35rem;
+      overflow: hidden;
+    }
+    .checklist-progress-fill {
+      height: 100%;
+      background: var(--teal-bright);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ---- CONNECT SECTION ---- */
+    .connect-input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .connect-input-row .field-input { flex: 1; }
+    .connect-person {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      margin-bottom: 0.35rem;
+      transition: all 0.2s;
+    }
+    .connect-person.done { border-left: 3px solid var(--teal-bright); opacity: 0.6; }
+    .connect-person-info { flex: 1; }
+    .connect-person-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .connect-person-role {
+      font-size: 0.68rem;
+      color: var(--grey-400);
+    }
+    .connect-person-note {
+      font-size: 0.72rem;
+      color: var(--grey-500);
+      font-style: italic;
+      margin-top: 0.15rem;
+    }
+
+    /* ---- SHORT SCRIPT CARDS ---- */
+    .short-script-card {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.35rem;
+    }
+    .short-script-hook {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+    .short-script-body {
+      font-size: 0.75rem;
+      color: var(--grey-500);
+      line-height: 1.5;
+      display: none;
+    }
+    .short-script-card.open .short-script-body { display: block; }
+    .short-script-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    .short-script-duration {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--grey-300);
+      text-transform: uppercase;
+    }
+
+    /* ---- ACTIONS ROW ---- */
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .actions-row-right {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ---- LOADING ---- */
+    .generating-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 0;
+      color: var(--grey-400);
+      font-size: 0.82rem;
+    }
+    .spinner-dots { display: flex; gap: 3px; }
+    .spinner-dots span {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: dot-pulse 1.2s ease-in-out infinite;
+    }
+    .spinner-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dot-pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 500;
+      pointer-events: none;
+      max-width: 500px;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fade-up 0.35s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+  <!-- APP -->
+  <div class="app" id="app">
+
+    <!-- LEFT NAV -->
+    <nav class="left-nav">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <a class="nav-link" href="control.html" title="Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-tooltip">Overview</span>
+      </a>
+      <a class="nav-link active" title="Content Engine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="nav-tooltip">Content Engine</span>
+      </a>
+      <div class="nav-spacer"></div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header animate-in">
+        <div>
+          <div class="page-title">Content Engine</div>
+          <div class="page-subtitle">Two hours on Monday. Content for the week. Connections in the niche.</div>
+        </div>
+        <div class="session-controls">
+          <select class="session-select" id="sessionSelect" onchange="loadSession(this.value)">
+            <option value="">New Session</option>
+          </select>
+          <button class="btn btn-sm" onclick="newSession()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 1: BRAIN DUMP -->
+      <div class="stage active expanded animate-in delay-1" id="stage1" data-stage="1">
+        <div class="stage-header" onclick="toggleStage(1)">
+          <div class="stage-number">1</div>
+          <div class="stage-title">Brain Dump</div>
+          <div class="stage-summary" id="stage1Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">What's on your mind today? Hit record on Superwhisper or your laptop, talk for a few minutes, then paste the transcript here. Or just type. This is optional context that feeds into everything downstream.</p>
+            <label class="field-label">Brain Dump <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Optional. Stream of consciousness.</span></label>
+            <textarea class="field-input" id="brainDumpText" placeholder="What's rattling around in your head? Conversations you've had, things you've noticed, stuff that's annoying you, ideas that won't leave you alone..." style="min-height:140px;" oninput="updateBrainDumpWordCount()"></textarea>
+            <div class="word-count" id="brainDumpWordCount">0 words</div>
+            <div class="actions-row">
+              <button class="btn btn-primary" onclick="saveBrainDump()">Save Brain Dump</button>
+              <button class="btn" onclick="skipBrainDump()">Skip</button>
+            </div>
+
+            <!-- Daily Briefing -->
+            <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--grey-200);">
+              <label class="field-label" style="margin-bottom:0.5rem;">Daily Briefing <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">What's happening today that your audience cares about</span></label>
+              <p style="font-size:0.78rem;color:var(--grey-400);margin-bottom:0.75rem;">Pulls the latest from email marketing, martech, AI in business, and the wider market. Good for finding a hook or reacting to something current.</p>
+              <label class="field-label">Focus <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Optional. Leave blank for the general briefing.</span></label>
+              <input type="text" class="field-input" id="briefingTopic" placeholder="e.g. 'email deliverability changes' or 'AI replacing marketing roles'" style="margin-bottom:0.75rem;">
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnBriefing" onclick="generateBriefing()">
+                  Generate Briefing
+                  <span class="cost-badge">~$0.08, ~20s</span>
+                </button>
+              </div>
+              <div id="briefingLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span class="briefing-status">Scanning today's news...</span>
+                </div>
+              </div>
+              <div id="briefingOutput" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2: FEED THE ENGINE -->
+      <div class="stage animate-in delay-2" id="stage2" data-stage="2">
+        <div class="stage-header" onclick="toggleStage(2)">
+          <div class="stage-number">2</div>
+          <div class="stage-title">Feed the Engine</div>
+          <div class="stage-summary" id="stage2Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Pull in a transcript from anywhere. Coaching session, business meeting, sales call, industry conversation. The engine will extract themes from whatever you give it.</p>
+            <label class="field-label">Source <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">What kind of conversation was this?</span></label>
+            <select class="session-select" id="sourceType" style="max-width:300px;margin-bottom:0.75rem;">
+              <option value="coaching">Coaching session</option>
+              <option value="business_meeting">Business meeting</option>
+              <option value="sales_call">Sales call</option>
+              <option value="industry">Industry conversation</option>
+              <option value="walk_talk">Walk and talk / solo riff</option>
+              <option value="other">Other</option>
+            </select>
+            <div class="input-tabs" id="feedTabs">
+              <button class="input-tab active" onclick="switchFeedTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchFeedTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchFeedTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="feedPanelPaste">
+              <textarea class="field-input" id="feedTranscript" placeholder="Paste your transcript here..." style="min-height:180px;" oninput="updateFeedWordCount()"></textarea>
+              <div class="word-count" id="feedWordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="feedPanelFile">
+              <div class="drop-zone" id="feedFileDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFeedFileDrop(event)">
+                <div class="drop-zone-text">Drop a .txt file here or click to browse</div>
+                <div class="drop-zone-hint">Plain text transcript files only</div>
+                <input type="file" id="feedFileInput" accept=".txt" style="display:none" onchange="handleFeedFileSelect(event)">
+              </div>
+            </div>
+            <div class="input-panel" id="feedPanelAudio">
+              <div class="drop-zone" id="feedAudioDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFeedAudioDrop(event)">
+                <div class="drop-zone-text">Drop an audio file here or click to browse</div>
+                <div class="drop-zone-hint">.mp3, .m4a, .wav, .webm</div>
+                <input type="file" id="feedAudioInput" accept=".mp3,.m4a,.wav,.webm,audio/*" style="display:none" onchange="handleFeedAudioSelect(event)">
+              </div>
+              <div id="feedTranscribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  Transcribing audio...
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" id="btnExtractThemes" onclick="extractThemes()">Extract Themes</button>
+            </div>
+            <div id="themeLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Extracting themes from your conversation...</span>
+              </div>
+            </div>
+            <div id="themeOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 3: TILE THE ANGLES -->
+      <div class="stage animate-in delay-3" id="stage3" data-stage="3">
+        <div class="stage-header" onclick="toggleStage(3)">
+          <div class="stage-number">3</div>
+          <div class="stage-title">Tile the Angles</div>
+          <div class="stage-summary" id="stage3Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:0.75rem;">The engine takes your brain dump + extracted themes and suggests 2-3 angles. Each one is tagged by bucket so you get a good mix across the week.</p>
+            <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+              <span class="bucket-badge leadership">Leadership & People</span>
+              <span class="bucket-badge systems">Systems & Automation</span>
+              <span class="bucket-badge founder">Founder Journey</span>
+            </div>
+            <label class="field-label">Extra context <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Optional. Anything else on your mind for this one.</span></label>
+            <input type="text" class="field-input" id="angleContext" placeholder="e.g. 'Market's tightening, people are pausing hires, how do you do more without more people?'" style="margin-bottom:0.75rem;">
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnGenerateAngles" onclick="generateAngles()">Generate Angles</button>
+            </div>
+            <div id="angleLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Tiling angles from your themes...</span>
+              </div>
+            </div>
+            <div id="angleOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 4: ROUGH RUN-THROUGH -->
+      <div class="stage animate-in delay-4" id="stage4" data-stage="4">
+        <div class="stage-header" onclick="toggleStage(4)">
+          <div class="stage-number">4</div>
+          <div class="stage-title">Rough Run-Through</div>
+          <div class="stage-summary" id="stage4Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Talk through your chosen angle for 5-10 minutes. Just riff. This is raw material, not the final video. The messier the better.</p>
+            <div class="input-tabs" id="roughTabs">
+              <button class="input-tab active" onclick="switchRoughTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchRoughTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchRoughTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="roughPanelPaste">
+              <textarea class="field-input" id="roughTranscript" placeholder="Paste your rough run-through transcript here..." style="min-height:180px;" oninput="updateRoughWordCount()"></textarea>
+              <div class="word-count" id="roughWordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="roughPanelFile">
+              <div class="drop-zone" id="roughFileDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleRoughFileDrop(event)">
+                <div class="drop-zone-text">Drop a .txt file here or click to browse</div>
+                <div class="drop-zone-hint">Plain text files only</div>
+                <input type="file" id="roughFileInput" accept=".txt" style="display:none" onchange="handleRoughFileSelect(event)">
+              </div>
+            </div>
+            <div class="input-panel" id="roughPanelAudio">
+              <div class="drop-zone" id="roughAudioDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleRoughAudioDrop(event)">
+                <div class="drop-zone-text">Drop an audio file here or click to browse</div>
+                <div class="drop-zone-hint">.mp3, .m4a, .wav, .webm</div>
+                <input type="file" id="roughAudioInput" accept=".mp3,.m4a,.wav,.webm,audio/*" style="display:none" onchange="handleRoughAudioSelect(event)">
+              </div>
+              <div id="roughTranscribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  Transcribing audio...
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" onclick="confirmRoughTranscript()">Use This Recording</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 5: LONG-FORM SCRIPT -->
+      <div class="stage" id="stage5" data-stage="5">
+        <div class="stage-header" onclick="toggleStage(5)">
+          <div class="stage-number">5</div>
+          <div class="stage-title">Long-Form Script</div>
+          <div class="stage-summary" id="stage5Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">The engine turns your rough thoughts into an 8-10 minute video script. It keeps your voice and your words, just gives them structure. Edit anything before you record.</p>
+            <div class="actions-row" style="margin-top:0;">
+              <button class="btn btn-primary" id="btnCreateScript" onclick="createScript()">Create Script</button>
+            </div>
+            <div id="scriptLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Building your 8-10 minute script...</span>
+              </div>
+            </div>
+            <div id="scriptOutput" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 6: RECORD & TRANSCRIBE FINAL -->
+      <div class="stage" id="stage6" data-stage="6">
+        <div class="stage-header" onclick="toggleStage(6)">
+          <div class="stage-number">6</div>
+          <div class="stage-title">Record & Transcribe Final</div>
+          <div class="stage-summary" id="stage6Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Record the video using your script, then bring the transcript back here. Now the engine has your actual words, your voice, your tone. Everything downstream pulls from this.</p>
+            <div class="input-tabs" id="finalTabs">
+              <button class="input-tab active" onclick="switchFinalTab('paste')">Paste Text</button>
+              <button class="input-tab" onclick="switchFinalTab('file')">Upload .txt</button>
+              <button class="input-tab" onclick="switchFinalTab('audio')">Upload Audio</button>
+            </div>
+            <div class="input-panel active" id="finalPanelPaste">
+              <textarea class="field-input" id="finalTranscript" placeholder="Paste the final video transcript here..." style="min-height:180px;" oninput="updateFinalWordCount()"></textarea>
+              <div class="word-count" id="finalWordCount">0 words</div>
+            </div>
+            <div class="input-panel" id="finalPanelFile">
+              <div class="drop-zone" id="finalFileDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFinalFileDrop(event)">
+                <div class="drop-zone-text">Drop a .txt file here or click to browse</div>
+                <div class="drop-zone-hint">Plain text files only</div>
+                <input type="file" id="finalFileInput" accept=".txt" style="display:none" onchange="handleFinalFileSelect(event)">
+              </div>
+            </div>
+            <div class="input-panel" id="finalPanelAudio">
+              <div class="drop-zone" id="finalAudioDropZone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFinalAudioDrop(event)">
+                <div class="drop-zone-text">Drop an audio file here or click to browse</div>
+                <div class="drop-zone-hint">.mp3, .m4a, .wav, .webm</div>
+                <input type="file" id="finalAudioInput" accept=".mp3,.m4a,.wav,.webm,audio/*" style="display:none" onchange="handleFinalAudioSelect(event)">
+              </div>
+              <div id="finalTranscribeLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  Transcribing audio...
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-primary" onclick="confirmFinalTranscript()">Use This Recording</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 7: CONTENT GENERATION -->
+      <div class="stage" id="stage7" data-stage="7">
+        <div class="stage-header" onclick="toggleStage(7)">
+          <div class="stage-number">7</div>
+          <div class="stage-title">Content Generation</div>
+          <div class="stage-summary" id="stage7Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">From your final transcript, the engine generates everything. LinkedIn post is the hero. Short-form scripts for chopping the video into 5 clips. Blog and newsletter from the same material.</p>
+
+            <!-- LinkedIn Post -->
+            <div style="margin-bottom:1.25rem;">
+              <label class="field-label" style="margin-bottom:0.5rem;">LinkedIn Post <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--teal);">(Hero Output)</span></label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnLinkedIn" onclick="generateLinkedInPost()">Generate LinkedIn Post</button>
+              </div>
+              <div id="linkedinLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Writing LinkedIn post...</span>
+                </div>
+              </div>
+              <div id="linkedinOutput" style="display:none"></div>
+            </div>
+
+            <!-- Short-Form Scripts -->
+            <div style="margin-bottom:1.25rem;">
+              <label class="field-label" style="margin-bottom:0.5rem;">Short-Form Video Scripts <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">5 clips from the long-form video</span></label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnShorts" onclick="generateShortScripts()">Generate 5 Short Scripts</button>
+              </div>
+              <div id="shortsLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Extracting short-form clips...</span>
+                </div>
+              </div>
+              <div id="shortsOutput" style="display:none"></div>
+            </div>
+
+            <!-- Blog -->
+            <div style="margin-bottom:1.25rem;">
+              <label class="field-label" style="margin-bottom:0.5rem;">Blog Article</label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnBlog" onclick="generateBlog()">Generate Blog</button>
+              </div>
+              <div id="blogLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Writing blog article...</span>
+                </div>
+              </div>
+              <div id="blogOutput" style="display:none"></div>
+            </div>
+
+            <!-- Newsletter -->
+            <div>
+              <label class="field-label" style="margin-bottom:0.5rem;">Newsletter</label>
+              <div class="actions-row" style="margin-top:0;">
+                <button class="btn btn-primary" id="btnNewsletter" onclick="generateNewsletter()">Generate Newsletter</button>
+              </div>
+              <div id="newsletterLoading" style="display:none">
+                <div class="generating-indicator">
+                  <div class="spinner-dots"><span></span><span></span><span></span></div>
+                  <span>Writing newsletter...</span>
+                </div>
+              </div>
+              <div id="newsletterOutput" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 8: DISTRIBUTE -->
+      <div class="stage" id="stage8" data-stage="8">
+        <div class="stage-header" onclick="toggleStage(8)">
+          <div class="stage-number">8</div>
+          <div class="stage-title">Distribute</div>
+          <div class="stage-summary" id="stage8Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnDistribution" onclick="generateDistribution()">Generate Distribution Snippets</button>
+            </div>
+            <div id="distLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Adapting content for each platform...</span>
+              </div>
+            </div>
+            <div id="distOutput" style="display:none"></div>
+
+            <div style="margin-top:1.25rem;">
+              <label class="field-label">Distribution Checklist</label>
+              <ul class="checklist" id="distChecklist">
+                <li class="checklist-item" data-channel="longform"><input type="checkbox" id="chkLongform" onchange="updateChecklist()"><label for="chkLongform">Upload long-form video to YouTube</label><button class="btn btn-sm btn-ghost" onclick="copyContent('longform')">Copy</button></li>
+                <li class="checklist-item" data-channel="linkedin_post"><input type="checkbox" id="chkLinkedinPost" onchange="updateChecklist()"><label for="chkLinkedinPost">LinkedIn post published</label><button class="btn btn-sm btn-ghost" onclick="copyContent('linkedin_post')">Copy</button></li>
+                <li class="checklist-item" data-channel="short1"><input type="checkbox" id="chkShort1" onchange="updateChecklist()"><label for="chkShort1">Short clip 1 posted (LinkedIn/Reels)</label></li>
+                <li class="checklist-item" data-channel="short2"><input type="checkbox" id="chkShort2" onchange="updateChecklist()"><label for="chkShort2">Short clip 2 posted (LinkedIn/Reels)</label></li>
+                <li class="checklist-item" data-channel="short3"><input type="checkbox" id="chkShort3" onchange="updateChecklist()"><label for="chkShort3">Short clip 3 posted (LinkedIn/Reels)</label></li>
+                <li class="checklist-item" data-channel="short4"><input type="checkbox" id="chkShort4" onchange="updateChecklist()"><label for="chkShort4">Short clip 4 posted (LinkedIn/Reels)</label></li>
+                <li class="checklist-item" data-channel="short5"><input type="checkbox" id="chkShort5" onchange="updateChecklist()"><label for="chkShort5">Short clip 5 posted (LinkedIn/Reels)</label></li>
+                <li class="checklist-item" data-channel="blog"><input type="checkbox" id="chkBlog" onchange="updateChecklist()"><label for="chkBlog">Blog article published</label><button class="btn btn-sm btn-ghost" onclick="copyContent('blog')">Copy</button></li>
+                <li class="checklist-item" data-channel="newsletter"><input type="checkbox" id="chkNewsletter" onchange="updateChecklist()"><label for="chkNewsletter">Newsletter sent</label><button class="btn btn-sm btn-ghost" onclick="copyContent('newsletter')">Copy</button></li>
+                <li class="checklist-item" data-channel="twitter"><input type="checkbox" id="chkTwitter" onchange="updateChecklist()"><label for="chkTwitter">Twitter/X thread posted</label><button class="btn btn-sm btn-ghost" onclick="copyContent('twitter')">Copy</button></li>
+              </ul>
+              <div class="checklist-progress" id="checklistProgress">0 / 10 distributed</div>
+              <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistBar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 9: CONNECT & OUTREACH -->
+      <div class="stage" id="stage9" data-stage="9">
+        <div class="stage-header" onclick="toggleStage(9)">
+          <div class="stage-number">9</div>
+          <div class="stage-title">Connect & Outreach</div>
+          <div class="stage-summary" id="stage9Summary"></div>
+          <svg class="stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="stage-body">
+          <div class="stage-inner">
+            <div class="stage-divider"></div>
+            <p style="font-size:0.82rem;color:var(--grey-500);margin-bottom:1rem;">Connect with 10 people in the niche on LinkedIn. Message them, comment on their stuff, start conversations. This is where content turns into pipeline.</p>
+
+            <label class="field-label">Target niche <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--grey-300);">Who are you trying to reach this week?</span></label>
+            <input type="text" class="field-input" id="connectNiche" placeholder="e.g. 'Marketing agency owners doing £500k-£2m' or 'SaaS founders using Taxi for Email'" style="margin-bottom:0.75rem;">
+
+            <div class="actions-row" style="margin-top:0;margin-bottom:1rem;">
+              <button class="btn btn-primary" id="btnGenerateConnections" onclick="generateConnections()">Suggest 10 Connections</button>
+            </div>
+            <div id="connectLoading" style="display:none">
+              <div class="generating-indicator">
+                <div class="spinner-dots"><span></span><span></span><span></span></div>
+                <span>Finding people in the niche...</span>
+              </div>
+            </div>
+            <div id="connectOutput" style="display:none"></div>
+
+            <div style="margin-top:1.25rem;">
+              <label class="field-label">Outreach Tracker</label>
+              <ul class="checklist" id="connectChecklist">
+                <li class="checklist-item"><input type="checkbox" id="chkConnect1" onchange="updateConnectChecklist()"><label for="chkConnect1">Person 1: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect2" onchange="updateConnectChecklist()"><label for="chkConnect2">Person 2: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect3" onchange="updateConnectChecklist()"><label for="chkConnect3">Person 3: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect4" onchange="updateConnectChecklist()"><label for="chkConnect4">Person 4: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect5" onchange="updateConnectChecklist()"><label for="chkConnect5">Person 5: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect6" onchange="updateConnectChecklist()"><label for="chkConnect6">Person 6: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect7" onchange="updateConnectChecklist()"><label for="chkConnect7">Person 7: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect8" onchange="updateConnectChecklist()"><label for="chkConnect8">Person 8: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect9" onchange="updateConnectChecklist()"><label for="chkConnect9">Person 9: Connect + message</label></li>
+                <li class="checklist-item"><input type="checkbox" id="chkConnect10" onchange="updateConnectChecklist()"><label for="chkConnect10">Person 10: Connect + message</label></li>
+              </ul>
+              <div class="checklist-progress" id="connectProgress">0 / 10 connected</div>
+              <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="connectBar" style="width:0%"></div></div>
+              <div class="actions-row">
+                <button class="btn btn-success" onclick="completeSession()">Mark Session Complete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- CONFIG ----
+    const SUPABASE_URL = 'https://zgtaskiordteelfvlmti.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndGFza2lvcmR0ZWVsZnZsbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDk3MDQsImV4cCI6MjA4Nzg4NTcwNH0.wUyyN9GqatrZY3xarbI5qoJMK3RyUPB4-DysF6AxT58';
+    const TOTAL_STAGES = 9;
+
+    // ---- SESSION STATE ----
+    let session = {
+      id: null,
+      stage: 1,
+      brainDump: '',
+      briefing: null,
+      briefingTopic: '',
+      sourceType: 'coaching',
+      feedTranscript: '',
+      extractedThemes: null,
+      selectedAngle: null,
+      roughTranscript: '',
+      longFormScript: null,
+      finalTranscript: '',
+      linkedinPost: null,
+      shortScripts: null,
+      blog: null,
+      newsletter: null,
+      distribution: { snippets: null, checklist: {} },
+      connections: { niche: '', suggestions: null, checklist: {} }
+    };
+
+    // ---- SUPABASE ----
+    function sbHeaders() {
+      return {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function sbGet(path) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() });
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPost(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase POST ${res.status}`);
+      return res.json();
+    }
+
+    async function sbPatch(path, body) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        method: 'PATCH',
+        headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(`Supabase PATCH ${res.status}`);
+      return res.json();
+    }
+
+    // ---- TOAST ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ---- SESSIONS ----
+    async function loadSessions() {
+      try {
+        const sessions = await sbGet('content_sessions_v2?order=updated_at.desc&limit=20');
+        const sel = document.getElementById('sessionSelect');
+        sel.innerHTML = '<option value="">New Session</option>';
+        sessions.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.title || 'Untitled'} (${new Date(s.updated_at).toLocaleDateString()})`;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Failed to load sessions:', e);
+      }
+    }
+
+    async function loadSession(id) {
+      if (!id) { newSession(); return; }
+      try {
+        const rows = await sbGet(`content_sessions_v2?id=eq.${id}`);
+        if (!rows.length) return;
+        const s = rows[0];
+        session = {
+          id: s.id,
+          stage: s.stage || 1,
+          brainDump: s.brain_dump || '',
+          briefing: s.briefing_output,
+          briefingTopic: s.briefing_topic || '',
+          sourceType: s.source_type || 'coaching',
+          feedTranscript: s.feed_transcript || '',
+          extractedThemes: s.extracted_themes,
+          selectedAngle: s.selected_angle,
+          roughTranscript: s.rough_transcript || '',
+          longFormScript: s.long_form_script,
+          finalTranscript: s.final_transcript || '',
+          linkedinPost: s.linkedin_post,
+          shortScripts: s.short_scripts,
+          blog: s.blog_data,
+          newsletter: s.newsletter_data,
+          distribution: { snippets: s.distribution_data, checklist: s.distribution_checklist || {} },
+          connections: { niche: s.connect_niche || '', suggestions: s.connect_suggestions, checklist: s.connect_checklist || {} }
+        };
+        restoreUI();
+        showToast('Session loaded');
+      } catch (e) {
+        showToast('Failed to load session');
+      }
+    }
+
+    function newSession() {
+      session = {
+        id: null, stage: 1,
+        brainDump: '', briefing: null, briefingTopic: '',
+        sourceType: 'coaching', feedTranscript: '',
+        extractedThemes: null, selectedAngle: null,
+        roughTranscript: '', longFormScript: null, finalTranscript: '',
+        linkedinPost: null, shortScripts: null, blog: null, newsletter: null,
+        distribution: { snippets: null, checklist: {} },
+        connections: { niche: '', suggestions: null, checklist: {} }
+      };
+      document.getElementById('sessionSelect').value = '';
+      document.getElementById('brainDumpText').value = '';
+      document.getElementById('feedTranscript').value = '';
+      document.getElementById('angleContext').value = '';
+      document.getElementById('roughTranscript').value = '';
+      document.getElementById('finalTranscript').value = '';
+      document.getElementById('connectNiche').value = '';
+      document.getElementById('briefingTopic').value = '';
+      ['briefingOutput','themeOutput','angleOutput','scriptOutput','linkedinOutput','shortsOutput','blogOutput','newsletterOutput','distOutput','connectOutput'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      ['brainDumpWordCount','feedWordCount','roughWordCount','finalWordCount'].forEach(id => {
+        document.getElementById(id).textContent = '0 words';
+      });
+      for (let i = 1; i <= TOTAL_STAGES; i++) {
+        document.getElementById(`stage${i}Summary`).textContent = '';
+        const el = document.getElementById(`stage${i}`);
+        el.classList.remove('completed', 'active', 'expanded');
+      }
+      document.getElementById('stage1').classList.add('active', 'expanded');
+    }
+
+    async function saveSession() {
+      const data = {
+        title: session.selectedAngle?.headline || session.brainDump?.substring(0, 50) || 'Untitled Session',
+        stage: session.stage,
+        brain_dump: session.brainDump,
+        briefing_output: session.briefing,
+        briefing_topic: session.briefingTopic,
+        source_type: session.sourceType,
+        feed_transcript: session.feedTranscript,
+        extracted_themes: session.extractedThemes,
+        selected_angle: session.selectedAngle,
+        rough_transcript: session.roughTranscript,
+        long_form_script: session.longFormScript,
+        final_transcript: session.finalTranscript,
+        linkedin_post: session.linkedinPost,
+        short_scripts: session.shortScripts,
+        blog_data: session.blog,
+        newsletter_data: session.newsletter,
+        distribution_data: session.distribution.snippets,
+        distribution_checklist: session.distribution.checklist,
+        connect_niche: session.connections.niche,
+        connect_suggestions: session.connections.suggestions,
+        connect_checklist: session.connections.checklist,
+        updated_at: new Date().toISOString(),
+        status: 'in_progress'
+      };
+
+      try {
+        if (session.id) {
+          await sbPatch(`content_sessions_v2?id=eq.${session.id}`, data);
+        } else {
+          const rows = await sbPost('content_sessions_v2', data);
+          if (rows && rows[0]) {
+            session.id = rows[0].id;
+            await loadSessions();
+            document.getElementById('sessionSelect').value = session.id;
+          }
+        }
+      } catch (e) {
+        console.error('Auto-save failed:', e);
+      }
+    }
+
+    // ---- STAGE MANAGEMENT ----
+    function toggleStage(n) {
+      document.getElementById(`stage${n}`).classList.toggle('expanded');
+    }
+
+    function activateStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      el.classList.add('expanded', 'active');
+      updateStageStates();
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    function completeStage(n) {
+      const el = document.getElementById(`stage${n}`);
+      el.classList.add('completed');
+      el.classList.remove('active');
+      session.stage = Math.max(session.stage, n + 1);
+      updateStageStates();
+    }
+
+    function updateStageStates() {
+      for (let i = 1; i <= TOTAL_STAGES; i++) {
+        const el = document.getElementById(`stage${i}`);
+        el.classList.remove('locked');
+        if (i < session.stage) {
+          el.classList.add('completed');
+        } else if (i === session.stage) {
+          el.classList.add('active');
+        }
+      }
+    }
+
+    function restoreUI() {
+      if (session.brainDump) {
+        document.getElementById('brainDumpText').value = session.brainDump;
+        updateBrainDumpWordCount();
+        document.getElementById('stage1Summary').textContent = `${wordCountOf(session.brainDump)} words`;
+      }
+      if (session.briefingTopic) {
+        document.getElementById('briefingTopic').value = session.briefingTopic;
+      }
+      if (session.briefing) {
+        renderBriefing(session.briefing);
+      }
+      if (session.feedTranscript) {
+        document.getElementById('feedTranscript').value = session.feedTranscript;
+        updateFeedWordCount();
+        document.getElementById('sourceType').value = session.sourceType;
+      }
+      if (session.extractedThemes) {
+        renderThemes(session.extractedThemes);
+        document.getElementById('stage2Summary').textContent = `${session.extractedThemes.length} themes`;
+      }
+      if (session.selectedAngle) {
+        document.getElementById('stage3Summary').textContent = session.selectedAngle.headline;
+      }
+      if (session.roughTranscript) {
+        document.getElementById('roughTranscript').value = session.roughTranscript;
+        updateRoughWordCount();
+        document.getElementById('stage4Summary').textContent = `${wordCountOf(session.roughTranscript)} words`;
+      }
+      if (session.longFormScript) {
+        renderScript(session.longFormScript);
+        document.getElementById('stage5Summary').textContent = session.longFormScript.title || 'Generated';
+      }
+      if (session.finalTranscript) {
+        document.getElementById('finalTranscript').value = session.finalTranscript;
+        updateFinalWordCount();
+        document.getElementById('stage6Summary').textContent = `${wordCountOf(session.finalTranscript)} words`;
+      }
+      if (session.linkedinPost) renderLinkedInPost(session.linkedinPost);
+      if (session.shortScripts) renderShortScripts(session.shortScripts);
+      if (session.blog) renderBlog(session.blog);
+      if (session.newsletter) renderNewsletter(session.newsletter);
+      if (session.linkedinPost || session.shortScripts || session.blog || session.newsletter) {
+        document.getElementById('stage7Summary').textContent = 'Generated';
+      }
+      if (session.distribution.snippets) {
+        renderDistribution(session.distribution.snippets);
+        document.getElementById('stage8Summary').textContent = 'Generated';
+      }
+      if (session.distribution.checklist) {
+        Object.entries(session.distribution.checklist).forEach(([key, done]) => {
+          const el = document.querySelector(`[data-channel="${key}"] input`);
+          if (el) { el.checked = done; el.closest('.checklist-item').classList.toggle('checked', done); }
+        });
+        updateChecklist();
+      }
+      if (session.connections.niche) {
+        document.getElementById('connectNiche').value = session.connections.niche;
+      }
+      if (session.connections.suggestions) {
+        renderConnections(session.connections.suggestions);
+      }
+      if (session.connections.checklist) {
+        Object.entries(session.connections.checklist).forEach(([key, done]) => {
+          const el = document.getElementById(key);
+          if (el) { el.checked = done; el.closest('.checklist-item').classList.toggle('checked', done); }
+        });
+        updateConnectChecklist();
+      }
+      updateStageStates();
+      const currentStage = document.getElementById(`stage${Math.min(session.stage, TOTAL_STAGES)}`);
+      if (currentStage) currentStage.classList.add('expanded');
+    }
+
+    // ---- UTILITIES ----
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard')).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      });
+    }
+
+    function markdownToHtml(md) {
+      if (!md) return '';
+      return md
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function wordCountOf(text) {
+      return text && text.trim() ? text.trim().split(/\s+/).length : 0;
+    }
+
+    function updateBrainDumpWordCount() {
+      document.getElementById('brainDumpWordCount').textContent = `${wordCountOf(document.getElementById('brainDumpText').value)} words`;
+    }
+    function updateFeedWordCount() {
+      document.getElementById('feedWordCount').textContent = `${wordCountOf(document.getElementById('feedTranscript').value)} words`;
+    }
+    function updateRoughWordCount() {
+      document.getElementById('roughWordCount').textContent = `${wordCountOf(document.getElementById('roughTranscript').value)} words`;
+    }
+    function updateFinalWordCount() {
+      document.getElementById('finalWordCount').textContent = `${wordCountOf(document.getElementById('finalTranscript').value)} words`;
+    }
+
+    // ---- TAB SWITCHING ----
+    function switchTab(tabGroupId, panelPrefix, tab) {
+      document.querySelectorAll(`#${tabGroupId} .input-tab`).forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`${panelPrefix}Panel${p}`).classList.remove('active'));
+      document.getElementById(`${panelPrefix}Panel${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    }
+    function switchFeedTab(tab) { switchTab('feedTabs', 'feed', tab); }
+    function switchRoughTab(tab) { switchTab('roughTabs', 'rough', tab); }
+    function switchFinalTab(tab) { switchTab('finalTabs', 'final', tab); }
+
+    // ---- FILE/AUDIO HANDLERS ----
+    function setupDropZone(dropId, inputId) {
+      document.getElementById(dropId).addEventListener('click', () => document.getElementById(inputId).click());
+    }
+    setupDropZone('feedFileDropZone', 'feedFileInput');
+    setupDropZone('feedAudioDropZone', 'feedAudioInput');
+    setupDropZone('roughFileDropZone', 'roughFileInput');
+    setupDropZone('roughAudioDropZone', 'roughAudioInput');
+    setupDropZone('finalFileDropZone', 'finalFileInput');
+    setupDropZone('finalAudioDropZone', 'finalAudioInput');
+
+    function readTextFileInto(file, textareaId, wordCountId, tabGroupId, panelPrefix) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById(textareaId).value = e.target.result;
+        document.getElementById(wordCountId).textContent = `${wordCountOf(e.target.result)} words`;
+        document.querySelectorAll(`#${tabGroupId} .input-tab`).forEach(t => t.classList.remove('active'));
+        document.querySelector(`#${tabGroupId} .input-tab:first-child`).classList.add('active');
+        ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`${panelPrefix}Panel${p}`).classList.remove('active'));
+        document.getElementById(`${panelPrefix}PanelPaste`).classList.add('active');
+        showToast(`Loaded ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
+
+    function handleFeedFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); readTextFileInto(e.dataTransfer?.files?.[0], 'feedTranscript', 'feedWordCount', 'feedTabs', 'feed'); }
+    function handleFeedFileSelect(e) { readTextFileInto(e.target.files?.[0], 'feedTranscript', 'feedWordCount', 'feedTabs', 'feed'); }
+    function handleRoughFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); readTextFileInto(e.dataTransfer?.files?.[0], 'roughTranscript', 'roughWordCount', 'roughTabs', 'rough'); }
+    function handleRoughFileSelect(e) { readTextFileInto(e.target.files?.[0], 'roughTranscript', 'roughWordCount', 'roughTabs', 'rough'); }
+    function handleFinalFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); readTextFileInto(e.dataTransfer?.files?.[0], 'finalTranscript', 'finalWordCount', 'finalTabs', 'final'); }
+    function handleFinalFileSelect(e) { readTextFileInto(e.target.files?.[0], 'finalTranscript', 'finalWordCount', 'finalTabs', 'final'); }
+
+    // Audio handlers
+    function handleFeedAudioDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); transcribeAudio(e.dataTransfer?.files?.[0], 'feed'); }
+    function handleFeedAudioSelect(e) { transcribeAudio(e.target.files?.[0], 'feed'); }
+    function handleRoughAudioDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); transcribeAudio(e.dataTransfer?.files?.[0], 'rough'); }
+    function handleRoughAudioSelect(e) { transcribeAudio(e.target.files?.[0], 'rough'); }
+    function handleFinalAudioDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); transcribeAudio(e.dataTransfer?.files?.[0], 'final'); }
+    function handleFinalAudioSelect(e) { transcribeAudio(e.target.files?.[0], 'final'); }
+
+    async function transcribeAudio(file, prefix) {
+      if (!file) return;
+      const loadingEl = document.getElementById(`${prefix}TranscribeLoading`);
+      loadingEl.style.display = 'block';
+      try {
+        const keyRes = await fetch('/api/thumbnails/get-upload-url', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+        });
+        const keyData = await keyRes.json();
+        if (!keyData.fal_key) throw new Error('Could not get upload key');
+
+        const initRes = await fetch('https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3', {
+          method: 'POST',
+          headers: { 'Authorization': `Key ${keyData.fal_key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_name: file.name, content_type: file.type || 'audio/mpeg' })
+        });
+        const initData = await initRes.json();
+        if (!initData.upload_url) throw new Error('No upload URL returned');
+
+        await fetch(initData.upload_url, {
+          method: 'PUT', headers: { 'Content-Type': file.type || 'audio/mpeg' }, body: file
+        });
+
+        const transRes = await fetch('/api/content-engine/transcribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio_url: initData.file_url })
+        });
+        const transData = await transRes.json();
+        if (!transRes.ok || !transData.success) throw new Error(transData.error || 'Transcription failed');
+
+        const textareaId = prefix === 'feed' ? 'feedTranscript' : prefix === 'rough' ? 'roughTranscript' : 'finalTranscript';
+        const wordCountId = prefix === 'feed' ? 'feedWordCount' : prefix === 'rough' ? 'roughWordCount' : 'finalWordCount';
+        const tabGroupId = `${prefix}Tabs`;
+        document.getElementById(textareaId).value = transData.text;
+        document.getElementById(wordCountId).textContent = `${wordCountOf(transData.text)} words`;
+        document.querySelectorAll(`#${tabGroupId} .input-tab`).forEach(t => t.classList.remove('active'));
+        document.querySelector(`#${tabGroupId} .input-tab:first-child`).classList.add('active');
+        ['Paste', 'File', 'Audio'].forEach(p => document.getElementById(`${prefix}Panel${p}`).classList.remove('active'));
+        document.getElementById(`${prefix}PanelPaste`).classList.add('active');
+        showToast(`Transcribed ${Math.round(transData.duration_seconds / 60)} minutes of audio`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // ---- STAGE 1: BRAIN DUMP ----
+    function saveBrainDump() {
+      session.brainDump = document.getElementById('brainDumpText').value.trim();
+      if (!session.brainDump) { showToast('Write or paste something first'); return; }
+      document.getElementById('stage1Summary').textContent = `${wordCountOf(session.brainDump)} words`;
+      completeStage(1);
+      activateStage(2);
+      saveSession();
+      showToast('Brain dump saved');
+    }
+
+    function skipBrainDump() {
+      session.brainDump = '';
+      document.getElementById('stage1Summary').textContent = 'Skipped';
+      completeStage(1);
+      activateStage(2);
+    }
+
+    // ---- DAILY BRIEFING ----
+    async function generateBriefing() {
+      const topic = document.getElementById('briefingTopic').value.trim();
+      session.briefingTopic = topic;
+      document.getElementById('btnBriefing').disabled = true;
+      document.getElementById('briefingLoading').style.display = 'block';
+      document.getElementById('briefingOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: topic || '', mode: 'email_tech' })
+        });
+
+        // Handle SSE stream (same pattern as original content engine)
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let briefingData = null;
+        let streamError = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const events = buffer.split('\n\n');
+          buffer = events.pop() || '';
+
+          for (const event of events) {
+            if (!event.startsWith('data: ')) continue;
+            try {
+              const data = JSON.parse(event.slice(6));
+              if (data.type === 'result' && data.success) {
+                briefingData = data.briefing;
+              } else if (data.type === 'error') {
+                streamError = data.error;
+              } else if (data.type === 'status') {
+                document.querySelector('.briefing-status').textContent = data.message;
+              }
+            } catch (_) {}
+          }
+        }
+
+        // Process remaining buffer
+        if (buffer.trim() && buffer.trim().startsWith('data: ')) {
+          try {
+            const data = JSON.parse(buffer.trim().slice(6));
+            if (data.type === 'result' && data.success) briefingData = data.briefing;
+            else if (data.type === 'error') streamError = data.error;
+          } catch (_) {}
+        }
+
+        if (streamError) throw new Error(streamError);
+        if (!briefingData) throw new Error('No briefing data received');
+
+        session.briefing = briefingData;
+        renderBriefing(briefingData);
+        saveSession();
+        showToast('Briefing generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnBriefing').disabled = false;
+        document.getElementById('briefingLoading').style.display = 'none';
+      }
+    }
+
+    function renderBriefing(briefing) {
+      let html = '<div class="briefing-card">';
+
+      if (briefing.date) {
+        html += `<div class="briefing-date">${esc(briefing.date)}</div>`;
+      }
+
+      // Coaching theme / overarching angle
+      if (briefing.coaching_theme) {
+        html += `<div class="briefing-coaching-theme">${esc(briefing.coaching_theme)}</div>`;
+      }
+
+      // News items
+      const items = briefing.items || briefing.stories || [];
+      items.forEach(item => {
+        html += `<div class="briefing-item">
+          <div class="briefing-item-headline">${esc(item.headline || item.title)}</div>
+          <div class="briefing-item-summary">${esc(item.summary || item.description)}</div>
+          ${item.hook || item.content_angle ? `<div class="briefing-item-hook">Your angle: ${esc(item.hook || item.content_angle)}</div>` : ''}
+        </div>`;
+      });
+
+      // If the briefing has a flat text format instead
+      if (!items.length && briefing.text) {
+        html += `<div style="font-size:0.82rem;color:var(--grey-600);line-height:1.65;">${markdownToHtml(briefing.text)}</div>`;
+      }
+
+      html += '</div>';
+
+      const el = document.getElementById('briefingOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 2: EXTRACT THEMES ----
+    async function extractThemes() {
+      const transcript = document.getElementById('feedTranscript').value.trim();
+      if (!transcript) { showToast('Paste a transcript first'); return; }
+      if (wordCountOf(transcript) < 30) { showToast('Transcript seems too short'); return; }
+
+      session.feedTranscript = transcript;
+      session.sourceType = document.getElementById('sourceType').value;
+      document.getElementById('btnExtractThemes').disabled = true;
+      document.getElementById('themeLoading').style.display = 'block';
+      document.getElementById('themeOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/coaching-engine/extract-themes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript, source_type: session.sourceType, brain_dump: session.brainDump })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Theme extraction failed');
+
+        session.extractedThemes = data.themes;
+        renderThemes(data.themes);
+        document.getElementById('stage2Summary').textContent = `${data.themes.length} themes`;
+        completeStage(2);
+        activateStage(3);
+        saveSession();
+        showToast(`${data.themes.length} themes extracted`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnExtractThemes').disabled = false;
+        document.getElementById('themeLoading').style.display = 'none';
+      }
+    }
+
+    function renderThemes(themes) {
+      let html = '';
+      themes.forEach(t => {
+        const bucketClass = t.bucket === 'leadership' ? 'leadership' : t.bucket === 'systems' ? 'systems' : 'founder';
+        const bucketLabel = t.bucket === 'leadership' ? 'Leadership & People' : t.bucket === 'systems' ? 'Systems & Automation' : 'Founder Journey';
+        html += `<div class="theme-card">
+          <div class="theme-card-content">
+            <div class="theme-card-label">${esc(t.theme)}
+              <span class="bucket-badge ${bucketClass}">${esc(bucketLabel)}</span>
+            </div>
+            <div class="theme-card-context">${esc(t.context)}</div>
+          </div>
+        </div>`;
+      });
+      const el = document.getElementById('themeOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 3: TILE THE ANGLES ----
+    async function generateAngles() {
+      if (!session.extractedThemes) { showToast('Extract themes first'); return; }
+      document.getElementById('btnGenerateAngles').disabled = true;
+      document.getElementById('angleLoading').style.display = 'block';
+      document.getElementById('angleOutput').style.display = 'none';
+
+      const extraContext = document.getElementById('angleContext').value.trim();
+
+      try {
+        const res = await fetch('/api/content-engine/generate-angles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            themes: session.extractedThemes,
+            brain_dump: session.brainDump,
+            briefing: session.briefing,
+            extra_context: extraContext,
+            source_type: session.sourceType
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate angles');
+
+        renderAngles(data.angles);
+        showToast('Angles generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnGenerateAngles').disabled = false;
+        document.getElementById('angleLoading').style.display = 'none';
+      }
+    }
+
+    function renderAngles(angles) {
+      let html = '';
+      angles.forEach((a, i) => {
+        const bucketClass = a.bucket === 'leadership' ? 'leadership' : a.bucket === 'systems' ? 'systems' : 'founder';
+        const bucketLabel = a.bucket === 'leadership' ? 'Leadership & People' : a.bucket === 'systems' ? 'Systems & Automation' : 'Founder Journey';
+        html += `<div class="angle-card" onclick="selectAngle(${i})" data-index="${i}">
+          <div style="margin-bottom:0.35rem;"><span class="bucket-badge ${bucketClass}">${esc(bucketLabel)}</span></div>
+          <div class="angle-card-headline">${esc(a.headline)}</div>
+          <div class="angle-card-desc">${esc(a.description)}</div>
+          ${a.crossover ? `<div class="angle-card-crossover">Crossover: ${esc(a.crossover)}</div>` : ''}
+        </div>`;
+      });
+      const el = document.getElementById('angleOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+      el._angles = angles;
+    }
+
+    function selectAngle(idx) {
+      const angles = document.getElementById('angleOutput')._angles;
+      if (!angles) return;
+      session.selectedAngle = angles[idx];
+      document.querySelectorAll('.angle-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.angle-card')[idx].classList.add('selected');
+      document.getElementById('stage3Summary').textContent = angles[idx].headline;
+      completeStage(3);
+      activateStage(4);
+      saveSession();
+      showToast('Angle selected');
+    }
+
+    // ---- STAGE 4: ROUGH RUN-THROUGH ----
+    function confirmRoughTranscript() {
+      const text = document.getElementById('roughTranscript').value.trim();
+      if (!text) { showToast('Paste or upload a transcript first'); return; }
+      session.roughTranscript = text;
+      document.getElementById('stage4Summary').textContent = `${wordCountOf(text)} words`;
+      completeStage(4);
+      activateStage(5);
+      saveSession();
+      showToast('Rough run-through saved');
+    }
+
+    // ---- STAGE 5: LONG-FORM SCRIPT ----
+    async function createScript() {
+      if (!session.roughTranscript) { showToast('Complete the rough run-through first'); return; }
+      document.getElementById('btnCreateScript').disabled = true;
+      document.getElementById('scriptLoading').style.display = 'block';
+      document.getElementById('scriptOutput').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/content-engine/create-script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rough_transcript: session.roughTranscript,
+            angle: session.selectedAngle,
+            brain_dump: session.brainDump,
+            themes: session.extractedThemes
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Script creation failed');
+
+        session.longFormScript = data.script;
+        renderScript(data.script);
+        document.getElementById('stage5Summary').textContent = data.script.title || '8-10 min script';
+        completeStage(5);
+        activateStage(6);
+        saveSession();
+        showToast('Script created');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnCreateScript').disabled = false;
+        document.getElementById('scriptLoading').style.display = 'none';
+      }
+    }
+
+    function renderScript(script) {
+      let html = `<div class="script-output">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+          <h3>${esc(script.title || 'Video Script')}</h3>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('scriptFullText').textContent)">Copy Script</button>
+        </div>
+        <div id="scriptFullText">`;
+
+      if (script.sections) {
+        script.sections.forEach(s => {
+          html += `<div class="script-section">
+            <div class="script-section-label">${esc(s.label)}</div>
+            <div class="script-section-text">${esc(s.text)}</div>
+          </div>`;
+        });
+      } else if (script.text) {
+        html += `<div class="script-section-text">${markdownToHtml(script.text)}</div>`;
+      }
+
+      html += `</div>`;
+      if (script.duration) {
+        html += `<div style="font-size:0.68rem;color:var(--grey-400);margin-top:0.5rem;">Estimated duration: ${esc(script.duration)}</div>`;
+      }
+      html += `</div>`;
+
+      const el = document.getElementById('scriptOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 6: RECORD & TRANSCRIBE FINAL ----
+    function confirmFinalTranscript() {
+      const text = document.getElementById('finalTranscript').value.trim();
+      if (!text) { showToast('Paste or upload a transcript first'); return; }
+      session.finalTranscript = text;
+      document.getElementById('stage6Summary').textContent = `${wordCountOf(text)} words`;
+      completeStage(6);
+      activateStage(7);
+      saveSession();
+      showToast('Final transcript saved');
+    }
+
+    // ---- STAGE 7: CONTENT GENERATION ----
+    async function generateLinkedInPost() {
+      if (!session.finalTranscript) { showToast('Add the final transcript first'); return; }
+      document.getElementById('btnLinkedIn').disabled = true;
+      document.getElementById('linkedinLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/generate-linkedin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            final_transcript: session.finalTranscript,
+            angle: session.selectedAngle,
+            brain_dump: session.brainDump
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'LinkedIn post generation failed');
+
+        session.linkedinPost = data.post;
+        renderLinkedInPost(data.post);
+        saveSession();
+        showToast('LinkedIn post generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnLinkedIn').disabled = false;
+        document.getElementById('linkedinLoading').style.display = 'none';
+      }
+    }
+
+    function renderLinkedInPost(post) {
+      const text = typeof post === 'string' ? post : post.text || post.content || '';
+      const el = document.getElementById('linkedinOutput');
+      el.innerHTML = `<div class="dist-card" style="border-left:3px solid var(--teal-bright);">
+        <div class="dist-card-header">
+          <span class="dist-card-platform">LinkedIn Post</span>
+          <button class="btn btn-sm" onclick="copyText(\`${text.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+        </div>
+        <div class="dist-card-content">${esc(text)}</div>
+      </div>`;
+      el.style.display = 'block';
+    }
+
+    async function generateShortScripts() {
+      if (!session.finalTranscript) { showToast('Add the final transcript first'); return; }
+      document.getElementById('btnShorts').disabled = true;
+      document.getElementById('shortsLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/generate-shorts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            final_transcript: session.finalTranscript,
+            angle: session.selectedAngle,
+            count: 5
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Short scripts generation failed');
+
+        session.shortScripts = data.scripts;
+        renderShortScripts(data.scripts);
+        saveSession();
+        showToast(`${data.scripts.length} short scripts generated`);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnShorts').disabled = false;
+        document.getElementById('shortsLoading').style.display = 'none';
+      }
+    }
+
+    function renderShortScripts(scripts) {
+      let html = '';
+      scripts.forEach((s, i) => {
+        html += `<div class="short-script-card" onclick="this.classList.toggle('open')">
+          <div class="short-script-hook">Clip ${i + 1}: ${esc(s.hook || s.title)}</div>
+          <div class="short-script-meta">
+            ${s.duration ? `<span class="short-script-duration">${esc(s.duration)}</span>` : ''}
+            <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();copyText(\`${(s.text || s.script || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+          </div>
+          <div class="short-script-body">${esc(s.text || s.script || '')}</div>
+        </div>`;
+      });
+      const el = document.getElementById('shortsOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    async function generateBlog() {
+      if (!session.finalTranscript) { showToast('Add the final transcript first'); return; }
+      document.getElementById('btnBlog').disabled = true;
+      document.getElementById('blogLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/generate-blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            final_transcript: session.finalTranscript,
+            angle: session.selectedAngle,
+            brain_dump: session.brainDump
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Blog generation failed');
+
+        session.blog = data.blog;
+        renderBlog(data.blog);
+        saveSession();
+        showToast('Blog article generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnBlog').disabled = false;
+        document.getElementById('blogLoading').style.display = 'none';
+      }
+    }
+
+    function renderBlog(blog) {
+      const el = document.getElementById('blogOutput');
+      el.innerHTML = `<div class="content-card open">
+        <div class="content-card-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="content-card-title">${esc(blog.title || 'Blog Article')}</span>
+          <button class="btn btn-sm" onclick="event.stopPropagation();copyText(\`${(blog.html || blog.text || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+        </div>
+        <div class="content-card-body">${markdownToHtml(blog.text || blog.content || '')}</div>
+      </div>`;
+      el.style.display = 'block';
+    }
+
+    async function generateNewsletter() {
+      if (!session.finalTranscript) { showToast('Add the final transcript first'); return; }
+      document.getElementById('btnNewsletter').disabled = true;
+      document.getElementById('newsletterLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/generate-newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            final_transcript: session.finalTranscript,
+            angle: session.selectedAngle,
+            brain_dump: session.brainDump,
+            blog: session.blog
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Newsletter generation failed');
+
+        session.newsletter = data.newsletter;
+        renderNewsletter(data.newsletter);
+        saveSession();
+        showToast('Newsletter generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnNewsletter').disabled = false;
+        document.getElementById('newsletterLoading').style.display = 'none';
+      }
+    }
+
+    function renderNewsletter(newsletter) {
+      const el = document.getElementById('newsletterOutput');
+      el.innerHTML = `<div class="content-card">
+        <div class="content-card-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="content-card-title">${esc(newsletter.subject || 'Newsletter')}</span>
+          <button class="btn btn-sm" onclick="event.stopPropagation();copyText(\`${(newsletter.text || newsletter.body || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+        </div>
+        <div class="content-card-body">${markdownToHtml(newsletter.text || newsletter.body || '')}</div>
+      </div>`;
+      el.style.display = 'block';
+    }
+
+    // ---- STAGE 8: DISTRIBUTE ----
+    async function generateDistribution() {
+      if (!session.linkedinPost && !session.blog && !session.newsletter) {
+        showToast('Generate some content first');
+        return;
+      }
+      document.getElementById('btnDistribution').disabled = true;
+      document.getElementById('distLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/generate-distribution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            linkedin_post: session.linkedinPost,
+            blog: session.blog,
+            newsletter: session.newsletter,
+            angle: session.selectedAngle
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Distribution generation failed');
+
+        session.distribution.snippets = data.snippets;
+        renderDistribution(data.snippets);
+        document.getElementById('stage8Summary').textContent = 'Generated';
+        completeStage(8);
+        activateStage(9);
+        saveSession();
+        showToast('Distribution snippets generated');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnDistribution').disabled = false;
+        document.getElementById('distLoading').style.display = 'none';
+      }
+    }
+
+    function renderDistribution(snippets) {
+      const platforms = [
+        { key: 'twitter_thread', name: 'Twitter/X Thread' },
+        { key: 'youtube_description', name: 'YouTube Description' },
+        { key: 'instagram_caption', name: 'Instagram Caption' }
+      ];
+      let html = '';
+      platforms.forEach(p => {
+        const text = snippets?.[p.key] || '';
+        if (text) {
+          html += `<div class="dist-card">
+            <div class="dist-card-header">
+              <span class="dist-card-platform">${esc(p.name)}</span>
+              <button class="btn btn-sm btn-ghost" onclick="copyText(\`${text.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+            </div>
+            <div class="dist-card-content">${esc(text)}</div>
+          </div>`;
+        }
+      });
+      const el = document.getElementById('distOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    function updateChecklist() {
+      const items = document.querySelectorAll('#distChecklist .checklist-item');
+      let checked = 0;
+      items.forEach(item => {
+        const chk = item.querySelector('input');
+        const channel = item.dataset.channel;
+        item.classList.toggle('checked', chk.checked);
+        if (chk.checked) checked++;
+        if (channel) session.distribution.checklist[channel] = chk.checked;
+      });
+      document.getElementById('checklistProgress').textContent = `${checked} / ${items.length} distributed`;
+      document.getElementById('checklistBar').style.width = `${(checked / items.length) * 100}%`;
+      saveSession();
+    }
+
+    function copyContent(channel) {
+      let text = '';
+      if (channel === 'linkedin_post') text = typeof session.linkedinPost === 'string' ? session.linkedinPost : session.linkedinPost?.text || '';
+      else if (channel === 'blog') text = session.blog?.text || session.blog?.content || '';
+      else if (channel === 'newsletter') text = session.newsletter?.text || session.newsletter?.body || '';
+      else if (channel === 'twitter') text = session.distribution.snippets?.twitter_thread || '';
+      else if (channel === 'longform') text = session.longFormScript?.text || 'Upload the video to YouTube';
+      if (text) copyText(text);
+      else showToast(`No ${channel} content yet`);
+    }
+
+    // ---- STAGE 9: CONNECT & OUTREACH ----
+    async function generateConnections() {
+      const niche = document.getElementById('connectNiche').value.trim();
+      if (!niche) { showToast('Enter a target niche first'); return; }
+      session.connections.niche = niche;
+      document.getElementById('btnGenerateConnections').disabled = true;
+      document.getElementById('connectLoading').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/content-engine/suggest-connections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            niche,
+            angle: session.selectedAngle,
+            linkedin_post: session.linkedinPost
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to suggest connections');
+
+        session.connections.suggestions = data.suggestions;
+        renderConnections(data.suggestions);
+        saveSession();
+        showToast('10 connection suggestions ready');
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        document.getElementById('btnGenerateConnections').disabled = false;
+        document.getElementById('connectLoading').style.display = 'none';
+      }
+    }
+
+    function renderConnections(suggestions) {
+      if (!suggestions || !suggestions.length) return;
+      // Update checklist labels with real names
+      suggestions.forEach((s, i) => {
+        const label = document.querySelector(`label[for="chkConnect${i + 1}"]`);
+        if (label) {
+          label.textContent = `${s.name || `Person ${i + 1}`}: ${s.action || 'Connect + message'}`;
+        }
+      });
+
+      let html = '';
+      suggestions.forEach(s => {
+        html += `<div class="connect-person">
+          <div class="connect-person-info">
+            <div class="connect-person-name">${esc(s.name || 'Suggested connection')}</div>
+            <div class="connect-person-role">${esc(s.role || '')}</div>
+            ${s.note ? `<div class="connect-person-note">${esc(s.note)}</div>` : ''}
+          </div>
+          ${s.message ? `<button class="btn btn-sm" onclick="copyText(\`${s.message.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy Message</button>` : ''}
+        </div>`;
+      });
+      const el = document.getElementById('connectOutput');
+      el.innerHTML = html;
+      el.style.display = 'block';
+      document.getElementById('stage9Summary').textContent = `${suggestions.length} suggestions`;
+    }
+
+    function updateConnectChecklist() {
+      let checked = 0;
+      for (let i = 1; i <= 10; i++) {
+        const chk = document.getElementById(`chkConnect${i}`);
+        if (chk) {
+          chk.closest('.checklist-item').classList.toggle('checked', chk.checked);
+          if (chk.checked) checked++;
+          session.connections.checklist[`chkConnect${i}`] = chk.checked;
+        }
+      }
+      document.getElementById('connectProgress').textContent = `${checked} / 10 connected`;
+      document.getElementById('connectBar').style.width = `${(checked / 10) * 100}%`;
+      saveSession();
+    }
+
+    async function completeSession() {
+      try {
+        if (session.id) {
+          await sbPatch(`content_sessions_v2?id=eq.${session.id}`, {
+            status: 'complete',
+            completed_at: new Date().toISOString()
+          });
+        }
+        showToast('Session complete! Nice work.');
+      } catch (e) {
+        showToast('Error completing session');
+      }
+    }
+
+    // ---- INIT ----
+    (function init() {
+      loadSessions();
+    })();
+  </script>
+</body>
+</html>

@@ -49,12 +49,31 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const { transcript } = await request.json();
+  const { transcript, source_type, brain_dump } = await request.json();
   if (!transcript || !transcript.trim()) {
     return new Response(JSON.stringify({ error: 'transcript is required' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  const sourceLabel: Record<string, string> = {
+    coaching: 'a coaching session with a business owner',
+    business_meeting: 'a business meeting',
+    sales_call: 'a sales call with a prospect',
+    industry: 'an industry conversation or podcast',
+    walk_talk: 'a walk-and-talk voice note (informal, stream of consciousness)',
+    other: 'a conversation'
+  };
+
+  const additionalContext = source_type || brain_dump ? `
+This transcript is from ${sourceLabel[source_type] || 'a conversation'}.
+${brain_dump ? `\nWill's brain dump before recording (what was on his mind):\n${brain_dump}` : ''}
+
+When extracting themes, tag each with a pillar:
+- "leadership" — people, delegation, team dynamics, management, coaching
+- "systems" — processes, automation, tools, efficiency, email marketing, tech
+- "founder" — building a business, personal journey, decisions, growth challenges
+` : '';
 
   try {
     const anthropic = new Anthropic({ apiKey: anthropicKey });
@@ -65,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
       system: SYSTEM_PROMPT,
       messages: [{
         role: 'user',
-        content: `Extract themes from this coaching session transcript:\n\n${transcript.slice(0, 15000)}`,
+        content: `Extract themes from this transcript:\n\n${transcript.slice(0, 15000)}${additionalContext}`,
       }],
     });
 
