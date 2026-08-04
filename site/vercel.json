@@ -4,5 +4,17 @@
       "path": "/api/content-pipeline/check-drive",
       "schedule": "30 10 * * *"
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "emailshepherd.vercel.app"
+        }
+      ],
+      "destination": "/outreach-console/"
+    }
   ]
 }
