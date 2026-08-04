@@ -1,0 +1,4559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Outreach Console · EmailShepherd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3ede2; --panel:#fffdf8; --ink:#1e1b16; --ink-soft:#5c554a; --line:#e4dccd;
+  --amber:#e2560f; --amber-soft:#fbe9dd; --teal:#0f766e; --teal-soft:#d8efe9;
+  --plum:#3f3cbb; --rose:#b4315a;
+  --fit-high:#0f766e; --fit-med:#b4690e; --fit-low:#9aa0a6;
+  --shadow:0 1px 2px rgba(30,27,22,.06),0 8px 24px rgba(30,27,22,.07);
+  --shadow-lg:0 24px 70px rgba(30,27,22,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(1200px 500px at 80% -10%, #fbe9dd 0%, rgba(251,233,221,0) 60%),
+    radial-gradient(900px 500px at -5% 10%, #d8efe9 0%, rgba(216,239,233,0) 55%),
+    var(--bg);
+  background-attachment:fixed;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");}
+.wrap{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column}
+
+/* Top bar */
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(8px);
+  background:rgba(243,237,226,.82);border-bottom:1px solid var(--line);padding:16px 26px 14px}
+.brandrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.mark{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--panel);
+  display:grid;place-items:center;font-family:Fraunces;font-weight:900;font-size:19px;transform:translateY(4px)}
+h1{font-family:Fraunces;font-weight:600;font-size:27px;margin:0;letter-spacing:-.02em}
+.sub{font-size:12.5px;color:var(--ink-soft);letter-spacing:.14em;text-transform:uppercase}
+.tools{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.search{flex:1;min-width:220px;display:flex;align-items:center;gap:9px;background:var(--panel);
+  border:1px solid var(--line);border-radius:11px;padding:9px 13px;box-shadow:var(--shadow)}
+.search input{border:0;outline:0;background:transparent;font:inherit;font-size:14px;width:100%;color:var(--ink)}
+.search svg{flex:0 0 auto;opacity:.5}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);transition:.15s;user-select:none}
+.chip:hover{border-color:#cdc4b2}
+.chip.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.chip.on.amber{background:var(--amber);border-color:var(--amber)}
+.chip.on.teal{background:var(--teal);border-color:var(--teal)}
+.count-note{font-size:12.5px;color:var(--ink-soft);margin-left:auto;align-self:center}
+.count-note b{color:var(--ink);font-weight:700}
+
+/* Board */
+.board{display:flex;gap:16px;padding:20px 26px 40px;overflow-x:auto;flex:1;align-items:flex-start}
+.col{flex:0 0 300px;display:flex;flex-direction:column;max-height:calc(100vh - 168px)}
+.col-head{display:flex;align-items:center;gap:9px;padding:4px 4px 12px;position:sticky;top:0}
+.dot{width:9px;height:9px;border-radius:50%}
+.col-title{font-family:Fraunces;font-weight:600;font-size:16.5px;letter-spacing:-.01em}
+.col-count{margin-left:auto;font-size:12px;font-weight:700;color:var(--ink-soft);
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.col-body{display:flex;flex-direction:column;gap:11px;overflow-y:auto;padding:4px;border-radius:14px;min-height:80px;
+  transition:background .15s}
+.col-body.drag{background:rgba(226,86,15,.06);outline:2px dashed rgba(226,86,15,.35);outline-offset:-4px}
+.col-body::-webkit-scrollbar{width:8px}.col-body::-webkit-scrollbar-thumb{background:#ddd3c1;border-radius:8px}
+
+/* Card */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+  box-shadow:var(--shadow);cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;position:relative}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#d8cfbd}
+.card.dragging{opacity:.4}
+.card-top{display:flex;align-items:center;gap:9px}
+.favi{width:22px;height:22px;border-radius:6px;flex:0 0 auto;background:#efe8db;object-fit:contain}
+.cname{font-weight:700;font-size:15px;line-height:1.15;letter-spacing:-.01em}
+.cdomain{font-size:11.5px;color:var(--ink-soft)}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.b{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:2.5px 7px;border-radius:6px;white-space:nowrap}
+.b-fit-High{background:var(--teal-soft);color:var(--teal)}
+.b-fit-Medium{background:#f7ecd5;color:var(--fit-med)}
+.b-fit-Low{background:#eceded;color:#6b7280}
+.b-tier{background:#efe8db;color:var(--ink-soft)}
+.b-proof-BBC{background:#e6e6fb;color:var(--plum)}
+.b-proof-Eurostar{background:var(--amber-soft);color:var(--amber)}
+.b-list{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
+.card .ribbon{position:absolute;top:11px;right:12px;font-size:10px;font-weight:700;color:var(--amber);
+  display:flex;align-items:center;gap:4px}
+.empty{font-size:12.5px;color:var(--ink-soft);text-align:center;padding:16px 8px;opacity:.7}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(30,27,22,.34);backdrop-filter:blur(2px);z-index:40;opacity:0;
+  pointer-events:none;transition:.2s}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(600px,94vw);background:var(--panel);z-index:50;
+  box-shadow:var(--shadow-lg);transform:translateX(102%);transition:transform .28s cubic-bezier(.5,.1,.2,1);
+  display:flex;flex-direction:column;border-left:1px solid var(--line)}
+.drawer.show{transform:none}
+.dhead{padding:20px 24px 16px;border-bottom:1px solid var(--line);background:
+  linear-gradient(180deg,#fffdf8,#fbf6ec)}
+.dhead .row{display:flex;align-items:center;gap:12px}
+.dhead h2{font-family:Fraunces;font-weight:600;font-size:24px;margin:0;letter-spacing:-.02em}
+.dhead a.dom{font-size:12.5px;color:var(--amber);text-decoration:none}
+.xbtn{margin-left:auto;border:1px solid var(--line);background:var(--panel);border-radius:9px;width:34px;height:34px;
+  cursor:pointer;font-size:17px;color:var(--ink-soft)}
+.xbtn:hover{background:#f3ede2}
+.dmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.dbody{overflow-y:auto;padding:20px 24px 30px;flex:1}
+.sect{margin-bottom:22px}
+.sect h3{font-family:Fraunces;font-weight:600;font-size:15px;margin:0 0 4px;letter-spacing:.01em;
+  display:flex;align-items:center;gap:8px}
+.sect .hint{font-size:12px;color:var(--ink-soft);margin:0 0 10px}
+label.fld{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-soft);margin:12px 0 5px}
+textarea,input.ti{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:#fffdf8;
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical;line-height:1.5}
+textarea:focus,input.ti:focus{outline:0;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.src{font-size:11.5px}.src a{color:var(--amber)}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;
+  background:#faf5ec;border:1px solid var(--line);border-radius:10px;padding:10px}
+.contact .role{grid-column:1/3;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
+.email-block{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:11px;background:#fffdf8}
+.email-block .eh{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.email-block .eno{font-family:Fraunces;font-weight:600;font-size:14px}
+.email-block .eday{font-size:11px;color:var(--ink-soft);background:#f0e9db;padding:2px 8px;border-radius:6px}
+.btns{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
+.btn{font:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:10px 15px;cursor:pointer;border:1px solid transparent;transition:.14s;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--amber);color:#fff}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-ghost{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.btn-ink{background:var(--ink);color:var(--panel)}
+.stagebar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,253,248,0),#fffdf8 30%);
+  padding:16px 24px 20px;border-top:1px solid var(--line);display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.stagebar .lab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);z-index:80;
+  background:var(--ink);color:var(--panel);padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:600;
+  box-shadow:var(--shadow-lg);opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pill-stage{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#faf5ec}
+@media(max-width:640px){.board{padding:16px}.col{flex-basis:82vw}}
+
+/* --- gated pipeline additions --- */
+.steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.step{font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:7px;background:#f0e9db;color:var(--ink-soft);border:1px solid var(--line)}
+.step.done{background:var(--teal-soft);color:var(--teal);border-color:transparent}
+.step.now{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.card .kill{position:absolute;top:8px;right:9px;border:0;background:transparent;color:#c9beac;cursor:pointer;font-size:13px;line-height:1;opacity:0;transition:.12s;z-index:2}
+.card:hover .kill{opacity:1}
+.card .kill:hover{color:var(--rose)}
+.col-excluded{opacity:.8}
+.col-excluded .card{background:#f8f0f2}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-back{background:transparent;border-color:var(--line);color:var(--ink-soft)}
+.btn-exclude{background:transparent;border:1px solid #eccdd6;color:var(--rose)}
+.excluded-note{margin-top:12px;font-size:12.5px;color:var(--rose)}
+.linklike{border:0;background:none;color:var(--amber);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
+.rmc{border:0;background:none;color:var(--ink-soft);font:inherit;font-size:10px;cursor:pointer;text-decoration:underline;margin-left:8px;letter-spacing:0;text-transform:none}
+.pushed-note{font-size:12px;color:var(--ink-soft);background:#f0e9db;padding:9px 11px;border-radius:9px;line-height:1.4}
+.subject-block{background:#faf5ec;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brandrow">
+      <span class="mark">S</span>
+      <h1>Outreach Console</h1>
+      <span class="sub">EmailShepherd · SFMC + Airship pipeline</span>
+    </div>
+    <div class="tools">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" placeholder="Search company or domain..." autocomplete="off">
+      </div>
+      <div class="chips" id="filters">
+        <span class="chip" data-f="list" data-v="SFMC">SFMC</span>
+        <span class="chip" data-f="list" data-v="Airship">Airship</span>
+        <span class="chip amber" data-f="proof" data-v="Eurostar">Eurostar proof</span>
+        <span class="chip" data-f="proof" data-v="BBC">BBC proof</span>
+        <span class="chip teal" data-f="fit" data-v="High">High fit</span>
+      </div>
+      <span class="count-note"><b id="shown">0</b> shown · <b id="total">0</b> companies</span>
+    </div>
+  </header>
+  <div class="board" id="board"></div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Researched sequences (5, pre-loaded, voice v2, mobile spacing) ---------- */
+const P_BBC = "we've worked with the BBC, who went from a high-risk manual process to what they called insanely fast.";
+const P_EURO = "we're working with Eurostar at the moment, where jobs that used to take days now take minutes in production.";
+const RESEARCHED = {
+  "marksspencer":{trigger:"M&S has just appointed Matt McLellan as Director of Loyalty (3 Aug 2026), succeeding Jade Sharpe, inheriting a freshly relaunched Sparks programme.",
+    source:"https://www.thegrocer.co.uk/news/mands-poaches-morrisons-customer-and-loyalty-director/722023.article",
+    emails:[
+      {subject:"Sparks Relaunch",body:"Hi {{first_name}},\n\nSaw that Matt McLellan is joining to run loyalty at M&S, picking up Sparks just as it relaunches.\n\nI assume that means you'll be shipping more lifecycle email than ever once it's underway, and I'd imagine a fair bit more build work landing on the team alongside it.\n\nYou're on SFMC too, and from what we've seen with others running that kind of volume around a launch, most of the time goes on the coding, QA and approvals rather than the campaigns themselves.\n\nThat's usually where we help.\n\nFor example, we're working with Eurostar at the moment, where jobs that used to take days now take minutes in production.\n\nI've already mocked up a couple of your Sparks emails so you can see how it works, and how we could roughly halve the time you spend on production.\n\nWould it be worth me sharing a bit more?\n\nWill"},
+      {subject:"Days Into Minutes",body:"Hi {{first_name}},\n\nFollowing up on the Sparks thought.\n\nThe reason I mentioned Eurostar: the same size of team, but production that used to take days now takes minutes, because the building is handled for them rather than done by hand each time.\n\nFor a loyalty programme running frequent, segmented sends, I'd imagine that kind of turnaround would take a fair bit of pressure off.\n\nThe mockup of your Sparks emails is ready whenever you'd like a look.\n\nWorth a quick call to walk you through it?\n\nWill"},
+      {subject:"Closing The Loop",body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}]},
+  "vodafone":{trigger:"Vodafone's Q1 FY27 update (27 Jul 2026) confirmed 1,200 job cuts as part of a drive to take ~£700m/year off costs.",
+    source:"https://uk.finance.yahoo.com/news/vodafone-earnings-boosted-cost-cutting-074928208.html",
+    emails:[
+      {subject:"Leaner Team",body:"Hi {{first_name}},\n\nI saw the Q1 update, the 1,200 roles going as part of the £700m efficiency drive.\n\nIt sounds like a lot of change, and I'd guess it means trying to do more with less across the board.\n\nI also imagine email production is one of the areas that won't slow down, since the volume of work stays much the same even as the team gets smaller, so any time you can claw back there would probably be welcome.\n\nI have a hunch we could reduce your email production time by as much as half, which would give the team room to get more done.\n\nFor example, we've worked with the BBC, who went from a high-risk manual process to what they called insanely fast.\n\nI've already mocked up a couple of your emails so you can see how it works, and how much time it could save.\n\nWould it be worth me sharing a bit more?\n\nWill"},
+      {subject:"Insanely Fast",body:"Hi {{first_name}},\n\nOn the leaner-team point, the BBC were in a similar spot: a small team, high stakes, and manual email build slowing everything down.\n\nOnce the building was handled for them, they described it as insanely fast and rolled it across six brands in a month.\n\nWith VodafoneThree now under one roof, I'd imagine there's a fair amount of lifecycle email to consolidate too.\n\nThe mockup I made you is ready whenever.\n\nWorth a short call to show you?\n\nWill"},
+      {subject:"Closing The Loop",body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}]},
+  "theeconomist":{trigger:"The Economist launched Economist Play (1 Jul 2026), a new subscription tier with its own subscriber-only newsletters piloting across four markets.",
+    source:"https://digiday.com/media/the-economists-new-audio-and-video-tier-targets-younger-subscribers/",
+    emails:[
+      {subject:"Play Newsletters",body:"Hi {{first_name}},\n\nSaw that Economist Play has launched with its own subscriber-only newsletters across the four pilot markets.\n\nI assume that means a good chunk of new onboarding and lifecycle email to build and localise, on top of everything already going out.\n\nFrom what we've seen with other media teams, that localisation and build work is where a lot of the time quietly goes, rather than on the flows and the copy.\n\nThat's usually where we help.\n\nFor example, we've worked with the BBC, who went from a messy, high-risk process to what they called insanely fast, six brands live in a month.\n\nI've already mocked up a couple of your Play emails so you can see how it works, and how we might halve the time you spend building them.\n\nWould it be worth me sharing a bit more?\n\nWill"},
+      {subject:"Six Brands",body:"Hi {{first_name}},\n\nMore on the BBC, since it's a close parallel: they were juggling manual HTML and long approval threads across brands.\n\nOnce the building was handled for them, they rolled us out across six brands, News, Sport, iPlayer and more, in a single month.\n\nFor a multi-market launch like Play, I'd imagine that kind of speed would make localising the flows a lot less painful.\n\nYour mocked-up Play emails are ready whenever.\n\nWorth a quick look together?\n\nWill"},
+      {subject:"Last One",body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}]},
+  "sainsburys":{trigger:"Sainsbury's Q1 trading (30 Jun 2026) flagged its three-year £1bn cost-reduction programme alongside a fast-scaling Digital Nectar push.",
+    source:"https://corporate.sainsburys.co.uk/news/press-releases/first-quarter-trading-statement-for-the-16-weeks-to-20-june-2026/",
+    emails:[
+      {subject:"Nectar Volume",body:"Hi {{first_name}},\n\nSaw the Q1 update, Digital Nectar scaling quickly while the £1bn cost programme asks every team to do more with less.\n\nI assume that combination lands fairly hard on the email side: more personalised sends and more segments, but not more people to build them.\n\nYou're on SFMC too, and from what we've seen with others running that kind of volume, most of the time goes on the coding, QA and approvals rather than the targeting.\n\nThat's usually where we help.\n\nWe're working with Eurostar at the moment, where jobs that used to take days now take minutes in production.\n\nI've already mocked up a few of your Nectar emails so you can see how it works, and how we could roughly halve your production time.\n\nWould it be worth me sharing a bit more?\n\nWill"},
+      {subject:"Same Team",body:"Hi {{first_name}},\n\nFollowing the Nectar thought.\n\nThe teams that grow personalised email without growing headcount are usually the ones that stop hand-building every template.\n\nEurostar are a good example: the same team, but production that took days now takes minutes because the build is handled for them.\n\nI'd imagine that would help with the cost targets too.\n\nYour mocked-up Nectar emails are ready whenever you'd like a look.\n\nWorth a quick call?\n\nWill"},
+      {subject:"Last One",body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}]},
+  "lowes":{trigger:"Lowe's CMO Jen Wilson has set a goal to roll out a personalised experience to every customer by end of 2026, on top of a 30M+ member loyalty base.",
+    source:"https://www.modernretail.co/technology/lowes-wants-to-roll-out-personalized-website-to-all-customers-by-end-of-2026/",
+    emails:[
+      {subject:"Personalising Everything",body:"Hi {{first_name}},\n\nSaw Jen Wilson's goal of a personalised experience for every Lowe's customer by year-end.\n\nWith 30 million-plus loyalty members, I assume that means a lot more triggered, segmented email between now and December.\n\nYou're on SFMC too, and from what we've seen with others heading down the personalisation route, the build and QA on all those variations is where a surprising amount of the time goes, rather than on the personalisation itself.\n\nThat's usually where we help.\n\nWe're working with Eurostar at the moment, where jobs that used to take days now take minutes in production.\n\nI've already mocked up a couple of your MyLowe's emails so you can see how it works, and how we could roughly halve your production time.\n\nWould it be worth me sharing a bit more?\n\nWill"},
+      {subject:"Build Vs Thinking",body:"Hi {{first_name}},\n\nFollowing the personalisation thought.\n\nThe thing that usually slows a push like this isn't the strategy, it's the production line behind it, since every new segment is another email to build, test and ship.\n\nEurostar took that off their team, and production that took days now takes minutes.\n\nI'd imagine that kind of headroom would help against a year-end deadline.\n\nYour mocked-up MyLowe's emails are ready whenever.\n\nWorth a quick look together?\n\nWill"},
+      {subject:"Closing The Loop",body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}]}
+};
+
+/* ---------- Data + state ---------- */
+const COMPANIES = [
+{
+"company": "Ace Hardware",
+"domain": "acehardware.com",
+"sector": "Retail (hardware co-op)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~12,500-21,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Adidas",
+"domain": "adidas.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"Airship",
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Air France",
+"domain": "airfrance.com",
+"sector": "Airline / Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~44,600",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Air France-KLM",
+"domain": "airfranceklm.com",
+"sector": "Airline / Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~76,000-79,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Alaska Airlines",
+"domain": "alaskaair.com",
+"sector": "Airline / Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~31,585 (Alaska Air Group)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "AMC",
+"domain": "amctheatres.com",
+"sector": "Cinema",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "AMC Theatres",
+"domain": "amctheatres.com",
+"sector": "Cinema",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~33,300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Arizona State University",
+"domain": "thesundevils.com",
+"sector": "Education",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Asda",
+"domain": "microsoftonline.com",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"Airship",
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Avis",
+"domain": "avis.com",
+"sector": "Travel (car rental)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~24,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Baileys",
+"domain": "diageo.com",
+"sector": "CPG (Diageo brand)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Bauer Media Group",
+"domain": "bauermedia.com",
+"sector": "Media (publishing/radio)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~11,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "BBC",
+"domain": "bbc.co.uk",
+"sector": "Media (broadcast)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"Airship",
+"SFMC"
+],
+"proof": "BBC"
+},
+{
+"company": "BBC Sport",
+"domain": "bbc.co.uk",
+"sector": "Media (sports)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Belk",
+"domain": "belk.com",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"Airship",
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Bloomingdale's",
+"domain": "bloomingdales.com",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Boots",
+"domain": "boots.com",
+"sector": "Retail (pharmacy)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~66,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Bosch",
+"domain": "bosch.com",
+"sector": "Manufacturing / Consumer",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~418,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Caesars Entertainment",
+"domain": "caesars.com",
+"sector": "Hospitality / Gaming",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~50,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Calvin Klein",
+"domain": "calvinklein.com",
+"sector": "Retail (fashion)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Camping World",
+"domain": "campingworld.com",
+"sector": "Retail",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Carrefour",
+"domain": "carrefour.com",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~324,750",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Chanel",
+"domain": "chanel.com",
+"sector": "Retail (luxury)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Chipotle",
+"domain": "chipotle.com",
+"sector": "QSR / Food",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~130,504",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Club Wyndham",
+"domain": "clubwyndhamvacationrentals.com",
+"sector": "Travel (hospitality)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Coach",
+"domain": "coach.com",
+"sector": "Retail (fashion)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Coop",
+"domain": "coop.ch",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "CosmoProf",
+"domain": "cosmoprofbeauty.com",
+"sector": "Retail (beauty B2B)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~27,000 (Sally Beauty)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Dior UK",
+"domain": "christiandior.com",
+"sector": "Retail (luxury)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Disney Store",
+"domain": "disneystore.com",
+"sector": "Retail (Disney)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Disneyland Paris",
+"domain": "disneylandparis.com",
+"sector": "Hospitality / Entertainment",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~17,000-20,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Douglas",
+"domain": "douglas.de",
+"sector": "Retail (beauty)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~19,900",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Dunelm",
+"domain": "dunelm.com",
+"sector": "Retail (home)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Dyson",
+"domain": "dyson.co.uk",
+"sector": "Consumer electronics",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "El Palacio de Hierro",
+"domain": "elpalaciodehierro.com",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Expedia",
+"domain": "expedia.com",
+"sector": "Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Fanatics",
+"domain": "fanatics.com",
+"sector": "Retail (sports merch)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~22,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Floor & Decor",
+"domain": "flooranddecor.com",
+"sector": "Retail (home)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Flutter Entertainment",
+"domain": "flutter.com",
+"sector": "Gambling / Betting",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~27,345",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Foot Locker",
+"domain": "footlocker.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~28,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Forever 21",
+"domain": "forever21.com",
+"sector": "Retail (fashion)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~30,000-43,000 (defunct 2025)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Girl Scouts",
+"domain": "girlscouts.org",
+"sector": "Nonprofit",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Globo",
+"domain": "globo.com",
+"sector": "Media (broadcast)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~14,000 (Grupo Globo)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Gucci",
+"domain": "gucci.com",
+"sector": "Retail (luxury)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "HP",
+"domain": "hp.com",
+"sector": "Tech (hardware)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Hy-Vee",
+"domain": "hy-vee.com",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~75,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Iceland",
+"domain": "iceland.co.uk",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "IKEA",
+"domain": "ikea.com",
+"sector": "Retail (home)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "J.Crew",
+"domain": "jcrew.com",
+"sector": "Retail (fashion)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "John Lewis",
+"domain": "johnlewis.co.uk",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Kingfisher",
+"domain": "kingfisher.com",
+"sector": "Retail (DIY)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~74,525",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "KitKat",
+"domain": "nestle.co.uk",
+"sector": "CPG (Nestle brand)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "L'Oreal",
+"domain": "lorealprofessionnel.com",
+"sector": "Beauty / CPG",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Ladbrokes",
+"domain": "ladbrokes.com",
+"sector": "Gambling / Betting",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Lego",
+"domain": "lego.com",
+"sector": "Retail (toys)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Leroy Merlin",
+"domain": "leroymerlin.com",
+"sector": "Retail (DIY)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~110,000-165,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Lidl",
+"domain": "lidl.com",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Live Nation",
+"domain": "livenation.co.uk",
+"sector": "Events / Entertainment",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Lowe's",
+"domain": "lowes.com",
+"sector": "Retail (home improvement)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Magazine Luiza (Magalu)",
+"domain": "magazineluiza.com.br",
+"sector": "Retail (e-commerce)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~32,423",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Marks & Spencer",
+"domain": "marksandspencer.com",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "McDonald's",
+"domain": "mcdonalds.com",
+"sector": "QSR / Food",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~150,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Michelin",
+"domain": "michelin.com",
+"sector": "Manufacturing / Automotive",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Motorola",
+"domain": "motorola.co.uk",
+"sector": "Tech (hardware)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "MultiChoice / DStv",
+"domain": "multichoice.com",
+"sector": "Media (pay-TV)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~12,300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "National Express",
+"domain": "nationalexpress.com",
+"sector": "Transport / Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "National Trust",
+"domain": "nationaltrust.org.uk",
+"sector": "Nonprofit (heritage)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "NBC Sports",
+"domain": "nbcsports.com",
+"sector": "Media / Sports",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~55,000 (NBCUniversal)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "NBCUniversal",
+"domain": "nbcuniversal.com",
+"sector": "Media",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~55,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Nestle",
+"domain": "nestle.com",
+"sector": "CPG / Food",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~277,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Nike",
+"domain": "nike.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~79,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Nordstrom",
+"domain": "nordstrom.com",
+"sector": "Retail (department store)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Paddy Power",
+"domain": "paddypower.com",
+"sector": "Gambling (Flutter)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~28,500 (Flutter)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Pandora",
+"domain": "pandora.net",
+"sector": "Retail (jewelry)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~37,000-39,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Pepsi",
+"domain": "pepsico.com",
+"sector": "CPG",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "PetSmart",
+"domain": "petsmart.com",
+"sector": "Retail (pet)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Philips",
+"domain": "philips.com",
+"sector": "Consumer electronics / Health",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Primark",
+"domain": "primark.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Sainsbury's",
+"domain": "sainsburys.co.uk",
+"sector": "Retail (grocery)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Saks Fifth Avenue",
+"domain": "saksfifthavenue.com",
+"sector": "Retail (luxury)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~16,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Sally Beauty",
+"domain": "sallybeauty.com",
+"sector": "Retail (beauty)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~27,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Samsonite",
+"domain": "samsonite.com",
+"sector": "Retail (luggage)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Shop Disney",
+"domain": "shopdisney.com",
+"sector": "Retail (Disney)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Sky News",
+"domain": "sky.com",
+"sector": "Media (broadcast)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~35,000 (Sky Group)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Southwest Airlines",
+"domain": "southwest.com",
+"sector": "Airline / Travel",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~72,790",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Target",
+"domain": "target.com",
+"sector": "Retail",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "TGI Fridays",
+"domain": "tgifridays.com",
+"sector": "Restaurants",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~11,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Body Shop",
+"domain": "thebodyshop.com",
+"sector": "Retail (beauty)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~10,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Home Depot",
+"domain": "homedepot.com",
+"sector": "Retail (home improvement)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~463,100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "TNT Sports",
+"domain": "tntsports.co.uk",
+"sector": "Media / Sports",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~35,000 (Warner Bros Discovery)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Turner Sports Interactive",
+"domain": "turnersports.com",
+"sector": "Media / Sports",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~35,000 (Warner Bros Discovery)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Ulta Beauty",
+"domain": "ulta.com",
+"sector": "Retail (beauty)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~58,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Under Armour",
+"domain": "underarmour.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Universal Pictures",
+"domain": "universalpictures.com",
+"sector": "Media / Film",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Urban Outfitters",
+"domain": "urbanoutfitters.eu",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "USA Today",
+"domain": "usatoday.com",
+"sector": "Media",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~11,200 (Gannett)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Vans",
+"domain": "vans.com",
+"sector": "Retail (apparel)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Walgreens",
+"domain": "walgreens.com",
+"sector": "Retail (pharmacy)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "~211,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Walt Disney World",
+"domain": "disney.co.uk",
+"sector": "Hospitality (theme park)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "WashU",
+"domain": "wustl.edu",
+"sector": "Education",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Yves Rocher",
+"domain": "yves-rocher.ca",
+"sector": "Retail (beauty)",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Zoetis Petcare",
+"domain": "zoetispetcare.com",
+"sector": "Pharma / Pet",
+"size_tier": "Enterprise",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "A+E Networks",
+"domain": "aenetworks.com",
+"sector": "Media (broadcast)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,900-2,200",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Alo Yoga",
+"domain": "aloyoga.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "AMC Networks",
+"domain": "amc.com",
+"sector": "Media (broadcast/streaming)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,800",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Armani",
+"domain": "armani.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "ARTE",
+"domain": "arte.tv",
+"sector": "Media (broadcast/streaming)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~550 core (~4,600 all entities)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Benetton",
+"domain": "benetton.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Betway",
+"domain": "betway.com",
+"sector": "Gambling / Betting",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Bissell",
+"domain": "bissell.com",
+"sector": "Consumer appliances",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "BoConcept",
+"domain": "boconcept.com",
+"sector": "Retail (furniture)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "bol",
+"domain": "bol.com",
+"sector": "Retail (e-commerce)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~7,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Bugaboo",
+"domain": "bugaboo.com",
+"sector": "Retail (baby)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Bushnell",
+"domain": "bushnell.com",
+"sector": "Retail (optics)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Canyon",
+"domain": "canyon.com",
+"sector": "Retail (bikes)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Caribou Coffee",
+"domain": "cariboucoffee.com",
+"sector": "Food / Coffee",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~7,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Celine",
+"domain": "celine.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Chicago Tribune",
+"domain": "chicagotribune.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,900-4,100 (Tribune Publishing)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Chopard",
+"domain": "chopard.com",
+"sector": "Retail (luxury jewelry)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "CNBC",
+"domain": "cnbc.com",
+"sector": "Media",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,000 (entity; Comcast/NBCU parent)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "CommunityAmerica Credit Union",
+"domain": "cacu.com",
+"sector": "Finance (credit union)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Compare the Market",
+"domain": "comparethemarket.com",
+"sector": "Insurance (aggregator)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Conde Nast",
+"domain": "condenast.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~7,700",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Crate and Barrel",
+"domain": "crateandbarrel.com",
+"sector": "Retail (home)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Cybex",
+"domain": "cybex-online.com",
+"sector": "Retail (baby)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Dainese",
+"domain": "dainese.com",
+"sector": "Retail (motorsport apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "DAZN",
+"domain": "dazn.com",
+"sector": "Media (sports streaming)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~6,183",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "ESPN",
+"domain": "espn.com",
+"sector": "Media / Sports",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~9,464",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Etam",
+"domain": "etam.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Ethan Allen",
+"domain": "ethanallen.com",
+"sector": "Retail (furniture)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Eurostar",
+"domain": "eurostar.com",
+"sector": "Travel (rail)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "France Televisions",
+"domain": "france.tv",
+"sector": "Media (broadcast)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~9,050",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Future PLC",
+"domain": "futureplc.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,680",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GameStop",
+"domain": "gamestop.com",
+"sector": "Retail",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~8,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GANT",
+"domain": "gant.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Garage Clothing",
+"domain": "garageclothing.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Geox",
+"domain": "geox.com",
+"sector": "Retail (footwear)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Givenchy",
+"domain": "givenchy.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Groupon",
+"domain": "groupon.com",
+"sector": "E-commerce (deals)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,079",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Harvey Nichols",
+"domain": "harveynichols.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Hawaiian Airlines",
+"domain": "hawaiianairlines.com",
+"sector": "Airline / Travel",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~6,456",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Holiday Extras",
+"domain": "holidayextras.com",
+"sector": "Travel",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "HomeAway",
+"domain": "homeaway.com",
+"sector": "Travel (Vrbo/Expedia)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,000 (brand; Expedia Group)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Horizon Hobby",
+"domain": "horizonhobby.com",
+"sector": "Retail (hobby)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "John Wiley & Sons",
+"domain": "wiley.com",
+"sector": "Publishing (academic)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~4,500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Kate Spade",
+"domain": "katespade.co.uk",
+"sector": "Retail (fashion)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Kindred Group",
+"domain": "kindredgroup.com",
+"sector": "Gambling / Betting",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,200-2,300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "La Redoute",
+"domain": "laredoute.com",
+"sector": "E-commerce (fashion)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~2,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Lamborghini",
+"domain": "lamborghini.com",
+"sector": "Automotive (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Lifeway",
+"domain": "lifeway.com",
+"sector": "Retail / Publishing (religious)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Loewe",
+"domain": "loewe.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Logitech",
+"domain": "logitech.com",
+"sector": "Consumer electronics",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Logitech G",
+"domain": "logitechg.com",
+"sector": "Consumer electronics (gaming)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "M6 (Groupe M6)",
+"domain": "m6.fr",
+"sector": "Media (broadcast)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~3,100-3,500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Margaritaville Vacation Club",
+"domain": "extraholidaysvacations.com",
+"sector": "Travel (hospitality)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Meilleurtaux",
+"domain": "meilleurtaux.com",
+"sector": "Fintech (broker)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Mizuno",
+"domain": "mizuno.com",
+"sector": "Retail (sportswear)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Mulberry",
+"domain": "mulberry.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "NBA Store EU",
+"domain": "nbastoreinternational.com",
+"sector": "Retail (sports merch)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Neiman Marcus",
+"domain": "neimanmarcus.com",
+"sector": "Retail (luxury)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~8,327",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "NETGEAR",
+"domain": "netgear.com",
+"sector": "Tech (hardware)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Neue Zurcher Zeitung (NZZ)",
+"domain": "nzz.ch",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,860 (NZZ Mediengruppe)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "New York Post",
+"domain": "nypost.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,000 (entity; News Corp parent ~24k)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "NordicTrack",
+"domain": "nordictrack.com",
+"sector": "Fitness equipment",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "NRDC",
+"domain": "nrdc.org",
+"sector": "Nonprofit (environment)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "OtterBox",
+"domain": "otterbox.com",
+"sector": "Consumer accessories",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Paula's Choice",
+"domain": "paulaschoice.com",
+"sector": "Retail (beauty)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Playmobil",
+"domain": "playmobil.com",
+"sector": "Retail (toys)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "POLITICO",
+"domain": "politico.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Prezzo",
+"domain": "prezzorestaurants.co.uk",
+"sector": "Restaurants",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Razer",
+"domain": "razer.com",
+"sector": "Consumer electronics (gaming)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Rimowa",
+"domain": "rimowa.com",
+"sector": "Retail (luxury luggage)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Rip Curl",
+"domain": "ripcurl.com",
+"sector": "Retail (apparel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,700",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Rue La La",
+"domain": "ruelala.com",
+"sector": "E-commerce (flash sales)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~600-1,300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Saks Off 5th",
+"domain": "saksoff5th.com",
+"sector": "Retail (off-price)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Schuh",
+"domain": "schuh.co.uk",
+"sector": "Retail (footwear)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Scotts",
+"domain": "scotts.com",
+"sector": "Consumer (garden)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Selfridges",
+"domain": "selfridges.com",
+"sector": "Retail (department store)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Shop Direct",
+"domain": "shopdirect.com",
+"sector": "E-commerce (retail)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~3,700 (The Very Group)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Silversea",
+"domain": "silversea.com",
+"sector": "Travel (cruise)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "SiriusXM",
+"domain": "siriusxm.com",
+"sector": "Media (audio)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~5,515",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Smithsonian",
+"domain": "smithsonianmag.com",
+"sector": "Media / Nonprofit",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Stella McCartney",
+"domain": "stellamccartney.com",
+"sector": "Retail (luxury fashion)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "STIGA",
+"domain": "stiga.com",
+"sector": "Retail (garden/sports)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Sylvania",
+"domain": "sylvania-automotive.com",
+"sector": "Automotive / Lighting",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Technogym",
+"domain": "technogym.com",
+"sector": "Fitness equipment",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "The Boston Globe",
+"domain": "bostonglobe.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,315",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Economist",
+"domain": "economist.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,540",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Ordinary",
+"domain": "theordinary.com",
+"sector": "Retail (beauty)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "The Space Cinema",
+"domain": "thespacecinema.it",
+"sector": "Cinema",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,115",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Vitamin Shoppe",
+"domain": "vitaminshoppe.com",
+"sector": "Retail (health)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~4,976",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Thomas Sabo",
+"domain": "thomassabo.com",
+"sector": "Retail (jewelry)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Tissot",
+"domain": "tissotwatches.com",
+"sector": "Retail (watches)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "TJC",
+"domain": "tjc.co.uk",
+"sector": "Retail (shopping channel)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Tory Burch",
+"domain": "toryburch.com",
+"sector": "Retail (fashion)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~4,800",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Tottenham Hotspur",
+"domain": "tottenhamhotspur.com",
+"sector": "Sports (football club)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Triumph",
+"domain": "triumph.com",
+"sector": "Automotive (motorcycles)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "TUMI",
+"domain": "tumi.com",
+"sector": "Retail (luggage)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Vente-Privee (Veepee)",
+"domain": "veepee.com",
+"sector": "E-commerce (flash sales)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~6,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Virgin Atlantic",
+"domain": "virginatlantic.com",
+"sector": "Airline / Travel",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~8,000-10,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Vue Entertainment",
+"domain": "myvue.com",
+"sector": "Cinema / Entertainment",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~1,058",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Wall Street Journal",
+"domain": "wsj.com",
+"sector": "Media (publishing)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~6,200 (Dow Jones)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Warner Bros",
+"domain": "warnerbros.com",
+"sector": "Media (WBD)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "~9,000 (studio)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Weber",
+"domain": "weber.com",
+"sector": "Consumer (grills)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "WebMD",
+"domain": "webmd.com",
+"sector": "Media (health)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Which?",
+"domain": "which.co.uk",
+"sector": "Media / Consumer nonprofit",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Wilton",
+"domain": "wilton.com",
+"sector": "Consumer (baking)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Zappos",
+"domain": "zappos.com",
+"sector": "Retail (e-commerce)",
+"size_tier": "Large",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "10BEST",
+"domain": "10best.com",
+"sector": "Media (travel)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Billboard",
+"domain": "billboard.com",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Boston",
+"domain": "boston.com",
+"sector": "Media (news)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "CBS Interactive",
+"domain": "cbsinteractive.com",
+"sector": "Media (Paramount)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~970",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Christian Science Monitor",
+"domain": "csmonitor.com",
+"sector": "Media (news)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "CNET",
+"domain": "cnet.com",
+"sector": "Media (tech)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Columbian",
+"domain": "columbian.com",
+"sector": "Media (news)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Diario AS",
+"domain": "as.com",
+"sector": "Media / Sports",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~393",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "ecobee",
+"domain": "ecobee.com",
+"sector": "Consumer tech (smart home)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "FASHIONPHILE",
+"domain": "fashionphile.com",
+"sector": "Retail (resale)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Flos",
+"domain": "flos.com",
+"sector": "Retail (design/lighting)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Good Energy",
+"domain": "goodenergy.co.uk",
+"sector": "Energy",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Isabel Marant",
+"domain": "isabelmarant.com",
+"sector": "Retail (luxury fashion)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Junior Couture",
+"domain": "juniorcouture.com",
+"sector": "Retail (kids fashion)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "LAist",
+"domain": "laist.com",
+"sector": "Media (public radio)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Luisa Via Roma",
+"domain": "luisaviaroma.com",
+"sector": "Retail (luxury e-comm)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~347",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Lyco",
+"domain": "lyco.co.uk",
+"sector": "Retail (lighting)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Martin Guitars",
+"domain": "martinguitar.com",
+"sector": "Manufacturing (music)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "POLITICO Europe",
+"domain": "politico.eu",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~350",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "RetailMeNot",
+"domain": "retailmenot.com",
+"sector": "E-commerce (deals)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Roberto Cavalli",
+"domain": "robertocavalli.com",
+"sector": "Retail (luxury fashion)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Rolling Stone",
+"domain": "rollingstone.com",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "SheKnows",
+"domain": "sheknows.com",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "The Gazette",
+"domain": "thegazette.com",
+"sector": "Media (news)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "The Michael J. Fox Foundation",
+"domain": "michaeljfox-email.org",
+"sector": "Nonprofit",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Tower Hobbies",
+"domain": "towerhobbies.com",
+"sector": "Retail (hobby e-comm)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Ultimate Ears",
+"domain": "ultimateears.com",
+"sector": "Consumer electronics",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Variety",
+"domain": "variety.com",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Veja",
+"domain": "veja-store.com",
+"sector": "Retail (footwear)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Women's Wear Daily",
+"domain": "wwd.com",
+"sector": "Media (publishing)",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "YES Network",
+"domain": "yesnetwork.com",
+"sector": "Media / Sports",
+"size_tier": "Mid",
+"email_fit": "High",
+"employees": "~350-400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Access Bank",
+"domain": "accessbankplc.com",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~28,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Allstate",
+"domain": "allstate.com",
+"sector": "Insurance",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~55,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Atlassian",
+"domain": "atlassian.com",
+"sector": "B2B SaaS",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "BNP Paribas",
+"domain": "bnpparibas.com",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~178,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Capitec Bank",
+"domain": "capitecbank.co.za",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~16,935",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "CIMB",
+"domain": "cimb.com",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~36,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "E.ON",
+"domain": "eon.com",
+"sector": "Energy / Utility",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~72,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "EnBW",
+"domain": "enbw.com",
+"sector": "Energy / Utility",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~30,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Fidelity Investments",
+"domain": "fidelity.com",
+"sector": "Finance (investments)",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~76,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "KeyBank",
+"domain": "key.com",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~17,333",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "MTN",
+"domain": "mtn.com",
+"sector": "Telecom",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~14,637",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Orange",
+"domain": "orange.com",
+"sector": "Telecom",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~127,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "PayPal",
+"domain": "paypal.com",
+"sector": "Fintech",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~24,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Paytm",
+"domain": "paytm.com",
+"sector": "Fintech",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~44,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Proximus",
+"domain": "proximus.be",
+"sector": "Telecom",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~25,076",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "RHB Banking Group",
+"domain": "rhbgroup.com",
+"sector": "Banking",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~12,971",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Shell",
+"domain": "shell.com",
+"sector": "Energy",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~96,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Synchrony",
+"domain": "synchrony.com",
+"sector": "Finance (consumer credit)",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~20,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Vodafone",
+"domain": "vodafone.com",
+"sector": "Telecom",
+"size_tier": "Enterprise",
+"email_fit": "Medium",
+"employees": "~85,225",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Century 21",
+"domain": "century21.com",
+"sector": "Real estate",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,000 corp (147k agents worldwide)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "eir",
+"domain": "eir.ie",
+"sector": "Telecom",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~3,170",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "eToro",
+"domain": "etoro.com",
+"sector": "Fintech (trading)",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,501",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "FIFA",
+"domain": "fifa.com",
+"sector": "Sports",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~4,754",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GetSmarter",
+"domain": "getsmarter.com",
+"sector": "Edtech (2U)",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Kiwibank",
+"domain": "kiwibank.co.nz",
+"sector": "Banking",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~2,500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Match Group",
+"domain": "mtch.com",
+"sector": "Dating / Apps",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~2,510",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Optus",
+"domain": "optus.com.au",
+"sector": "Telecom",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~7,572",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "PGA",
+"domain": "pga.com",
+"sector": "Sports",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,250",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Sonos",
+"domain": "sonos.com",
+"sector": "Consumer electronics",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,708",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "SurveyMonkey",
+"domain": "surveymonkey.com",
+"sector": "B2B SaaS",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Trello",
+"domain": "trello.com",
+"sector": "B2B SaaS (Atlassian)",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Upstox",
+"domain": "upstox.com",
+"sector": "Fintech (trading)",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~2,100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "US Open (USTA)",
+"domain": "usopen.org",
+"sector": "Sports",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,000-1,700",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Virgin Mobile",
+"domain": "virginmobile.com",
+"sector": "Telecom",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~2,000 (brand; varies by market)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "William Hill",
+"domain": "williamhill.com",
+"sector": "Gambling / Betting",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~5,500-9,800",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "YTL Communications",
+"domain": "ytlcommunications.my",
+"sector": "Telecom",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~1,100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Zillow",
+"domain": "zillow.com",
+"sector": "Real estate / Tech",
+"size_tier": "Large",
+"email_fit": "Medium",
+"employees": "~7,000",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "AccuWeather",
+"domain": "accuweather.com",
+"sector": "Media (weather)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~540",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Barnebys",
+"domain": "barnebys.co.uk",
+"sector": "Marketplace (auctions)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "ConsumerLab",
+"domain": "consumerlab.com",
+"sector": "Media / Health",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Craftsy",
+"domain": "craftsy.com",
+"sector": "Media / E-learning",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~250",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Dictionary.com",
+"domain": "dictionary.com",
+"sector": "Media / App",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~51-200",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "eharmony",
+"domain": "eharmony.com",
+"sector": "Dating / App",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~140-155",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "hagebau connect",
+"domain": "hagebau.de",
+"sector": "Retail (DIY)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~57 (unit; hagebau group large)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Kilo Health",
+"domain": "kilo.health",
+"sector": "Health tech",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~450",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Logos",
+"domain": "logos.com",
+"sector": "Software / Media",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Loom",
+"domain": "loom.com",
+"sector": "B2B SaaS (Atlassian)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Milan Records",
+"domain": "milanrecords.com",
+"sector": "Media (music)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "NCAA March Madness",
+"domain": "ncaa.com",
+"sector": "Sports",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~500 (central office)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Olympique Lyonnais",
+"domain": "ol.fr",
+"sector": "Sports (football club)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~550 (OL Groupe)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "OneFootball",
+"domain": "onefootball.com",
+"sector": "Media / Sports app",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~360-390",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Oregon Public Broadcasting (OPB)",
+"domain": "opb.org",
+"sector": "Media (public broadcaster)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "RCA Records",
+"domain": "rcarecords.com",
+"sector": "Media (music, Sony)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Regiocast (Radio BOB!)",
+"domain": "regiocast.de",
+"sector": "Media (radio)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~300",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Rhapsody International (Napster)",
+"domain": "napster.com",
+"sector": "Media (music streaming)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~140",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Runkeeper",
+"domain": "runkeeper.com",
+"sector": "App (fitness, ASICS)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Sacramento Kings",
+"domain": "nba.com/kings",
+"sector": "Sports (NBA)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~500-700",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Sleep.com",
+"domain": "sleep.com",
+"sector": "Media (health)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "SportsLine",
+"domain": "sportsline.com",
+"sector": "Media (sports)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "SXSW",
+"domain": "sxsw.com",
+"sector": "Events",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~175 full-time",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "The Influence Room",
+"domain": "theinfluenceroom.com",
+"sector": "Martech / PR",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "TracFone Wireless",
+"domain": "tracfone.com",
+"sector": "Telecom",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~750 (Verizon-owned; huge base)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "triple j Unearthed",
+"domain": "triplejunearthed.com",
+"sector": "Media (music, ABC)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Washington Capitals",
+"domain": "nhl.com/capitals",
+"sector": "Sports (NHL)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~200-500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "WBUR",
+"domain": "wbur.org",
+"sector": "Media (public radio)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~220",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "WHYY",
+"domain": "whyy.org",
+"sector": "Media (public radio)",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "~400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Word by Word",
+"domain": "ntgateway.com",
+"sector": "Media / Education",
+"size_tier": "Mid",
+"email_fit": "Medium",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Infosys",
+"domain": "infosys.com",
+"sector": "IT services (B2B)",
+"size_tier": "Enterprise",
+"email_fit": "Low",
+"employees": "~323,578",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "VML",
+"domain": "vml.com",
+"sector": "Agency",
+"size_tier": "Enterprise",
+"email_fit": "Low",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "Brillio",
+"domain": "brillio.com",
+"sector": "IT services (B2B)",
+"size_tier": "Large",
+"email_fit": "Low",
+"employees": "~5,700",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Ci&T",
+"domain": "ciandt.com",
+"sector": "IT services (B2B)",
+"size_tier": "Large",
+"email_fit": "Low",
+"employees": "~7,400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Hootsuite",
+"domain": "hootsuite.com",
+"sector": "Martech / SaaS",
+"size_tier": "Large",
+"email_fit": "Low",
+"employees": "~1,559",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "HPE Aruba Networking",
+"domain": "arubanetworks.com",
+"sector": "Tech / Networking (B2B)",
+"size_tier": "Large",
+"email_fit": "Low",
+"employees": "~5,500",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Testlio",
+"domain": "testlio.com",
+"sector": "QA / Testing (B2B)",
+"size_tier": "Large",
+"email_fit": "Low",
+"employees": "~1,080",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Chipper Cash",
+"domain": "chippercash.com",
+"sector": "Fintech",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~235",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Dinda",
+"domain": "dinda.com",
+"sector": "App / E-commerce",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~56",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Ding",
+"domain": "ding.com",
+"sector": "Fintech / Telecom top-up",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~230",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Eventbase",
+"domain": "eventbase.com",
+"sector": "Events tech (B2B)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~130",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Expensify",
+"domain": "expensify.com",
+"sector": "Fintech / SaaS",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~140",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GasBuddy",
+"domain": "gasbuddy.com",
+"sector": "Auto / App",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GetPlus",
+"domain": "getplus.co.id",
+"sector": "Loyalty / App",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~100",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "GSN Games",
+"domain": "gsngames.com",
+"sector": "Gaming (mobile)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~400",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Libon",
+"domain": "libon.com",
+"sector": "Telecom / App",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~79 (Orange unit)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Mano Bustas",
+"domain": "manobustas.lt",
+"sector": "Real estate / Utilities",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~89",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "OLIO",
+"domain": "olioapp.com",
+"sector": "App (sustainability)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~166",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "PayByPhone",
+"domain": "paybyphone.com",
+"sector": "Fintech / Mobility",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~235",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Redbox",
+"domain": "redbox.com",
+"sector": "Media / Retail",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~600 (wound down 2024)",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Ryde",
+"domain": "rydesharing.com",
+"sector": "Mobility / App",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~50",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Self Financial",
+"domain": "self.inc",
+"sector": "Fintech (credit)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~778",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "SnipSnap",
+"domain": "snipsnap.com",
+"sector": "App (coupons)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~10",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Talk Home",
+"domain": "talkhome.us",
+"sector": "Telecom / App",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~20-50",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+},
+{
+"company": "Tyler Cowen",
+"domain": "conversationswithtyler.com",
+"sector": "Newsletter (individual)",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "",
+"lists": [
+"SFMC"
+],
+"proof": "Eurostar"
+},
+{
+"company": "what3words",
+"domain": "what3words.com",
+"sector": "Tech / Location",
+"size_tier": "Mid",
+"email_fit": "Low",
+"employees": "~87",
+"lists": [
+"Airship"
+],
+"proof": "BBC"
+}
+];
+const STAGES = [
+  {id:"companies", label:"Companies",         color:"#9aa0a6"},
+  {id:"enrich",    label:"Enrich · contacts", color:"#3f3cbb"},
+  {id:"research",  label:"Research · AI",      color:"#7c3aed"},
+  {id:"copy",      label:"Copy",              color:"#e2560f"},
+  {id:"ready",     label:"Ready to push",     color:"#b4690e"},
+  {id:"pushed",    label:"Pushed",            color:"#0f766e"}
+];
+const EXCLUDED = {id:"excluded", label:"Excluded", color:"#b4315a"};
+const STAGE_ORDER = STAGES.map(s=>s.id);
+const SUBJECTS = ["Email production","Email question"];
+const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g,"");
+const KEY = "es_outreach_v7";
+let STATE = JSON.parse(localStorage.getItem(KEY) || "null");
+
+function seed(){
+  const st = {};
+  COMPANIES.forEach(c=>{
+    const k = norm(c.company);
+    const r = RESEARCHED[k];
+    st[c.company] = r
+      ? {stage:"copy", trigger:r.trigger, source:r.source, contacts:[], emails:r.emails.map(e=>({subject:"Email production",body:e.body})), generated:true, prevStage:null, subject:"Email production"}
+      : {stage:"companies", trigger:"", source:"", contacts:[], emails:[], generated:false, prevStage:null, subject:"Email production"};
+  });
+  return st;
+}
+if(!STATE){ STATE = seed(); }
+else { COMPANIES.forEach(c=>{ if(!STATE[c.company]) STATE[c.company]={stage:"companies",trigger:"",source:"",contacts:[],emails:[],generated:false,prevStage:null,subject:"Email production"}; }); }
+let ONLINE=false;
+function save(name){
+  localStorage.setItem(KEY, JSON.stringify(STATE));
+  if(name===undefined) name=(typeof openName!=='undefined'?openName:null);
+  if(ONLINE && name && STATE[name]) syncCompany(name);
+}
+
+/* ---------- Copy generation (template, voice v2, mobile spacing) ---------- */
+function genEmails(c){
+  const s = STATE[c.company];
+  const subj = s.subject || SUBJECTS[0];
+  const proofEx = c.proof==="BBC" ? P_BBC : P_EURO;
+  const trig = s.trigger.trim() || "[add the recent why-now trigger here].";
+  const onEsp = c.lists.includes("SFMC") ? "on SFMC " : (c.lists.includes("Airship") ? "on Airship " : "");
+  const e2subj = c.proof==="BBC" ? "Insanely Fast" : "Days Into Minutes";
+  const e2body = c.proof==="BBC"
+    ? "Hi {{first_name}},\n\nMore on the BBC, since it's a close parallel: a small team, high stakes, and manual email build slowing everything down.\n\nOnce the building was handled for them, they called it insanely fast and rolled it across six brands in a month.\n\nThe mockup of your emails is ready whenever you'd like a look.\n\nWorth a quick call to walk you through it?\n\nWill"
+    : "Hi {{first_name}},\n\nMore on Eurostar, since it's a close parallel: the same size of team, but production that used to take days now takes minutes, because the building is handled for them rather than done by hand.\n\nThe mockup of your emails is ready whenever you'd like a look.\n\nWorth a quick call to walk you through it?\n\nWill";
+  return [
+    {subject:subj,
+     body:`Hi {{first_name}},\n\n${trig}\n\nI assume that means more email landing on the ${c.company} team, and probably a fair bit of everyone's time going on building and QAing it rather than the campaigns themselves.\n\nFrom what we've seen with others ${onEsp}running that kind of volume, that build work is usually where the hours go.\n\nThat's usually where we help.\n\nFor example, ${proofEx}\n\nI've already mocked up a couple of your emails so you can see how it works, and how we could roughly halve your production time.\n\nWould it be worth me sharing a bit more?\n\nWill`},
+    {subject:subj, body:e2body},
+    {subject:subj,
+     body:"Hi {{first_name}},\n\nIs this something you could be interested in, or shall I put a pin in it for now?\n\nWill"}
+  ];
+}
+const ROLES=["Head of CRM","Head of Email","Head of Lifecycle"];
+function findContacts(c){
+  const dom=c.domain.replace(/^www\./,"");
+  return ROLES.map(r=>({role:r,name:"",email:"first.last@"+dom}));
+}
+
+/* ---------- Rendering (gated pipeline) ---------- */
+const board=document.getElementById("board");
+let filters={list:null,proof:null,fit:null}, query="";
+
+function matches(c){
+  if(query && !(c.company.toLowerCase().includes(query)||c.domain.toLowerCase().includes(query))) return false;
+  if(filters.list && !c.lists.includes(filters.list)) return false;
+  if(filters.proof && c.proof!==filters.proof) return false;
+  if(filters.fit && c.email_fit!==filters.fit) return false;
+  return true;
+}
+function faviconFor(c){return `https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`;}
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+function enc(s){return (s||"").replace(/"/g,"&quot;");}
+
+function cardHTML(c){
+  const s=STATE[c.company], r=RESEARCHED[norm(c.company)];
+  return `<div class="card${s.stage==='excluded'?' excluded':''}" data-name="${enc(c.company)}">
+    <button class="kill" title="Not them / exclude">✕</button>
+    <div class="card-top">
+      <img class="favi" src="${faviconFor(c)}" onerror="this.style.visibility='hidden'"/>
+      <div><div class="cname">${esc(c.company)}</div><div class="cdomain">${esc(c.domain)}</div></div>
+    </div>
+    <div class="badges">
+      ${r?`<span class="b" style="background:#fbe9dd;color:var(--amber)">researched</span>`:""}
+      ${c.email_fit?`<span class="b b-fit-${c.email_fit}">${c.email_fit} fit</span>`:""}
+      <span class="b b-proof-${c.proof}">${c.proof}</span>
+      ${c.lists.map(l=>`<span class="b b-list">${l}</span>`).join("")}
+      ${s.stage==='pushed'&&s.sentAt?`<span class="b b-tier">pushed ${new Date(s.sentAt).toLocaleDateString()}</span>`:""}
+    </div></div>`;
+}
+
+function render(){
+  const visible = COMPANIES.filter(matches);
+  const cols = STAGES.concat([EXCLUDED]);
+  board.innerHTML = cols.map(st=>{
+    const items = visible.filter(c=>STATE[c.company].stage===st.id);
+    return `<section class="col${st.id==='excluded'?' col-excluded':''}">
+      <div class="col-head"><span class="dot" style="background:${st.color}"></span>
+        <span class="col-title">${st.label}</span><span class="col-count">${items.length}</span></div>
+      <div class="col-body">${items.length?items.map(cardHTML).join(""):`<div class="empty">Nothing here yet</div>`}</div>
+    </section>`;
+  }).join("");
+  document.getElementById("shown").textContent = visible.filter(c=>STATE[c.company].stage!=='excluded').length;
+  document.getElementById("total").textContent = COMPANIES.length;
+  wireBoard();
+}
+function wireBoard(){
+  document.querySelectorAll(".card").forEach(el=>el.addEventListener("click",()=>openDrawer(el.dataset.name)));
+  document.querySelectorAll(".card .kill").forEach(k=>k.addEventListener("click",e=>{
+    e.stopPropagation(); exclude(k.closest(".card").dataset.name);}));
+}
+
+/* ---------- Drawer ---------- */
+const drawer=document.getElementById("drawer"), scrim=document.getElementById("scrim");
+let openName=null;
+function openDrawer(name){
+  openName=name;
+  const c=COMPANIES.find(x=>x.company===name), s=STATE[name];
+  const idx=STAGE_ORDER.indexOf(s.stage);
+  const steps=STAGES.map((st,i)=>`<div class="step ${st.id===s.stage?'now':(i<idx?'done':'')}">${i+1}. ${st.label}</div>`).join("");
+  drawer.innerHTML=`
+   <div class="dhead">
+     <div class="row">
+       <img class="favi" style="width:32px;height:32px" src="${faviconFor(c)}" onerror="this.style.visibility='hidden'">
+       <div><h2>${esc(c.company)}</h2><a class="dom" href="https://${c.domain}" target="_blank">${esc(c.domain)} ↗</a></div>
+       <button class="xbtn" onclick="closeDrawer()">✕</button>
+     </div>
+     <div class="dmeta">
+       ${c.email_fit?`<span class="b b-fit-${c.email_fit}">${c.email_fit} fit</span>`:""}
+       ${c.size_tier?`<span class="b b-tier">${esc(c.size_tier)}${c.employees?` · ${esc(c.employees)}`:""}</span>`:""}
+       <span class="b b-proof-${c.proof}">${c.proof} proof</span>
+       ${c.lists.map(l=>`<span class="b b-list">${l}</span>`).join("")}
+       ${c.sector?`<span class="b b-tier">${esc(c.sector)}</span>`:""}
+     </div>
+     ${s.stage==='excluded'
+       ? `<div class="excluded-note">Excluded from the sequence, will not be contacted.</div>`
+       : `<div class="steps">${steps}</div>`}
+   </div>
+   <div class="dbody">
+     <div class="sect">
+       <h3>Why now · the trigger</h3>
+       <p class="hint">The recent, dated reason we're reaching out.</p>
+       <textarea id="trigger" rows="3" placeholder="e.g. new CMO appointed last week; Q2 flagged a cost-cutting drive...">${esc(s.trigger)}</textarea>
+       <label class="fld">Source link</label>
+       <input class="ti" id="source" placeholder="https://..." value="${enc(s.source)}">
+       ${s.stage==='research'?`<div class="btns" style="margin-top:8px"><a class="btn btn-ghost" href="https://news.google.com/search?q=${encodeURIComponent(c.company)}%20when%3A30d" target="_blank">Find a recent trigger ↗</a></div><p class="hint" style="margin-top:6px">Auto AI research wires in later. For now, paste the trigger and a source, then Generate copy.</p>`:''}
+     </div>
+     <div class="sect">
+       <h3>Contacts <span style="font-weight:400;color:var(--ink-soft);font-size:12px">(~3 per company)</span></h3>
+       <p class="hint">${s.stage==='companies'?'Press "Find free contacts" below to enrich.':'Edit, add or remove. Real enrichment (Prospeo) wires in later.'}</p>
+       <div id="contacts">${renderContacts(s)}</div>
+       ${s.stage!=='companies'?`<div class="btns"><button class="btn btn-ghost" onclick="addContact()">＋ Add contact</button></div>`:''}
+     </div>
+     <div class="sect">
+       <h3>The sequence <span style="font-weight:400;color:var(--ink-soft);font-size:12px">3-step direct</span></h3>
+       <p class="hint">Edit inline, changes save automatically.</p>
+       <div id="emails">${renderEmails(s)}</div>
+       ${s.emails.length?`<div class="btns"><button class="btn btn-ghost" onclick="regen()">↻ Regenerate from template</button></div>`:''}
+     </div>
+   </div>
+   <div class="stagebar">${stagebar(s,idx)}</div>`;
+  drawer.classList.add("show"); scrim.classList.add("show");
+  const t=document.getElementById("trigger");
+  if(t) t.addEventListener("input",()=>{STATE[openName].trigger=t.value;save();});
+  const src=document.getElementById("source");
+  if(src) src.addEventListener("input",e=>{STATE[openName].source=e.target.value;save();});
+  wireEmailInputs(); wireContactInputs();
+  const subjAll=document.getElementById("subject-all");
+  if(subjAll) subjAll.addEventListener("input",()=>applySubject(subjAll.value));
+}
+function stagebar(s,idx){
+  if(s.stage==='excluded')
+    return `<span class="lab">Excluded</span><button class="btn btn-primary" style="margin-left:auto" onclick="restore()">Restore to pipeline</button>`;
+  const P={
+    companies:["Find free contacts →",false,"btn-teal"],
+    enrich:["Start research →", s.contacts.length===0,"btn-primary"],
+    research:["Generate copy →", (!s.trigger.trim()||!s.source.trim()),"btn-primary"],
+    copy:["Mark copy ready →", s.emails.length===0,"btn-teal"],
+    ready:["Push to Instantly ↗", false,"btn-primary"],
+    pushed:["Pushed ✓", true,"btn-ink"]
+  }[s.stage];
+  const back = idx>0 ? `<button class="btn btn-back" onclick="back()">← Back</button>` : "";
+  const next = `<button class="btn ${P[2]}" ${P[1]?"disabled":""} onclick="advance()">${P[0]}</button>`;
+  const note = s.stage==='pushed' ? `<div class="pushed-note">Replies, opens and bounces live in Instantly. Syncing that status back here is a future step.</div>` : "";
+  const exclude = `<button class="btn btn-exclude" onclick="exclude()">Not them</button>`;
+  return `${back}${next}${note}<span style="flex:1"></span>${exclude}`;
+}
+function renderContacts(s){
+  if(!s.contacts.length) return `<p class="hint" style="opacity:.7">No contacts yet.</p>`;
+  return s.contacts.map((ct,i)=>`<div class="contact">
+    <div class="role">${esc(ct.role)}<button class="rmc" data-rm="${i}">remove</button></div>
+    <input class="ti" data-ci="${i}" data-k="name" placeholder="Full name" value="${enc(ct.name)}">
+    <input class="ti" data-ci="${i}" data-k="email" placeholder="email@company.com" value="${enc(ct.email)}">
+  </div>`).join("");
+}
+function renderEmails(s){
+  const subj = s.subject || SUBJECTS[0];
+  const abtn = SUBJECTS.map(v=>`<button class="btn ${v===subj?'btn-ink':'btn-ghost'}" style="padding:6px 11px;font-size:12px" onclick="setSubject('${v}')">${v}</button>`).join("");
+  const head = `<div class="subject-block">
+      <label class="fld">Subject · used on all three, so replies stay in one thread</label>
+      <input class="ti" id="subject-all" value="${enc(subj)}">
+      <div class="btns" style="margin-top:8px">${abtn}<span style="font-size:11.5px;color:var(--ink-soft);align-self:center;margin-left:4px">A/B pick, or type your own</span></div>
+    </div>`;
+  if(!s.emails.length) return head + `<p class="hint" style="opacity:.7;margin-top:12px">No copy yet, it is generated at the Research step once the trigger is in.</p>`;
+  const days=["Day 1","Day 5","Day 12"], names=["Trigger + offer","Proof / angle","Breakup"];
+  const blocks = s.emails.map((e,i)=>`<div class="email-block">
+    <div class="eh"><span class="eno">Email ${i+1}</span><span class="eday">${days[i]||""}</span>
+      <span style="font-size:11.5px;color:var(--ink-soft)">${names[i]||""}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--ink-soft)">${i===0?"Subject: "+esc(subj):"Re: "+esc(subj)}</span></div>
+    <label class="fld">Body</label>
+    <textarea data-ei="${i}" data-k="body" rows="${Math.min(16,e.body.split("\n").length+2)}">${esc(e.body)}</textarea>
+  </div>`).join("");
+  return head + blocks;
+}
+function wireEmailInputs(){
+  document.querySelectorAll("[data-ei]").forEach(el=>el.addEventListener("input",()=>{
+    STATE[openName].emails[+el.dataset.ei][el.dataset.k]=el.value;save();}));
+}
+function wireContactInputs(){
+  document.querySelectorAll("[data-ci]").forEach(el=>el.addEventListener("input",()=>{
+    STATE[openName].contacts[+el.dataset.ci][el.dataset.k]=el.value;save();}));
+  document.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{
+    STATE[openName].contacts.splice(+b.dataset.rm,1);save();refreshDrawer();}));
+}
+function refreshDrawer(){ if(openName) openDrawer(openName); }
+
+/* ---------- Gated actions ---------- */
+let _finding=false;
+async function fetchContacts(c){
+  try{
+    const res=await fetch("/api/outreach/enrich",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({company:c.company,domain:c.domain})});
+    if(!res.ok) return null;
+    const d=await res.json();
+    if(!d||!Array.isArray(d.contacts)) return null;
+    return d.contacts.map(x=>({role:x.title||"Contact",name:x.name||"",email:x.email||"",linkedin:x.linkedin||""}));
+  }catch(e){ return null; }
+}
+async function advance(){
+  const c=COMPANIES.find(x=>x.company===openName), s=STATE[openName];
+  if(s.stage==="companies"){
+    if(!s.contacts.length){
+      if(_finding) return; _finding=true; toast("Finding contacts…");
+      const real=await fetchContacts(c); _finding=false;
+      s.contacts=(real&&real.length)?real:findContacts(c);
+      toast(real ? `Found ${s.contacts.length} verified contacts` : "Demo contacts (start serve.py for live pulls)");
+    }
+    s.stage="enrich";
+  }
+  else if(s.stage==="enrich"){ if(!s.contacts.length){toast("Find contacts first");return;} s.stage="research"; toast("Ready to research"); }
+  else if(s.stage==="research"){ if(!s.trigger.trim()||!s.source.trim()){toast("Add the trigger and a source link first");return;} s.emails=genEmails(c); s.generated=true; s.stage="copy"; toast("Copy generated from the trigger"); }
+  else if(s.stage==="copy"){ if(!s.emails.length){toast("Generate copy first");return;} s.stage="ready"; toast("Marked ready to push"); }
+  else if(s.stage==="ready"){ if(!confirm(`Push the ${openName} sequence to Instantly?\n\nDemo only, nothing is actually sent, the card moves to Pushed.`))return; s.stage="pushed"; s.sentAt=new Date().toISOString(); toast("Pushed to Instantly (demo)"); }
+  save(); render(); refreshDrawer();
+}
+function back(){
+  const s=STATE[openName], i=STAGE_ORDER.indexOf(s.stage);
+  if(i>0){ s.stage=STAGE_ORDER[i-1]; if(s.stage!=="pushed") s.sentAt=null; save(); render(); refreshDrawer(); }
+}
+function exclude(name){
+  name=name||openName; const s=STATE[name];
+  if(s.stage!=="excluded"){ s.prevStage=s.stage; s.stage="excluded"; save(name); render(); toast(name+" excluded"); if(openName===name) refreshDrawer(); }
+}
+function restore(){
+  const s=STATE[openName]; s.stage=s.prevStage||"companies"; s.prevStage=null; save(); render(); refreshDrawer(); toast("Restored");
+}
+function regen(){
+  const c=COMPANIES.find(x=>x.company===openName);
+  STATE[openName].emails=genEmails(c); STATE[openName].generated=true; save(); refreshDrawer(); toast("Copy regenerated");
+}
+function addContact(){ STATE[openName].contacts.push({role:"Contact",name:"",email:""}); save(); refreshDrawer(); }
+function applySubject(v){ const s=STATE[openName]; s.subject=v; s.emails.forEach(e=>e.subject=v); save(); }
+function setSubject(v){ applySubject(v); refreshDrawer(); }
+function closeDrawer(){ drawer.classList.remove("show"); scrim.classList.remove("show"); openName=null; }
+scrim.addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();});
+
+/* ---------- Filters + toast ---------- */
+document.getElementById("q").addEventListener("input",e=>{query=e.target.value.toLowerCase().trim();render();});
+document.getElementById("filters").addEventListener("click",e=>{
+  const chip=e.target.closest(".chip"); if(!chip) return;
+  const f=chip.dataset.f, v=chip.dataset.v;
+  filters[f]= filters[f]===v ? null : v;
+  document.querySelectorAll(`.chip[data-f="${f}"]`).forEach(x=>x.classList.toggle("on",x.dataset.v===filters[f]));
+  render();
+});
+let toastT;
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200);}
+
+async function checkAuth(){
+  try{ const r=await fetch('/api/outreach/auth'); if(!r.ok) return 'login'; const d=await r.json(); return d.ok?'ok':'login'; }
+  catch(e){ return 'local'; }
+}
+async function loadState(){
+  try{
+    const r=await fetch('/api/outreach/state'); if(!r.ok) return;
+    const {rows}=await r.json();
+    (rows||[]).forEach(row=>{ if(!STATE[row.company]) return;
+      STATE[row.company]={ stage:row.stage||'companies', prevStage:row.prev_stage||null,
+        trigger:row.trigger||'', source:row.source||'', subject:row.subject||'Email production',
+        contacts:row.contacts||[], emails:row.emails||[], generated:!!row.generated, sentAt:row.sent_at||null }; });
+    localStorage.setItem(KEY, JSON.stringify(STATE));
+  }catch(e){}
+}
+const _syncT={};
+function syncCompany(name){
+  clearTimeout(_syncT[name]);
+  _syncT[name]=setTimeout(()=>{ fetch('/api/outreach/state',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({company:name,state:STATE[name]})}).catch(()=>{}); },400);
+}
+function showLogin(){
+  document.body.insertAdjacentHTML('beforeend',`<div id="loginwrap" style="position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(30,27,22,.5);backdrop-filter:blur(4px)">
+    <form id="loginform" style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;width:min(360px,90vw);box-shadow:var(--shadow-lg)">
+      <div style="font-family:Fraunces;font-size:22px;margin-bottom:4px">Outreach Console</div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Enter the team password.</div>
+      <input id="pw" type="password" class="ti" placeholder="Password" autofocus>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px">Enter</button>
+      <div id="pwerr" style="color:var(--rose);font-size:12.5px;margin-top:8px;display:none">Wrong password.</div>
+    </form></div>`);
+  document.getElementById('loginform').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const pw=document.getElementById('pw').value;
+    const r=await fetch('/api/outreach/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    if(r.ok){ document.getElementById('loginwrap').remove(); boot(); }
+    else { document.getElementById('pwerr').style.display='block'; }
+  });
+}
+async function boot(){
+  const st=await checkAuth();
+  if(st==='login'){ showLogin(); return; }
+  ONLINE=(st==='ok');
+  if(ONLINE) await loadState();
+  render();
+}
+boot();
+</script>
+</body>
+</html>
